@@ -17,6 +17,7 @@ Simple shared grocery list PWA with one global list that works on phones and des
 - Node.js 20+
 - .NET 8.0 SDK
 - npm or yarn
+- Azure Functions Core Tools v4 (for running the API locally with `func` command or SWA CLI)
 
 ### Getting Started
 
@@ -101,4 +102,5 @@ our-grocery-list/
 ## Reference documents
 
 - [docs/requirements.md](docs/requirements.md) — detailed Version 1 functional requirements.
+- [docs/architecture.md](docs/architecture.md) — technical architecture and implementation details.
 - [.github/copilot-instructions.md](.github/copilot-instructions.md) — guidance for using Copilot effectively on this project.
