@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+build/
+bin/
+obj/
+
+# Environment files
+.env
+.env.local
+*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Azure Functions
+api/local.settings.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# PWA
+sw.js
+workbox-*.js

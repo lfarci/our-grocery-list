@@ -1,0 +1,11 @@
+{
+    "IsEncrypted": false,
+    "Values": {
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+        "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+        "CosmosDbConnectionString": "<your-cosmos-db-connection-string>",
+        "CosmosDbDatabaseName": "grocery-list",
+        "CosmosDbContainerName": "items",
+        "AzureSignalRConnectionString": "<your-signalr-connection-string>"
+    }
+}

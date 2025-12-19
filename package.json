@@ -1,0 +1,23 @@
+{
+  "name": "our-grocery-list",
+  "version": "1.0.0",
+  "description": "Simple shared grocery list PWA with one global list that works on phones and desktops.",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "start": "swa start",
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build && cd ../api && dotnet build",
+    "build:frontend": "cd frontend && npm run build",
+    "build:api": "cd api && dotnet build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@azure/static-web-apps-cli": "^2.0.7"
+  }
+}
+
