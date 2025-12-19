@@ -1,73 +1,79 @@
-# React + TypeScript + Vite
+# Frontend - Our Grocery List
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript PWA built with Vite and Tailwind CSS.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Framework**: React 19 with TypeScript
+- **Build Tool**: Vite 7
+- **Styling**: Tailwind CSS v4
+- **PWA**: vite-plugin-pwa with Workbox
+- **State Management**: React hooks
+- **Offline Storage**: IndexedDB
 
-## React Compiler
+## Project Structure
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+├── api/          # API client functions
+├── components/   # React components
+├── hooks/        # Custom React hooks
+├── pwa/          # Service worker registration
+├── storage/      # IndexedDB cache layer
+└── types/        # TypeScript type definitions
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Local Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Running the Frontend Only
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+This starts the Vite dev server on port 5173 with hot reload.
+
+### Running with Full Stack (Recommended)
+
+From the root directory:
+
+```bash
+npm start
+```
+
+This uses the SWA CLI to run:
+- Vite dev server on port 5173
+- Azure Functions on port 7071
+- SWA emulator on port 4280 (proxies both)
+
+### Other Commands
+
+```bash
+npm run build      # Build for production
+npm run preview    # Preview production build
+npm run lint       # Run ESLint
+npm run format     # Format code with Prettier
+```
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and configure:
+
+- `VITE_API_BASE_URL` - API endpoint (default: `/api`)
+- `VITE_SIGNALR_HUB_URL` - SignalR hub URL (default: `/api/negotiate`)
+
+## PWA Features
+
+- Installable app with web manifest
+- Service worker for offline functionality
+- Automatic asset caching with Workbox
+- Network-first strategy for API calls
+
+## Development Guidelines
+
+- Use Tailwind utility classes for styling
+- Follow existing component patterns
+- Keep components simple and focused
+- Use type-only imports for TypeScript types
+- Format code before committing (`npm run format`)
+

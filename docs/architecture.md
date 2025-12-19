@@ -164,23 +164,12 @@ All endpoints are prefixed with `/api`:
 
 ## Local Development Workflow
 
-### Option 1: SWA CLI (Recommended)
-```bash
-npm start
-```
-- Runs Vite dev server on port 5173
-- Runs Azure Functions on port 7071
-- Proxies requests through SWA emulator on port 4280
-- Hot reload for both frontend and backend
+See [frontend/README.md](../frontend/README.md) for detailed local development instructions.
 
-### Option 2: Separate Processes
-```bash
-# Terminal 1 - Frontend
-cd frontend && npm run dev
-
-# Terminal 2 - Backend
-cd api && func start
-```
+**Quick start:**
+- Full stack: `npm start` (from root, uses SWA CLI)
+- Frontend only: `cd frontend && npm run dev`
+- Backend only: `cd api && func start`
 
 ## Environment Configuration
 
