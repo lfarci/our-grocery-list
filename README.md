@@ -15,7 +15,7 @@ Simple shared grocery list PWA with one global list that works on phones and des
 ### Prerequisites
 
 - Node.js 20+
-- .NET 8.0 SDK
+- .NET 10.0 SDK
 - npm or yarn
 - Azure Functions Core Tools v4 (for running the API locally with `func` command or SWA CLI)
 

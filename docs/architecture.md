@@ -13,7 +13,7 @@ This document describes the technical architecture of the Our Grocery List appli
 - **Local Storage**: IndexedDB for offline caching
 
 ### Backend
-- **Runtime**: Azure Functions v4 (.NET 8 isolated worker)
+- **Runtime**: Azure Functions v4 (.NET 10 isolated worker)
 - **Language**: C#
 - **HTTP Framework**: ASP.NET Core
 - **Planned Database**: Azure Cosmos DB
