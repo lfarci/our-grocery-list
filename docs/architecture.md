@@ -8,7 +8,7 @@ This document describes the technical architecture of the Our Grocery List appli
 - **Framework**: React 19 with TypeScript
 - **Build Tool**: Vite 7
 - **PWA Support**: vite-plugin-pwa with Workbox
-- **Styling**: CSS (planned to be enhanced later)
+- **Styling**: Tailwind CSS
 - **State Management**: React hooks (useState, useEffect)
 - **Local Storage**: IndexedDB for offline caching
 
