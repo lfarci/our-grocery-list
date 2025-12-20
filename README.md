@@ -32,7 +32,7 @@ cd api && func start
 
 Visit `http://localhost:5173` to see the app.
 
-📖 **Full setup guide**: See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed instructions.
+📖 **Full setup guide**: See [docs/development.md](docs/development.md) for detailed instructions.
 
 ## Tech Stack
 
@@ -67,7 +67,7 @@ our-grocery-list/
 
 ## Reference documents
 
-- [DEVELOPMENT.md](DEVELOPMENT.md) — complete development setup guide.
+- [docs/development.md](docs/development.md) — complete development setup guide.
 - [docs/requirements.md](docs/requirements.md) — detailed Version 1 functional requirements.
 - [docs/architecture.md](docs/architecture.md) — technical architecture overview.
 - [.github/copilot-instructions.md](.github/copilot-instructions.md) — guidance for using Copilot effectively on this project.
