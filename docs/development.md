@@ -45,7 +45,7 @@ This will:
 
 ### 2. Configure Environment
 
-Create your local environment file:
+**Frontend configuration:**
 
 ```bash
 cp frontend/.env.example frontend/.env
@@ -55,6 +55,14 @@ The default configuration in `.env` is set for running services separately:
 ```
 VITE_API_BASE_URL=http://localhost:7071/api
 ```
+
+**API configuration (REQUIRED for separate services):**
+
+```bash
+cp api/local.settings.json.example api/local.settings.json
+```
+
+This file configures CORS and is required to avoid CORS errors. It's git-ignored, so you must create it locally.
 
 ### 3. Start Development Servers
 
@@ -138,7 +146,17 @@ VITE_API_BASE_URL=/api
 
 ### Backend Configuration
 
-The API uses `api/local.settings.json` for local configuration. This file is already set up with:
+### Backend Configuration
+
+The API requires `api/local.settings.json` for local configuration.
+
+**Create the file from the example:**
+
+```bash
+cp api/local.settings.json.example api/local.settings.json
+```
+
+This file configures CORS and is already set up with the correct settings:
 
 ```json
 {
@@ -148,12 +166,13 @@ The API uses `api/local.settings.json` for local configuration. This file is alr
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated"
   },
   "Host": {
-    "CORS": "http://localhost:5173,http://localhost:4280"
+    "CORS": "http://localhost:5173,http://localhost:4280",
+    "CORSCredentials": false
   }
 }
 ```
 
-If you need to recreate it, use `api/local.settings.json.example` as a template.
+> **Important:** The `local.settings.json` file is git-ignored and must be created locally. Without it, you'll encounter CORS errors when running services separately.
 
 ## Available Scripts
 
@@ -281,11 +300,34 @@ curl http://localhost:5173
 
 ### CORS errors
 
-If you see CORS errors in the browser console:
+**Most common cause:** Missing `api/local.settings.json` file.
 
-1. Check `api/local.settings.json` has your frontend URL in CORS
-2. Verify API is running on port 7071
-3. Restart the API after changing CORS settings
+If you see CORS errors in the browser console when running services separately:
+
+1. **Create `api/local.settings.json`** (if not already present):
+   ```bash
+   cp api/local.settings.json.example api/local.settings.json
+   ```
+
+2. **Verify CORS configuration** in `api/local.settings.json`:
+   ```json
+   {
+     "Host": {
+       "CORS": "http://localhost:5173,http://localhost:4280",
+       "CORSCredentials": false
+     }
+   }
+   ```
+
+3. **Restart the API** after creating or modifying the file:
+   ```bash
+   cd api
+   func start
+   ```
+
+4. **Check browser console** - you should see successful API requests without CORS errors
+
+> **Note:** The `local.settings.json` file is git-ignored and must be created on each machine. This is the #1 cause of CORS issues in local development.
 
 ### SWA CLI not starting
 

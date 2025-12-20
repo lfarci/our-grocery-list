@@ -16,16 +16,8 @@ builder.Services.Configure<JsonSerializerOptions>(options =>
     options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
 
-// Configure CORS for local development
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowLocalhost", policy =>
-    {
-        policy.WithOrigins("http://localhost:5173")
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
+// Note: CORS is configured in local.settings.json for local development
+// For Azure deployment, configure CORS in the Azure Portal
 
 builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
