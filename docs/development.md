@@ -166,8 +166,7 @@ This file configures CORS and is already set up with the correct settings:
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated"
   },
   "Host": {
-    "CORS": "http://localhost:5173,http://localhost:4280",
-    "CORSCredentials": false
+    "CORS": "http://localhost:5173,http://127.0.0.1:5173"
   }
 }
 ```
