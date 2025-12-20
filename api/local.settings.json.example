@@ -1,0 +1,10 @@
+{
+    "IsEncrypted": false,
+    "Values": {
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+        "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated"
+    },
+    "Host": {
+        "CORS": "http://localhost:5173,http://127.0.0.1:5173",
+    }
+}
