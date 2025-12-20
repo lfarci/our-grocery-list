@@ -17,7 +17,7 @@ export function GroceryItemsList({ items, onToggleDone, onDelete }: GroceryItems
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {items.map((item) => (
         <GroceryItem
           key={item.id}
