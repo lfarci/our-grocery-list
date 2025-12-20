@@ -34,6 +34,23 @@ Visit `http://localhost:5173` to see the app.
 
 📖 **Full setup guide**: See [docs/development.md](docs/development.md) for detailed instructions.
 
+## Testing
+
+The project includes comprehensive end-to-end tests using Playwright.
+
+```bash
+# Run all e2e tests
+npm run test:e2e
+
+# Run tests with UI mode
+npm run test:e2e:ui
+
+# View test report
+npm run test:e2e:report
+```
+
+📖 **Test documentation**: See [e2e/README.md](e2e/README.md) for full testing guide.
+
 ## Tech Stack
 
 - **Frontend**: React 19 + TypeScript + Tailwind CSS + Vite + PWA
@@ -56,6 +73,7 @@ our-grocery-list/
 │   ├── Functions/         # HTTP endpoints
 │   ├── Models/            # Data models
 │   └── Program.cs         # App configuration
+├── e2e/                   # Playwright end-to-end tests
 └── docs/                  # Documentation
 ```
 

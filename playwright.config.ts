@@ -12,7 +12,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:4280',
     trace: 'on-first-retry',
   },
 
@@ -25,8 +25,8 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'cd frontend && npm run dev',
-    url: 'http://localhost:5173',
+    command: 'npm run dev',
+    url: 'http://localhost:4280',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
