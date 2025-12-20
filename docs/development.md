@@ -4,8 +4,13 @@ This guide provides instructions for setting up and running the application loca
 
 ## Prerequisites
 
-- **Node.js** 18 or higher
+- **Node.js** 18.x, 20.x, or 22.x (LTS versions)
+  - ⚠️ **Important**: Node.js 24+ is NOT compatible with Azure Functions Core Tools v4
+  - Recommended: Node.js 20.x LTS
+  - Check your version: `node --version`
+  - Download from: https://nodejs.org/
 - **.NET 10 SDK**
+  - Download from: https://dotnet.microsoft.com/download/dotnet/10.0
 - **Azure Functions Core Tools** v4 (for running the API locally)
 - **Azure Static Web Apps CLI** (optional, for integrated development)
 
@@ -17,6 +22,21 @@ npm install -g azure-functions-core-tools@4
 # Azure Static Web Apps CLI (optional)
 npm install -g @azure/static-web-apps-cli
 ```
+
+### Node.js Version Compatibility
+
+Azure Functions Core Tools v4 requires Node.js LTS versions (18.x, 20.x, or 22.x). If you have Node.js 24 or newer:
+
+1. **Use nvm (Node Version Manager)** to switch versions:
+   ```bash
+   # Install nvm: https://github.com/nvm-sh/nvm
+   nvm install 20
+   nvm use 20
+   ```
+
+2. **Or download Node.js 20 LTS** from https://nodejs.org/
+
+See https://aka.ms/functions-node-versions for more details on Azure Functions Node.js compatibility.
 
 ## Project Structure
 
@@ -339,6 +359,34 @@ If `npm run dev` fails:
 
 2. Check that ports 4280, 5173, and 7071 are available
 3. Try running services separately to isolate the issue
+
+### Node.js version incompatibility
+
+If you see this error when running SWA CLI:
+
+```
+✖ Found Azure Functions Core Tools v4 which is incompatible with your current Node.js v24.x.x.
+✖ See https://aka.ms/functions-node-versions for more information.
+```
+
+**Solution:** Azure Functions Core Tools v4 only supports Node.js LTS versions (18.x, 20.x, or 22.x). Node.js 24+ is not yet supported.
+
+**Fix using nvm (recommended):**
+```bash
+# Install Node.js 20 LTS
+nvm install 20
+nvm use 20
+
+# Verify the version
+node --version  # Should show v20.x.x
+
+# Try running again
+npm run dev
+```
+
+**Alternative:** Download and install Node.js 20 LTS from https://nodejs.org/
+
+> **Note:** You can check Node.js compatibility for Azure Functions at https://aka.ms/functions-node-versions
 
 ### TypeScript errors in frontend
 

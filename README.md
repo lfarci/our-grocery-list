@@ -13,7 +13,7 @@ Simple shared grocery list PWA with one global list that works on phones and des
 ## Quick Start
 
 ### Prerequisites
-- Node.js 18+
+- Node.js 18.x, 20.x, or 22.x (⚠️ Node.js 24+ not supported by Azure Functions v4)
 - .NET 10 SDK
 - Azure Functions Core Tools v4
 
