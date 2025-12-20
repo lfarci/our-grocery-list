@@ -10,6 +10,55 @@ Simple shared grocery list PWA with one global list that works on phones and des
 - Ordering: not-done first, then done; oldest items stay on top within each group.
 - Changes sync across devices eventually without reload.
 
+## Quick Start
+
+### Prerequisites
+- Node.js 18+
+- .NET 10 SDK
+- Azure Functions Core Tools v4
+
+### Installation
+
+```bash
+# Install all dependencies
+npm install
+
+# Start frontend (Terminal 1)
+cd frontend && npm run dev
+
+# Start API (Terminal 2)
+cd api && func start
+```
+
+Visit `http://localhost:5173` to see the app.
+
+📖 **Full setup guide**: See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed instructions.
+
+## Tech Stack
+
+- **Frontend**: React 19 + TypeScript + Tailwind CSS + Vite + PWA
+- **Backend**: .NET 10 Azure Functions (isolated worker)
+- **Storage**: In-memory (ConcurrentDictionary)
+- **Deployment**: Azure Static Web Apps (planned)
+
+## Project Structure
+
+```
+our-grocery-list/
+├── frontend/               # React PWA application
+│   ├── src/
+│   │   ├── api/           # API client
+│   │   ├── components/    # React components
+│   │   ├── hooks/         # Custom hooks
+│   │   ├── types/         # TypeScript types
+│   │   └── storage/       # Local storage utilities
+├── api/                   # Azure Functions backend
+│   ├── Functions/         # HTTP endpoints
+│   ├── Models/            # Data models
+│   └── Program.cs         # App configuration
+└── docs/                  # Documentation
+```
+
 ## Working on the project
 
 - Treat the requirements as the source of truth for behavior and scope; avoid adding new features without updating the requirements first.
@@ -18,5 +67,11 @@ Simple shared grocery list PWA with one global list that works on phones and des
 
 ## Reference documents
 
+- [DEVELOPMENT.md](DEVELOPMENT.md) — complete development setup guide.
 - [docs/requirements.md](docs/requirements.md) — detailed Version 1 functional requirements.
+- [docs/architecture.md](docs/architecture.md) — technical architecture overview.
 - [.github/copilot-instructions.md](.github/copilot-instructions.md) — guidance for using Copilot effectively on this project.
+
+## License
+
+MIT
