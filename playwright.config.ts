@@ -1,18 +1,22 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:5173';
+const startServer =
+  process.env.PLAYWRIGHT_START_SERVER === '1' ||
+  process.env.PLAYWRIGHT_START_SERVER === 'true';
+
 /**
  * Playwright configuration for e2e tests
  * See https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
   testDir: './e2e',
-  fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1, // Run tests serially to ensure proper data isolation
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:4280',
+    baseURL,
     trace: 'on-first-retry',
   },
 
@@ -24,10 +28,12 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:4280',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
+  webServer: startServer
+    ? {
+        command: 'npm run dev',
+        url: baseURL,
+        reuseExistingServer: !process.env.CI,
+        timeout: 120000,
+      }
+    : undefined,
 });

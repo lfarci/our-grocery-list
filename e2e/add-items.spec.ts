@@ -1,9 +1,20 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+const itemCards = (page: Page) =>
+  page.locator('div.bg-white').filter({ has: page.locator('input[type="checkbox"]') });
+const itemCardByName = (page: Page, itemName: string) =>
+  itemCards(page).filter({ has: page.locator('div.font-medium', { hasText: itemName }) });
 
 test.describe('Grocery List - Add Items', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
+    // Clear all items before each test
+    await request.delete('http://localhost:7071/api/items');
+    
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'Our Grocery List' })).toBeVisible();
+    
+    // Wait for the initial load to complete and verify list is empty
+    await expect(itemCards(page)).toHaveCount(0, { timeout: 10000 });
   });
 
   test('should display the main page with title and form', async ({ page }) => {
@@ -24,7 +35,7 @@ test.describe('Grocery List - Add Items', () => {
     await page.getByRole('button', { name: 'Add Item' }).click();
     
     // Verify item appears in the list
-    await expect(page.getByText('Milk')).toBeVisible();
+    await expect(itemCardByName(page, 'Milk')).toHaveCount(1);
     
     // Verify form is cleared
     await expect(page.getByLabel('Item Name *')).toHaveValue('');
@@ -39,8 +50,9 @@ test.describe('Grocery List - Add Items', () => {
     await page.getByRole('button', { name: 'Add Item' }).click();
     
     // Verify item and notes appear in the list
-    await expect(page.getByText('Bread')).toBeVisible();
-    await expect(page.getByText('2 loaves, whole wheat')).toBeVisible();
+    const itemCard = itemCardByName(page, 'Bread');
+    await expect(itemCard).toHaveCount(1);
+    await expect(itemCard.getByText('2 loaves, whole wheat')).toBeVisible();
     
     // Verify form is cleared
     await expect(page.getByLabel('Item Name *')).toHaveValue('');
@@ -55,21 +67,25 @@ test.describe('Grocery List - Add Items', () => {
     await page.getByLabel('Item Name *').press('Enter');
     
     // Verify item appears in the list
-    await expect(page.getByText('Eggs')).toBeVisible();
+    await expect(itemCardByName(page, 'Eggs')).toHaveCount(1);
   });
 
   test('should show validation error for empty name', async ({ page }) => {
+    const initialCount = await itemCards(page).count();
+
     // Try to submit with empty name
     await page.getByRole('button', { name: 'Add Item' }).click();
     
     // Verify error message appears
     await expect(page.getByText('Please enter an item name')).toBeVisible();
-    
+
     // Verify no item was added to the list
-    await expect(page.getByText('Your list is empty. Add something above.')).toBeVisible();
+    await expect(itemCards(page)).toHaveCount(initialCount);
   });
 
   test('should not add item with only whitespace in name', async ({ page }) => {
+    const initialCount = await itemCards(page).count();
+
     // Fill in only whitespace
     await page.getByLabel('Item Name *').fill('   ');
     
@@ -80,31 +96,33 @@ test.describe('Grocery List - Add Items', () => {
     await expect(page.getByText('Please enter an item name')).toBeVisible();
     
     // Verify no item was added
-    await expect(page.getByText('Your list is empty. Add something above.')).toBeVisible();
+    await expect(itemCards(page)).toHaveCount(initialCount);
   });
 
   test('should add multiple items sequentially', async ({ page }) => {
     // Add first item
     await page.getByLabel('Item Name *').fill('Apples');
     await page.getByRole('button', { name: 'Add Item' }).click();
-    await expect(page.getByText('Apples')).toBeVisible();
+    await expect(itemCardByName(page, 'Apples')).toHaveCount(1);
     
     // Add second item
     await page.getByLabel('Item Name *').fill('Oranges');
     await page.getByRole('button', { name: 'Add Item' }).click();
-    await expect(page.getByText('Oranges')).toBeVisible();
+    await page.waitForTimeout(500); // Give React time to update
+    await expect(itemCardByName(page, 'Oranges')).toHaveCount(1);
     
     // Add third item
     await page.getByLabel('Item Name *').fill('Bananas');
     await page.getByLabel('Quantity/Notes (optional)').fill('1 bunch');
     await page.getByRole('button', { name: 'Add Item' }).click();
-    await expect(page.getByText('Bananas')).toBeVisible();
-    await expect(page.getByText('1 bunch')).toBeVisible();
+    await page.waitForTimeout(500); // Give React time to update
+    await expect(itemCardByName(page, 'Bananas')).toHaveCount(1);
+    await expect(itemCardByName(page, 'Bananas').getByText('1 bunch')).toBeVisible();
     
     // Verify all items are visible
-    await expect(page.getByText('Apples')).toBeVisible();
-    await expect(page.getByText('Oranges')).toBeVisible();
-    await expect(page.getByText('Bananas')).toBeVisible();
+    await expect(itemCardByName(page, 'Apples')).toHaveCount(1);
+    await expect(itemCardByName(page, 'Oranges')).toHaveCount(1);
+    await expect(itemCardByName(page, 'Bananas')).toHaveCount(1);
   });
 
   test('should trim whitespace from item name and notes', async ({ page }) => {
@@ -116,7 +134,8 @@ test.describe('Grocery List - Add Items', () => {
     await page.getByRole('button', { name: 'Add Item' }).click();
     
     // Verify trimmed values are stored
-    await expect(page.getByText('Butter')).toBeVisible();
-    await expect(page.getByText('unsalted')).toBeVisible();
+    const itemCard = itemCardByName(page, 'Butter');
+    await expect(itemCard).toHaveCount(1);
+    await expect(itemCard.getByText('unsalted')).toBeVisible();
   });
 });

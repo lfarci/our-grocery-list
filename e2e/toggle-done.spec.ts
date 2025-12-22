@@ -1,7 +1,18 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+const escapeRegex = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const checkboxFor = (page: Page, itemName: string) =>
+  page.getByRole('checkbox', { name: new RegExp(`Mark ${escapeRegex(itemName)} as (done|not done)`, 'i') });
+const itemCards = (page: Page) =>
+  page.locator('div.bg-white').filter({ has: page.locator('input[type="checkbox"]') });
+const itemCardByName = (page: Page, itemName: string) =>
+  itemCards(page).filter({ has: page.locator('div.font-medium', { hasText: itemName }) });
 
 test.describe('Grocery List - Toggle Done Status', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
+    // Clear all items before each test
+    await request.delete('http://localhost:7071/api/items');
+    
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'Our Grocery List' })).toBeVisible();
   });
@@ -10,10 +21,10 @@ test.describe('Grocery List - Toggle Done Status', () => {
     // Add an item
     await page.getByLabel('Item Name *').fill('Pasta');
     await page.getByRole('button', { name: 'Add Item' }).click();
-    await expect(page.getByText('Pasta')).toBeVisible();
+    await expect(itemCardByName(page, 'Pasta')).toHaveCount(1);
     
     // Get the checkbox and verify it's not checked
-    const checkbox = page.getByRole('checkbox', { name: 'Mark Pasta as done' });
+    const checkbox = checkboxFor(page, 'Pasta');
     await expect(checkbox).not.toBeChecked();
     
     // Mark as done
@@ -32,9 +43,9 @@ test.describe('Grocery List - Toggle Done Status', () => {
     // Add an item
     await page.getByLabel('Item Name *').fill('Rice');
     await page.getByRole('button', { name: 'Add Item' }).click();
-    await expect(page.getByText('Rice')).toBeVisible();
+    await expect(itemCardByName(page, 'Rice')).toHaveCount(1);
     
-    const checkbox = page.getByRole('checkbox', { name: 'Mark Rice as done' });
+    const checkbox = checkboxFor(page, 'Rice');
     
     // Mark as done
     await checkbox.check();
@@ -57,7 +68,7 @@ test.describe('Grocery List - Toggle Done Status', () => {
     await page.getByLabel('Item Name *').fill('Chicken');
     await page.getByRole('button', { name: 'Add Item' }).click();
     
-    const checkbox = page.getByRole('checkbox', { name: 'Mark Chicken as done' });
+    const checkbox = checkboxFor(page, 'Chicken');
     
     // Toggle multiple times
     await checkbox.check();
@@ -85,13 +96,13 @@ test.describe('Grocery List - Toggle Done Status', () => {
     await page.getByRole('button', { name: 'Add Item' }).click();
     
     // Mark only the middle item as done
-    const onionsCheckbox = page.getByRole('checkbox', { name: 'Mark Onions as done' });
+    const onionsCheckbox = checkboxFor(page, 'Onions');
     await onionsCheckbox.check();
     
     // Verify states
-    await expect(page.getByRole('checkbox', { name: 'Mark Carrots as done' })).not.toBeChecked();
+    await expect(checkboxFor(page, 'Carrots')).not.toBeChecked();
     await expect(onionsCheckbox).toBeChecked();
-    await expect(page.getByRole('checkbox', { name: 'Mark Potatoes as done' })).not.toBeChecked();
+    await expect(checkboxFor(page, 'Potatoes')).not.toBeChecked();
   });
 
   test('should apply done styling to items with notes', async ({ page }) => {
@@ -100,11 +111,12 @@ test.describe('Grocery List - Toggle Done Status', () => {
     await page.getByLabel('Quantity/Notes (optional)').fill('Greek, plain');
     await page.getByRole('button', { name: 'Add Item' }).click();
     
-    await expect(page.getByText('Yogurt')).toBeVisible();
-    await expect(page.getByText('Greek, plain')).toBeVisible();
+    const itemCard = itemCardByName(page, 'Yogurt');
+    await expect(itemCard).toHaveCount(1);
+    await expect(itemCard.getByText('Greek, plain')).toBeVisible();
     
     // Mark as done
-    const checkbox = page.getByRole('checkbox', { name: 'Mark Yogurt as done' });
+    const checkbox = checkboxFor(page, 'Yogurt');
     await checkbox.check();
     
     // Verify both name and notes have styling
@@ -127,7 +139,7 @@ test.describe('Grocery List - Toggle Done Status', () => {
     await page.getByRole('button', { name: 'Add Item' }).click();
     
     // Mark the first item as done
-    await page.getByRole('checkbox', { name: 'Mark First Item as done' }).check();
+    await checkboxFor(page, 'First Item').check();
     
     // Get all item names in order
     const items = page.locator('div.bg-white div.font-medium');
@@ -146,13 +158,14 @@ test.describe('Grocery List - Toggle Done Status', () => {
     await page.getByRole('button', { name: 'Add Item' }).click();
     
     // Toggle done status
-    const checkbox = page.getByRole('checkbox', { name: 'Mark Special Item as done' });
+    const checkbox = checkboxFor(page, 'Special Item');
     await checkbox.check();
     await checkbox.uncheck();
     await checkbox.check();
     
     // Verify data is still intact
-    await expect(page.getByText('Special Item')).toBeVisible();
-    await expect(page.getByText('Important notes here')).toBeVisible();
+    const itemCard = itemCardByName(page, 'Special Item');
+    await expect(itemCard).toHaveCount(1);
+    await expect(itemCard.getByText('Important notes here')).toBeVisible();
   });
 });
