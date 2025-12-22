@@ -50,6 +50,25 @@ test.describe('Grocery List Application', () => {
   });
 
   test('Viewing the list - Empty state message', async ({ page }) => {
+    await test.step('Wait for initial load and delete all existing items', async () => {
+      // Wait for the page to finish loading (either showing items or empty state)
+      await page.waitForLoadState('networkidle');
+      
+      // The API seeds sample data by default. Delete all items if any exist.
+      const deleteButtons = page.getByRole('button', { name: /delete/i });
+      const count = await deleteButtons.count();
+      
+      if (count > 0) {
+        // Delete all items one by one
+        for (let i = 0; i < count; i++) {
+          // Always click the first delete button since items shift after deletion
+          await deleteButtons.first().click();
+          // Wait for the item to be removed
+          await page.waitForTimeout(200);
+        }
+      }
+    });
+
     await test.step('Verify empty state message when no items', async () => {
       // Should show a friendly empty state message
       await expect(page.getByText('Your list is empty. Add something above.')).toBeVisible();
