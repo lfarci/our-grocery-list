@@ -1,0 +1,156 @@
+# Deployment Guide
+
+This document describes how to deploy the Our Grocery List application to Azure Static Web Apps.
+
+## Overview
+
+The application is deployed to Azure Static Web Apps using GitHub Actions. The deployment workflow is triggered automatically on pushes to the `main` branch and on pull requests.
+
+## Azure Resource Details
+
+- **Resource Name**: `stapp-app-prd-bc`
+- **Resource Group**: `rg-app-prd-bc`
+- **Subscription**: Our Grocery List (`a11f964d-5b7d-4d99-a65d-193c11bc3901`)
+- **Location**: Central US
+- **Default Hostname**: https://happy-ground-08c1ce310.6.azurestaticapps.net
+- **SKU**: Free tier
+
+## Setup Instructions
+
+### 1. Configure Deployment Token
+
+The deployment workflow requires a deployment token to authenticate with Azure Static Web Apps. This token needs to be configured as a GitHub repository secret.
+
+#### Retrieve the Deployment Token
+
+You can retrieve the deployment token using Azure CLI:
+
+```bash
+az staticwebapp secrets list \
+  --name stapp-app-prd-bc \
+  --resource-group rg-app-prd-bc \
+  --query properties.apiKey \
+  --output tsv
+```
+
+Alternatively, you can find it in the Azure Portal:
+1. Navigate to the Azure Portal
+2. Go to your Static Web App resource (`stapp-app-prd-bc`)
+3. Click on "Manage deployment token" in the Overview section
+4. Copy the deployment token
+
+#### Add the Secret to GitHub
+
+1. Go to your GitHub repository settings
+2. Navigate to **Settings** > **Secrets and variables** > **Actions**
+3. Click **New repository secret**
+4. Name: `AZURE_STATIC_WEB_APPS_API_TOKEN`
+5. Value: Paste the deployment token from Azure
+6. Click **Add secret**
+
+### 2. Workflow Configuration
+
+The deployment workflow is located at `.github/workflows/azure-static-web-apps-deploy.yml`.
+
+#### Workflow Triggers
+
+The workflow runs on:
+- **Push to main branch**: Deploys the production version
+- **Pull requests**: Creates preview deployments for testing
+- **Manual trigger**: Can be triggered manually via workflow_dispatch
+
+#### Build Process
+
+The workflow performs the following steps:
+
+1. **Checkout code**: Retrieves the repository code
+2. **Setup Node.js**: Installs Node.js 20.x with npm caching
+3. **Setup .NET**: Installs .NET 10.0.x SDK
+4. **Install dependencies**: Runs `npm ci` to install all dependencies
+5. **Build frontend**: Compiles the React application using Vite
+6. **Build API**: Compiles the .NET Azure Functions API
+7. **Deploy**: Uploads the built application to Azure Static Web Apps
+
+#### Deployment Configuration
+
+- **App Location**: `/frontend` - Location of the React application
+- **API Location**: `/api` - Location of the Azure Functions API
+- **Output Location**: `dist` - Build output directory for the frontend
+- **Skip Build**: Build steps are performed before deployment for better control
+
+### 3. Environment Protection
+
+The workflow uses GitHub Environments to protect the production deployment:
+
+- **Environment Name**: `production`
+- **URL**: https://happy-ground-08c1ce310.6.azurestaticapps.net
+
+You can configure environment protection rules in GitHub:
+1. Go to **Settings** > **Environments**
+2. Select or create the `production` environment
+3. Configure protection rules (e.g., required reviewers, wait timer)
+
+### 4. Pull Request Deployments
+
+When you create a pull request targeting the `main` branch:
+- A preview deployment is automatically created
+- The preview URL is posted as a comment on the pull request
+- The preview deployment is deleted when the pull request is closed
+
+### 5. Manual Deployment
+
+You can manually trigger a deployment:
+
+1. Go to the **Actions** tab in your GitHub repository
+2. Select the "Azure Static Web Apps - Deploy" workflow
+3. Click **Run workflow**
+4. Select the branch to deploy
+5. Click **Run workflow**
+
+## Monitoring and Troubleshooting
+
+### View Deployment Logs
+
+1. Go to the **Actions** tab in your GitHub repository
+2. Select the workflow run you want to inspect
+3. Click on the job to view detailed logs
+
+### Common Issues
+
+#### Deployment Token Expired
+
+If you see authentication errors:
+1. Regenerate the deployment token in Azure Portal
+2. Update the `AZURE_STATIC_WEB_APPS_API_TOKEN` secret in GitHub
+
+#### Build Failures
+
+If the build fails:
+1. Check the workflow logs for specific error messages
+2. Ensure all dependencies are correctly specified in `package.json` and `api.csproj`
+3. Test the build locally using `npm run build`
+
+#### API Not Working
+
+If the API endpoints are not accessible after deployment:
+1. Verify the API location is correctly set to `/api`
+2. Check that the Azure Functions are using the isolated worker model
+3. Review the API logs in Azure Portal under the Static Web App resource
+
+## Local Development vs. Production
+
+### Local Development
+- Frontend runs on `http://localhost:5173`
+- API runs on `http://localhost:7071`
+- Uses local settings from `local.settings.json`
+
+### Production
+- Frontend and API are served from `https://happy-ground-08c1ce310.6.azurestaticapps.net`
+- API endpoints are available at `/api/*`
+- Environment variables are configured in Azure Portal
+
+## Additional Resources
+
+- [Azure Static Web Apps Documentation](https://docs.microsoft.com/azure/static-web-apps/)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [Azure Static Web Apps CLI](https://github.com/Azure/static-web-apps-cli)
