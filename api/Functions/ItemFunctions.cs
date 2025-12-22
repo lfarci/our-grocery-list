@@ -18,62 +18,75 @@ public class ItemFunctions
     // In-memory data store - shared across all requests
     private static readonly ConcurrentDictionary<string, GroceryItem> _items = new();
 
-    // Static constructor to pre-seed with sample data
-    static ItemFunctions()
-    {
-        var now = DateTime.UtcNow;
-        
-        var sampleItems = new[]
-        {
-            new GroceryItem
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Milk",
-                Notes = "2 gallons, whole milk",
-                IsDone = false,
-                CreatedAt = now.AddMinutes(-10),
-                UpdatedAt = now.AddMinutes(-10)
-            },
-            new GroceryItem
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Bread",
-                Notes = "Whole wheat",
-                IsDone = false,
-                CreatedAt = now.AddMinutes(-8),
-                UpdatedAt = now.AddMinutes(-8)
-            },
-            new GroceryItem
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Eggs",
-                Notes = "1 dozen",
-                IsDone = true,
-                CreatedAt = now.AddMinutes(-5),
-                UpdatedAt = now.AddMinutes(-2)
-            },
-            new GroceryItem
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Apples",
-                IsDone = false,
-                CreatedAt = now.AddMinutes(-3),
-                UpdatedAt = now.AddMinutes(-3)
-            },
-            new GroceryItem
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Cheese",
-                Notes = "Cheddar",
-                IsDone = true,
-                CreatedAt = now.AddMinutes(-1),
-                UpdatedAt = now
-            }
-        };
+    // Static flag to track if we've been explicitly cleared (for testing)
+    private static bool _hasBeenCleared = false;
+    private static bool _hasSeeded = false;
+    private static readonly object _seedLock = new();
 
-        foreach (var item in sampleItems)
+    // Static method to seed sample data (called lazily on first GET if not cleared)
+    private static void SeedDataIfNeeded()
+    {
+        lock (_seedLock)
         {
-            _items.TryAdd(item.Id, item);
+            // Don't seed if we've been explicitly cleared (testing mode)
+            if (_hasBeenCleared || _hasSeeded || _items.Count > 0) return;
+            
+            var now = DateTime.UtcNow;
+            
+            var sampleItems = new[]
+            {
+                new GroceryItem
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Milk",
+                    Notes = "2 gallons, whole milk",
+                    IsDone = false,
+                    CreatedAt = now.AddMinutes(-10),
+                    UpdatedAt = now.AddMinutes(-10)
+                },
+                new GroceryItem
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Bread",
+                    Notes = "Whole wheat",
+                    IsDone = false,
+                    CreatedAt = now.AddMinutes(-8),
+                    UpdatedAt = now.AddMinutes(-8)
+                },
+                new GroceryItem
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Eggs",
+                    Notes = "1 dozen",
+                    IsDone = true,
+                    CreatedAt = now.AddMinutes(-5),
+                    UpdatedAt = now.AddMinutes(-2)
+                },
+                new GroceryItem
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Apples",
+                    IsDone = false,
+                    CreatedAt = now.AddMinutes(-3),
+                    UpdatedAt = now.AddMinutes(-3)
+                },
+                new GroceryItem
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Cheese",
+                    Notes = "Cheddar",
+                    IsDone = true,
+                    CreatedAt = now.AddMinutes(-1),
+                    UpdatedAt = now
+                }
+            };
+
+            foreach (var item in sampleItems)
+            {
+                _items.TryAdd(item.Id, item);
+            }
+            
+            _hasSeeded = true;
         }
     }
 
@@ -90,6 +103,9 @@ public class ItemFunctions
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "items")] HttpRequestData req)
     {
         _logger.LogInformation("Getting all grocery items");
+
+        // Seed data if this is the first GET and list is empty
+        SeedDataIfNeeded();
 
         var response = req.CreateResponse(HttpStatusCode.OK);
         await response.WriteAsJsonAsync(_items.Values.ToList());
@@ -173,6 +189,25 @@ public class ItemFunctions
         if (!_items.TryRemove(id, out _))
         {
             return req.CreateResponse(HttpStatusCode.NotFound);
+        }
+
+        return req.CreateResponse(HttpStatusCode.NoContent);
+    }
+
+    /// <summary>
+    /// DELETE /api/items - Delete all grocery items (for testing purposes)
+    /// </summary>
+    [Function("DeleteAllItems")]
+    public HttpResponseData DeleteAllItems(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "items")] HttpRequestData req)
+    {
+        _logger.LogInformation("Deleting all grocery items");
+
+        lock (_seedLock)
+        {
+            _items.Clear();
+            _hasSeeded = false;
+            _hasBeenCleared = true; // Mark that we've been cleared - don't auto-seed anymore
         }
 
         return req.CreateResponse(HttpStatusCode.NoContent);
