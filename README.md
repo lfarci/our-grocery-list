@@ -14,7 +14,7 @@ Simple shared grocery list PWA with one global list that works on phones and des
 
 ### Prerequisites
 - Node.js 18.x, 20.x, or 22.x (⚠️ Node.js 24+ not supported by Azure Functions v4)
-- .NET 10 SDK
+- .NET 8.0 SDK
 - Azure Functions Core Tools v4
 
 ### Installation
@@ -61,7 +61,7 @@ Tests are located in the `tests/` directory and validate the core user flows inc
 ## Tech Stack
 
 - **Frontend**: React 19 + TypeScript + Tailwind CSS + Vite + PWA
-- **Backend**: .NET 10 Azure Functions (isolated worker)
+- **Backend**: .NET 8.0 Azure Functions (isolated worker)
 - **Storage**: In-memory (ConcurrentDictionary)
 - **Deployment**: Azure Static Web Apps
 
