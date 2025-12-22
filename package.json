@@ -7,7 +7,7 @@
     "frontend"
   ],
   "scripts": {
-    "postinstall": "cd api && dotnet restore",
+    "postinstall": "cd api && dotnet restore && npx playwright install chromium --with-deps",
     "dev": "swa start http://localhost:5173 --api-location ./api",
     "dev:frontend": "cd frontend && npm run dev",
     "start": "npm run dev",
