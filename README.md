@@ -91,9 +91,9 @@ our-grocery-list/
 
 ## Deployment
 
-The app is deployed to Azure Static Web Apps with automatic deployments on every push to `main` and preview deployments for pull requests.
+The app is deployed to Azure Static Web Apps (`stapp-app-prd-bc`) with automatic deployments on every push to `main` and preview deployments for pull requests.
 
-🚀 **Live app**: https://happy-ground-08c1ce310.6.azurestaticapps.net
+🚀 **Live app**: Check the [Actions tab](../../actions) for the deployment URL, or find it in the Azure Portal under the Static Web App resource.
 
 📖 **Deployment guide**: See [docs/deployment.md](docs/deployment.md) for deployment setup and troubleshooting.
 

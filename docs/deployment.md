@@ -12,8 +12,12 @@ The application is deployed to Azure Static Web Apps using GitHub Actions. The d
 - **Resource Group**: `rg-app-prd-bc`
 - **Subscription**: Our Grocery List (`a11f964d-5b7d-4d99-a65d-193c11bc3901`)
 - **Location**: Central US
-- **Default Hostname**: https://happy-ground-08c1ce310.6.azurestaticapps.net
 - **SKU**: Free tier
+
+To get the deployment URL, you can:
+- Check the workflow run logs after deployment (outputs "Deployment URL" in the deploy step)
+- View it in Azure Portal under the Static Web App Overview
+- Use Azure CLI: `az staticwebapp show --name stapp-app-prd-bc --resource-group rg-app-prd-bc --query defaultHostname -o tsv`
 
 ## Setup Instructions
 
@@ -83,7 +87,11 @@ The workflow performs the following steps:
 The workflow uses GitHub Environments to protect the production deployment:
 
 - **Environment Name**: `production`
-- **URL**: https://happy-ground-08c1ce310.6.azurestaticapps.net
+
+The deployment URL is dynamically provided by Azure Static Web Apps after each deployment. You can find it in:
+- The workflow run logs (look for "Deployment URL" notice)
+- Azure Portal under your Static Web App resource
+- Pull request comments (for preview deployments)
 
 You can configure environment protection rules in GitHub:
 1. Go to **Settings** > **Environments**
@@ -145,7 +153,7 @@ If the API endpoints are not accessible after deployment:
 - Uses local settings from `local.settings.json`
 
 ### Production
-- Frontend and API are served from `https://happy-ground-08c1ce310.6.azurestaticapps.net`
+- Frontend and API are served from the Azure Static Web Apps default hostname (check workflow logs or Azure Portal for the URL)
 - API endpoints are available at `/api/*`
 - Environment variables are configured in Azure Portal
 
