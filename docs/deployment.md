@@ -69,18 +69,21 @@ The workflow performs the following steps:
 
 1. **Checkout code**: Retrieves the repository code
 2. **Setup Node.js**: Installs Node.js 20.x with npm caching
-3. **Setup .NET**: Installs .NET 10.0.x SDK
+3. **Setup .NET**: Installs .NET 10.0.x SDK for Azure Functions
 4. **Install dependencies**: Runs `npm ci` to install all dependencies
 5. **Build frontend**: Compiles the React application using Vite
-6. **Build API**: Compiles the .NET Azure Functions API
-7. **Deploy**: Uploads the built application to Azure Static Web Apps
+6. **Deploy**: Uploads the application to Azure Static Web Apps
+   - Frontend: Uses pre-built artifacts from step 5
+   - API: Built by Azure's Oryx build system using .NET 10
 
 #### Deployment Configuration
 
 - **App Location**: `/frontend` - Location of the React application
 - **API Location**: `/api` - Location of the Azure Functions API
 - **Output Location**: `dist` - Build output directory for the frontend
-- **Skip Build**: Build steps are performed before deployment for better control
+- **Build Strategy**:
+  - Frontend build is performed in the workflow for full control
+  - API build is handled by Azure Static Web Apps for .NET isolated worker compatibility
 
 ### 3. Environment Protection
 
