@@ -14,7 +14,7 @@ Simple shared grocery list PWA with one global list that works on phones and des
 
 ### Prerequisites
 - Node.js 18.x, 20.x, or 22.x (⚠️ Node.js 24+ not supported by Azure Functions v4)
-- .NET 10 SDK
+- .NET 8.0 SDK
 - Azure Functions Core Tools v4
 
 ### Installation
@@ -61,9 +61,9 @@ Tests are located in the `tests/` directory and validate the core user flows inc
 ## Tech Stack
 
 - **Frontend**: React 19 + TypeScript + Tailwind CSS + Vite + PWA
-- **Backend**: .NET 10 Azure Functions (isolated worker)
+- **Backend**: .NET 8.0 Azure Functions (isolated worker)
 - **Storage**: In-memory (ConcurrentDictionary)
-- **Deployment**: Azure Static Web Apps (planned)
+- **Deployment**: Azure Static Web Apps
 
 ## Project Structure
 
@@ -89,11 +89,20 @@ our-grocery-list/
 - Keep interactions simple and touch-friendly for both mobile and desktop; PWA install should open straight to the list.
 - When in doubt about edge cases, prefer the simplest behavior that still matches the requirements.
 
+## Deployment
+
+The app is deployed to Azure Static Web Apps (`stapp-app-prd-bc`) with automatic deployments on every push to `main` and preview deployments for pull requests.
+
+🚀 **Live app**: Check the [Actions tab](../../actions) for the deployment URL, or find it in the Azure Portal under the Static Web App resource.
+
+📖 **Deployment guide**: See [docs/deployment.md](docs/deployment.md) for deployment setup and troubleshooting.
+
 ## Reference documents
 
 - [docs/development.md](docs/development.md) — complete development setup guide.
 - [docs/requirements.md](docs/requirements.md) — detailed Version 1 functional requirements.
 - [docs/architecture.md](docs/architecture.md) — technical architecture overview.
+- [docs/deployment.md](docs/deployment.md) — deployment setup and configuration guide.
 - [.github/copilot-instructions.md](.github/copilot-instructions.md) — guidance for using Copilot effectively on this project.
 
 ## License
