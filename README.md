@@ -34,6 +34,30 @@ Visit `http://localhost:5173` to see the app.
 
 📖 **Full setup guide**: See [docs/development.md](docs/development.md) for detailed instructions.
 
+## Testing
+
+End-to-end tests are written with Playwright and TypeScript.
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in UI mode (interactive)
+npm run test:ui
+
+# Run tests in debug mode
+npm run test:debug
+
+# View test report
+npm run test:report
+```
+
+Tests are located in the `tests/` directory and validate the core user flows including:
+- Application loads and displays correctly
+- Add item form is present and functional
+- Validation prevents empty item names
+- Empty state message displays when list is empty
+
 ## Tech Stack
 
 - **Frontend**: React 19 + TypeScript + Tailwind CSS + Vite + PWA
