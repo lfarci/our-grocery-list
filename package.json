@@ -7,18 +7,24 @@
     "frontend"
   ],
   "scripts": {
-    "postinstall": "cd api && dotnet restore",
+    "postinstall": "cd api && dotnet restore && npx playwright install chromium --with-deps",
     "dev": "swa start http://localhost:5173 --api-location ./api",
+    "dev:frontend": "cd frontend && npm run dev",
     "start": "npm run dev",
     "build": "npm run build:frontend && npm run build:api",
     "build:frontend": "cd frontend && npm run build",
     "build:api": "cd api && dotnet build",
     "clean": "npm run clean:frontend && npm run clean:api",
     "clean:frontend": "cd frontend && rm -rf node_modules dist",
-    "clean:api": "cd api && rm -rf bin obj"
+    "clean:api": "cd api && rm -rf bin obj",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report"
   },
   "devDependencies": {
-    "@azure/static-web-apps-cli": "^2.0.1"
+    "@azure/static-web-apps-cli": "^2.0.1",
+    "@playwright/test": "^1.57.0"
   },
   "keywords": [
     "grocery-list",

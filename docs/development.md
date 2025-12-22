@@ -216,6 +216,57 @@ This file configures CORS and is already set up with the correct settings:
 - `dotnet build` - Build the API
 - `dotnet restore` - Restore NuGet packages
 
+## Testing
+
+The application uses **Playwright** for end-to-end testing.
+
+### Prerequisites
+
+Playwright browsers are installed automatically when you run `npm install` in the root directory. If you need to install them manually:
+
+```bash
+npx playwright install chromium
+```
+
+### Running Tests
+
+From the root directory:
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in UI mode (interactive)
+npm run test:ui
+
+# Run tests in debug mode
+npm run test:debug
+
+# View the test report
+npm run test:report
+```
+
+### Test Configuration
+
+Tests are configured to:
+- Run against `http://localhost:5173` (automatically starts the frontend dev server)
+- Use Chromium browser by default
+- Retry failed tests 2 times on CI
+- Generate HTML reports in `playwright-report/`
+
+The Playwright configuration file is located at `playwright.config.ts` in the root directory.
+
+### Writing Tests
+
+Tests are located in the `tests/` directory. Follow these guidelines:
+
+- Use role-based locators (`getByRole`, `getByLabel`, etc.) for resilience
+- Group related tests with `test.describe()`
+- Use `test.step()` to organize test actions
+- Follow the naming convention: `<feature-or-page>.spec.ts`
+
+See `.github/instructions/playwright.instructions.md` for detailed testing guidelines.
+
 ## Features
 
 ### Frontend
