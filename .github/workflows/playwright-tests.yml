@@ -98,10 +98,10 @@ jobs:
         id: test_url
         run: |
           if [ -n "${{ github.event.inputs.deployment_url }}" ]; then
-            echo "url=${{ github.event.inputs.deployment_url }}" >> $GITHUB_OUTPUT
+            echo "url=${{ github.event.inputs.deployment_url }}" >> "$GITHUB_OUTPUT"
             echo "Testing manual URL: ${{ github.event.inputs.deployment_url }}"
           else
-            echo "url=${{ needs.wait_for_deployment.outputs.deployment_url }}" >> $GITHUB_OUTPUT
+            echo "url=${{ needs.wait_for_deployment.outputs.deployment_url }}" >> "$GITHUB_OUTPUT"
             echo "Testing deployment URL: ${{ needs.wait_for_deployment.outputs.deployment_url }}"
           fi
 
