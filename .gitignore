@@ -301,3 +301,6 @@ __pycache__/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Development tools
+actionlint
