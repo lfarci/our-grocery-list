@@ -7,7 +7,7 @@ test.describe('Grocery List Application', () => {
 
   test('Smoke test - Application loads successfully', async ({ page }) => {
     await test.step('Verify page title', async () => {
-      await expect(page).toHaveTitle('frontend');
+      await expect(page).toHaveTitle('Our Grocery List');
     });
 
     await test.step('Verify main heading is visible', async () => {
