@@ -1,81 +1,24 @@
 name: Playwright Tests
 
 on:
-  pull_request:
-    branches:
-      - main
-    types: [opened, synchronize, reopened]
+  workflow_call:
+    inputs:
+      deployment_url:
+        description: 'URL to test'
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       deployment_url:
-        description: 'URL to test (leave empty to wait for deployment)'
-        required: false
+        description: 'URL to test'
+        required: true
         type: string
 
 permissions:
   contents: read
-  actions: read
-  pull-requests: read
 
 jobs:
-  # This job waits for the deployment to complete and extracts the URL
-  wait_for_deployment:
-    # Skip this job if a URL was provided via manual trigger
-    if: github.event.inputs.deployment_url == ''
-    runs-on: ubuntu-latest
-    name: Wait for Deployment
-    outputs:
-      deployment_url: ${{ steps.get_url.outputs.url }}
-    steps:
-      - name: Wait for deployment workflow to complete
-        id: wait_deploy
-        uses: lewagon/wait-on-check-action@v1.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          check-name: 'Build and Deploy'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 10
-          allowed-conclusions: success
-
-      - name: Get deployment URL from PR comments
-        id: get_url
-        uses: actions/github-script@v7
-        with:
-          script: |
-            // For pull requests, extract URL from Azure SWA bot comment
-            if (context.payload.pull_request) {
-              const comments = await github.rest.issues.listComments({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.pull_request.number,
-              });
-              
-              // Find the Azure Static Web Apps comment
-              const swaComment = comments.data.find(comment => 
-                comment.user.login === 'github-actions[bot]' &&
-                comment.body.includes('Azure Static Web Apps')
-              );
-              
-              if (swaComment) {
-                // Extract URL from comment - typically in format: https://xyz.azurestaticapps.net
-                const urlMatch = swaComment.body.match(/https?:\/\/[a-z0-9-]+\.azurestaticapps\.net/);
-                if (urlMatch) {
-                  const url = urlMatch[0];
-                  core.setOutput('url', url);
-                  core.notice(`Found deployment URL: ${url}`);
-                  return;
-                }
-              }
-              
-              core.setFailed('Could not find deployment URL in PR comments');
-            } else {
-              core.setFailed('This workflow requires a pull request context');
-            }
-
   test:
-    needs: [wait_for_deployment]
-    # Always run if manual URL provided, or if wait_for_deployment succeeded
-    if: always() && (github.event.inputs.deployment_url != '' || needs.wait_for_deployment.result == 'success')
     runs-on: ubuntu-latest
     name: Run Playwright Tests
     steps:
@@ -94,21 +37,12 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 
-      - name: Determine test URL
-        id: test_url
-        run: |
-          if [ -n "${{ github.event.inputs.deployment_url }}" ]; then
-            echo "url=${{ github.event.inputs.deployment_url }}" >> "$GITHUB_OUTPUT"
-            echo "Testing manual URL: ${{ github.event.inputs.deployment_url }}"
-          else
-            echo "url=${{ needs.wait_for_deployment.outputs.deployment_url }}" >> "$GITHUB_OUTPUT"
-            echo "Testing deployment URL: ${{ needs.wait_for_deployment.outputs.deployment_url }}"
-          fi
-
       - name: Run Playwright tests
         env:
-          BASE_URL: ${{ steps.test_url.outputs.url }}
-        run: npx playwright test --project=chromium
+          BASE_URL: ${{ inputs.deployment_url }}
+        run: |
+          echo "Running Playwright tests against: ${{ inputs.deployment_url }}"
+          npx playwright test --project=chromium
 
       - name: Upload test results
         if: always()
