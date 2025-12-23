@@ -106,9 +106,45 @@ You can configure environment protection rules in GitHub:
 When you create a pull request targeting the `main` branch:
 - A preview deployment is automatically created
 - The preview URL is posted as a comment on the pull request
+- **Automated Playwright tests** run immediately after successful deployment
 - The preview deployment is deleted when the pull request is closed
 
-### 5. Manual Deployment
+### 5. Playwright Tests on Pull Requests
+
+The repository includes automated end-to-end (E2E) tests using Playwright that run on every pull request.
+
+#### How It Works
+
+The Playwright test workflow is implemented as a reusable workflow that can be:
+1. **Automatically invoked** by the deployment workflow after successful PR preview deployment
+2. **Manually triggered** for ad-hoc testing against any URL
+
+When a PR is opened or updated:
+1. The deployment workflow builds and deploys a preview version
+2. Upon successful deployment, the test workflow is automatically invoked
+3. The deployment URL is passed directly to the test workflow
+4. Playwright tests run against the live preview deployment
+5. Test results and traces are uploaded as artifacts for review
+
+#### Manual Test Runs
+
+You can manually trigger Playwright tests against any URL:
+
+1. Go to the **Actions** tab in your GitHub repository
+2. Select the "Playwright Tests" workflow
+3. Click **Run workflow**
+4. Enter the deployment URL to test
+5. Click **Run workflow**
+
+#### Viewing Test Results
+
+After tests complete:
+- Check the workflow run summary for pass/fail status
+- Download test artifacts:
+  - `playwright-report`: HTML report with detailed test results
+  - `playwright-traces`: Test execution traces for debugging failures
+
+### 6. Manual Deployment
 
 You can manually trigger a deployment:
 
