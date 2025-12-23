@@ -12,15 +12,21 @@ export default defineConfig({
         name: 'Our Grocery List',
         short_name: 'Grocery List',
         description: 'Simple shared grocery list that works on phones and desktops',
-        theme_color: '#ffffff',
-        background_color: '#ffffff',
+        theme_color: '#ffcc00',
+        background_color: '#ffcc00',
         display: 'standalone',
         start_url: '/',
         icons: [
           {
-            src: 'vite.svg',
+            src: '/icon-yellow-background-192.png',
             sizes: '192x192',
-            type: 'image/svg+xml',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: '/icon-yellow-background-512.png',
+            sizes: '512x512',
+            type: 'image/png',
             purpose: 'any maskable'
           }
         ]
