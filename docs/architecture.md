@@ -166,17 +166,19 @@ All endpoints are prefixed with `/api`:
 - **Repository pattern**: Abstraction for data access
 
 ### Data Layer
-- **Storage**: Azure Cosmos DB
+- **Storage**: Azure Cosmos DB with **NoSQL API** (formerly SQL API)
   - **Cosmos DB Emulator**: For local development (localhost:8081)
   - **Azure Cosmos DB**: For production
 - **Repository interface**: IItemRepository for abstraction
-- **Cosmos DB specifics**:
-  - Document database for items
+- **Cosmos DB NoSQL API specifics**:
+  - Document database with JSON documents for items
+  - SQL-like query syntax (NoSQL API query language)
   - Partition key: "global" (single partition for global shared list)
   - Consistency: Strong consistency for operations
   - Connection: Configured via connection string
   - Database: GroceryListDb (configurable)
   - Container: Items (configurable)
+  - SDK: Microsoft.Azure.Cosmos (NoSQL API SDK)
   - Emulator connection string: Well-known key for local development
 
 ### Real-time Updates (Planned)

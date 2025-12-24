@@ -4,9 +4,16 @@ This guide explains how to set up Azure Cosmos DB for the Our Grocery List appli
 
 ## Overview
 
-The application uses Azure Cosmos DB for persistent storage:
+The application uses Azure Cosmos DB with the **NoSQL API** (formerly SQL API) for persistent storage:
 - **Cosmos DB Emulator**: For local development (runs on localhost:8081)
 - **Azure Cosmos DB**: For production (cloud-based)
+
+**Why NoSQL API?**
+- Document-based storage with JSON documents
+- Flexible schema for grocery items
+- SQL-like query syntax
+- Strong consistency guarantees
+- Native support in .NET SDK
 
 ## Local Development with Cosmos DB Emulator
 
@@ -91,6 +98,8 @@ az group create \
 
 ### 2. Create Cosmos DB Account
 
+Create a Cosmos DB account with the **NoSQL API**:
+
 ```bash
 az cosmosdb create \
   --name grocerylist-cosmos-db \
@@ -100,9 +109,11 @@ az cosmosdb create \
   --enable-free-tier false
 ```
 
-**Note**: Free tier can only be enabled on one Cosmos DB account per subscription. Remove `--enable-free-tier false` if you want to use the free tier.
+**Note**: 
+- The NoSQL API is the default API when creating a Cosmos DB account
+- Free tier can only be enabled on one Cosmos DB account per subscription. Remove `--enable-free-tier false` if you want to use the free tier.
 
-### 3. Create Database
+### 3. Create Database (NoSQL API)
 
 ```bash
 az cosmosdb sql database create \
@@ -111,7 +122,7 @@ az cosmosdb sql database create \
   --name GroceryListDb
 ```
 
-### 4. Create Container
+### 4. Create Container (NoSQL API)
 
 ```bash
 az cosmosdb sql container create \
@@ -124,6 +135,7 @@ az cosmosdb sql container create \
 ```
 
 **Container Configuration**:
+- **API**: NoSQL API (uses `az cosmosdb sql` commands)
 - **Partition Key**: `/partitionKey` (fixed value of "global" for single shared list)
 - **Throughput**: 400 RU/s (minimum for manual throughput)
 - **Consistency**: Strong (set at account level)

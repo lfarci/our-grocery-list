@@ -6,7 +6,7 @@ namespace api.Repositories;
 
 /// <summary>
 /// Cosmos DB implementation of the item repository
-/// Uses Azure Cosmos DB for persistent storage with strong consistency
+/// Uses Azure Cosmos DB NoSQL API for persistent storage with strong consistency
 /// </summary>
 public class CosmosDbItemRepository : IItemRepository
 {

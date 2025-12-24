@@ -62,7 +62,7 @@ Tests are located in the `tests/` directory and validate the core user flows inc
 
 - **Frontend**: React 19 + TypeScript + Tailwind CSS + Vite + PWA
 - **Backend**: .NET 8.0 Azure Functions (isolated worker)
-- **Storage**: Azure Cosmos DB
+- **Storage**: Azure Cosmos DB with NoSQL API
   - Cosmos DB Emulator for local development (see [Cosmos DB setup guide](docs/cosmosdb-setup.md))
   - Azure Cosmos DB for production
 - **Deployment**: Azure Static Web Apps
