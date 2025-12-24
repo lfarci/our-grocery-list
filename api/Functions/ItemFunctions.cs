@@ -1,6 +1,6 @@
-using System.Collections.Concurrent;
 using System.Net;
 using api.Models;
+using api.Repositories;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -9,77 +9,19 @@ namespace api.Functions;
 
 /// <summary>
 /// Azure Functions for managing grocery list items
-/// Uses in-memory ConcurrentDictionary for data storage
+/// Uses repository pattern for data access abstraction
 /// </summary>
 public class ItemFunctions
 {
     private readonly ILogger<ItemFunctions> _logger;
-    
-    // In-memory data store - shared across all requests
-    private static readonly ConcurrentDictionary<string, GroceryItem> _items = new();
+    private readonly IItemRepository _repository;
 
-    // Static constructor to pre-seed with sample data
-    static ItemFunctions()
-    {
-        var now = DateTime.UtcNow;
-        
-        var sampleItems = new[]
-        {
-            new GroceryItem
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Milk",
-                Notes = "2 gallons, whole milk",
-                IsDone = false,
-                CreatedAt = now.AddMinutes(-10),
-                UpdatedAt = now.AddMinutes(-10)
-            },
-            new GroceryItem
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Bread",
-                Notes = "Whole wheat",
-                IsDone = false,
-                CreatedAt = now.AddMinutes(-8),
-                UpdatedAt = now.AddMinutes(-8)
-            },
-            new GroceryItem
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Eggs",
-                Notes = "1 dozen",
-                IsDone = true,
-                CreatedAt = now.AddMinutes(-5),
-                UpdatedAt = now.AddMinutes(-2)
-            },
-            new GroceryItem
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Apples",
-                IsDone = false,
-                CreatedAt = now.AddMinutes(-3),
-                UpdatedAt = now.AddMinutes(-3)
-            },
-            new GroceryItem
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Cheese",
-                Notes = "Cheddar",
-                IsDone = true,
-                CreatedAt = now.AddMinutes(-1),
-                UpdatedAt = now
-            }
-        };
-
-        foreach (var item in sampleItems)
-        {
-            _items.TryAdd(item.Id, item);
-        }
-    }
-
-    public ItemFunctions(ILogger<ItemFunctions> logger)
+    public ItemFunctions(
+        ILogger<ItemFunctions> logger,
+        IItemRepository repository)
     {
         _logger = logger;
+        _repository = repository;
     }
 
     /// <summary>
@@ -91,8 +33,10 @@ public class ItemFunctions
     {
         _logger.LogInformation("Getting all grocery items");
 
+        var items = await _repository.GetAllAsync();
+
         var response = req.CreateResponse(HttpStatusCode.OK);
-        await response.WriteAsJsonAsync(_items.Values.ToList());
+        await response.WriteAsJsonAsync(items);
         return response;
     }
 
@@ -125,10 +69,10 @@ public class ItemFunctions
             UpdatedAt = now
         };
 
-        _items.TryAdd(item.Id, item);
+        var createdItem = await _repository.CreateAsync(item);
 
         var response = req.CreateResponse(HttpStatusCode.Created);
-        await response.WriteAsJsonAsync(item);
+        await response.WriteAsJsonAsync(createdItem);
         return response;
     }
 
@@ -142,7 +86,8 @@ public class ItemFunctions
     {
         _logger.LogInformation("Updating grocery item {ItemId}", id);
 
-        if (!_items.TryGetValue(id, out var item))
+        var existingItem = await _repository.GetByIdAsync(id);
+        if (existingItem is null)
         {
             return req.CreateResponse(HttpStatusCode.NotFound);
         }
@@ -151,12 +96,19 @@ public class ItemFunctions
         
         if (request?.IsDone is not null)
         {
-            item.IsDone = request.IsDone.Value;
-            item.UpdatedAt = DateTime.UtcNow;
+            existingItem.IsDone = request.IsDone.Value;
+            existingItem.UpdatedAt = DateTime.UtcNow;
+        }
+
+        var updatedItem = await _repository.UpdateAsync(existingItem);
+        
+        if (updatedItem is null)
+        {
+            return req.CreateResponse(HttpStatusCode.NotFound);
         }
 
         var response = req.CreateResponse(HttpStatusCode.OK);
-        await response.WriteAsJsonAsync(item);
+        await response.WriteAsJsonAsync(updatedItem);
         return response;
     }
 
@@ -164,13 +116,15 @@ public class ItemFunctions
     /// DELETE /api/items/{id} - Delete a grocery item
     /// </summary>
     [Function("DeleteItem")]
-    public HttpResponseData DeleteItem(
+    public async Task<HttpResponseData> DeleteItem(
         [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "items/{id}")] HttpRequestData req,
         string id)
     {
         _logger.LogInformation("Deleting grocery item {ItemId}", id);
 
-        if (!_items.TryRemove(id, out _))
+        var deleted = await _repository.DeleteAsync(id);
+
+        if (!deleted)
         {
             return req.CreateResponse(HttpStatusCode.NotFound);
         }

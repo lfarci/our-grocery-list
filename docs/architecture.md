@@ -59,13 +59,23 @@ our-grocery-list/
 ├── api/                        # Azure Functions backend
 │   ├── Functions/              # HTTP trigger functions
 │   │   ├── ItemFunctions.cs    # CRUD endpoints for items
-│   │   └── SignalRFunctions.cs # SignalR negotiate endpoint
+│   │   └── SignalRFunctions.cs # SignalR negotiate endpoint (planned)
 │   ├── Models/                 # Data models
 │   │   └── GroceryItem.cs      # Item model and DTOs
+│   ├── Repositories/           # Data access layer
+│   │   ├── IItemRepository.cs       # Repository interface
+│   │   ├── InMemoryItemRepository.cs # In-memory implementation
+│   │   └── CosmosDbItemRepository.cs # Cosmos DB implementation
 │   ├── Program.cs              # Functions host configuration
 │   ├── host.json               # Functions runtime config
 │   ├── local.settings.json.example # Settings template
 │   └── api.csproj
+├── docs/                       # Documentation
+│   ├── architecture.md         # Architecture overview
+│   ├── requirements.md         # Functional requirements
+│   ├── development.md          # Development setup guide
+│   ├── deployment.md           # Deployment guide
+│   └── cosmosdb-setup.md       # Cosmos DB setup guide
 ├── swa-cli.config.json         # Static Web Apps CLI config
 ├── package.json                # Root workspace configuration
 └── README.md
@@ -93,14 +103,17 @@ interface GroceryItem {
 ```csharp
 public class GroceryItem
 {
-    public string Id { get; set; }
-    public string Name { get; set; }
-    public string? Notes { get; set; }
-    public bool IsDone { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public string Id { get; set; }              // Unique identifier (GUID)
+    public string PartitionKey { get; set; }     // Partition key for Cosmos DB (always "global")
+    public string Name { get; set; }            // Item name (required)
+    public string? Notes { get; set; }          // Optional quantity/notes
+    public bool IsDone { get; set; }            // Completion status
+    public DateTime CreatedAt { get; set; }     // UTC timestamp
+    public DateTime UpdatedAt { get; set; }     // UTC timestamp
 }
 ```
+
+**Note**: The `PartitionKey` property is used for Cosmos DB partitioning and is always set to "global" to maintain a single shared list. This property is not exposed to the frontend.
 
 ### Request/Response Contracts
 
@@ -151,11 +164,20 @@ All endpoints are prefixed with `/api`:
 - **Isolated worker model**: Runs in separate process
 - **HTTP triggers**: RESTful API endpoints
 - **Authorization**: Anonymous (to be enhanced with auth later)
+- **Repository pattern**: Abstraction for data access
 
-### Data Layer (Planned)
-- **Cosmos DB**: Document database for items
-- **Partition key**: Single partition for global list
-- **Consistency**: Strong consistency for operations
+### Data Layer
+- **Storage providers**: 
+  - **InMemory**: Default for local development (ConcurrentDictionary)
+  - **Cosmos DB**: Production-ready persistent storage
+- **Repository interface**: IItemRepository for abstraction
+- **Cosmos DB specifics**:
+  - Document database for items
+  - Partition key: "global" (single partition for global shared list)
+  - Consistency: Strong consistency for operations
+  - Connection: Configured via connection string
+  - Database: GroceryListDb (configurable)
+  - Container: Items (configurable)
 
 ### Real-time Updates (Planned)
 - **Azure SignalR Service**: Push updates to all clients
@@ -180,8 +202,13 @@ See [frontend/README.md](../frontend/README.md) for detailed local development i
 ### Backend (local.settings.json)
 - `AzureWebJobsStorage`: Storage connection (development)
 - `FUNCTIONS_WORKER_RUNTIME`: dotnet-isolated
-- `CosmosDbConnectionString`: Cosmos DB connection (future)
+- `StorageProvider`: "InMemory" or "CosmosDb" (default: "InMemory")
+- `CosmosDbConnectionString`: Cosmos DB connection string (required when using CosmosDb)
+- `CosmosDbDatabaseId`: Database name (default: "GroceryListDb")
+- `CosmosDbContainerId`: Container name (default: "Items")
 - `AzureSignalRConnectionString`: SignalR connection (future)
+
+For detailed Cosmos DB setup, see [cosmosdb-setup.md](cosmosdb-setup.md).
 
 ## Build and Deployment
 

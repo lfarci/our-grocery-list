@@ -2,9 +2,13 @@
     "IsEncrypted": false,
     "Values": {
         "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-        "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated"
+        "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+        "StorageProvider": "InMemory",
+        "CosmosDbConnectionString": "",
+        "CosmosDbDatabaseId": "GroceryListDb",
+        "CosmosDbContainerId": "Items"
     },
     "Host": {
-        "CORS": "http://localhost:5173,http://127.0.0.1:5173",
+        "CORS": "http://localhost:5173,http://127.0.0.1:5173"
     }
 }
