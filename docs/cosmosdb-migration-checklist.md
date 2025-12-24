@@ -73,7 +73,6 @@ Edit `api/local.settings.json`:
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
-    "StorageProvider": "CosmosDb",
     "CosmosDbConnectionString": "YOUR_CONNECTION_STRING_HERE",
     "CosmosDbDatabaseId": "GroceryListDb",
     "CosmosDbContainerId": "Items"
@@ -187,7 +186,6 @@ az staticwebapp appsettings set \
   --name stapp-app-prd-bc \
   --resource-group rg-app-prd-bc \
   --setting-names \
-    StorageProvider=CosmosDb \
     CosmosDbConnectionString="YOUR_CONNECTION_STRING_HERE" \
     CosmosDbDatabaseId=GroceryListDb \
     CosmosDbContainerId=Items
@@ -250,12 +248,9 @@ git push origin main
 - Consider increasing throughput if consistently throttled
 - Verify using Direct connection mode (default in this implementation)
 
-## Rollback to In-Memory Storage
+## Rollback Options
 
-If you need to roll back:
-1. Update `local.settings.json`: `"StorageProvider": "InMemory"`
-2. Restart the API
-3. For Azure: Update application setting `StorageProvider=InMemory`
+If you encounter issues with Cosmos DB, the emulator can be stopped and data will be preserved for troubleshooting. The application requires Cosmos DB (emulator or cloud) to function.
 
 ## Cost Monitoring
 

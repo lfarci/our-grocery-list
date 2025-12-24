@@ -64,7 +64,6 @@ our-grocery-list/
 │   │   └── GroceryItem.cs      # Item model and DTOs
 │   ├── Repositories/           # Data access layer
 │   │   ├── IItemRepository.cs       # Repository interface
-│   │   ├── InMemoryItemRepository.cs # In-memory implementation
 │   │   └── CosmosDbItemRepository.cs # Cosmos DB implementation
 │   ├── Program.cs              # Functions host configuration
 │   ├── host.json               # Functions runtime config
@@ -167,10 +166,9 @@ All endpoints are prefixed with `/api`:
 - **Repository pattern**: Abstraction for data access
 
 ### Data Layer
-- **Storage providers**: 
-  - **Cosmos DB Emulator**: Default for local development (localhost:8081)
-  - **Azure Cosmos DB**: Production persistent storage
-  - **InMemory**: Testing only (ConcurrentDictionary, no persistence, no sample data)
+- **Storage**: Azure Cosmos DB
+  - **Cosmos DB Emulator**: For local development (localhost:8081)
+  - **Azure Cosmos DB**: For production
 - **Repository interface**: IItemRepository for abstraction
 - **Cosmos DB specifics**:
   - Document database for items
@@ -204,9 +202,8 @@ See [frontend/README.md](../frontend/README.md) for detailed local development i
 ### Backend (local.settings.json)
 - `AzureWebJobsStorage`: Storage connection (development)
 - `FUNCTIONS_WORKER_RUNTIME`: dotnet-isolated
-- `StorageProvider`: "CosmosDb" or "InMemory" (default: "CosmosDb")
 - `CosmosDbConnectionString`: Cosmos DB connection string
-  - Default: Cosmos DB Emulator (localhost:8081)
+  - Local: Cosmos DB Emulator (localhost:8081)
   - Production: Azure Cosmos DB connection string
 - `CosmosDbDatabaseId`: Database name (default: "GroceryListDb")
 - `CosmosDbContainerId`: Container name (default: "Items")

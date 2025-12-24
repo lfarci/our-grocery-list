@@ -5,9 +5,8 @@ This guide explains how to set up Azure Cosmos DB for the Our Grocery List appli
 ## Overview
 
 The application uses Azure Cosmos DB for persistent storage:
-- **Cosmos DB Emulator**: Default for local development (runs on localhost:8081)
-- **Azure Cosmos DB**: Production persistent storage in the cloud
-- **InMemory**: Testing only (no persistence, no sample data)
+- **Cosmos DB Emulator**: For local development (runs on localhost:8081)
+- **Azure Cosmos DB**: For production (cloud-based)
 
 ## Local Development with Cosmos DB Emulator
 
@@ -41,7 +40,6 @@ The default `local.settings.json.example` is pre-configured for the Cosmos DB Em
 ```json
 {
   "Values": {
-    "StorageProvider": "CosmosDb",
     "CosmosDbConnectionString": "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
     "CosmosDbDatabaseId": "GroceryListDb",
     "CosmosDbContainerId": "Items"
@@ -155,7 +153,6 @@ Create or update `api/local.settings.json`:
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
-    "StorageProvider": "CosmosDb",
     "CosmosDbConnectionString": "YOUR_COSMOS_DB_CONNECTION_STRING",
     "CosmosDbDatabaseId": "GroceryListDb",
     "CosmosDbContainerId": "Items"
@@ -167,7 +164,6 @@ Create or update `api/local.settings.json`:
 ```
 
 **Configuration Options**:
-- `StorageProvider`: Set to "CosmosDb" to use Cosmos DB, or "InMemory" for in-memory storage
 - `CosmosDbConnectionString`: Your Cosmos DB connection string from step 5
 - `CosmosDbDatabaseId`: Database name (default: "GroceryListDb")
 - `CosmosDbContainerId`: Container name (default: "Items")
@@ -181,7 +177,6 @@ func start
 
 You should see logs indicating:
 ```
-Application started with storage provider: CosmosDb
 CosmosDbItemRepository initialized with database: GroceryListDb, container: Items
 ```
 
@@ -208,7 +203,6 @@ az functionapp config appsettings set \
   --name your-function-app-name \
   --resource-group rg-app-prd-bc \
   --settings \
-    "StorageProvider=CosmosDb" \
     "CosmosDbConnectionString=YOUR_COSMOS_DB_CONNECTION_STRING" \
     "CosmosDbDatabaseId=GroceryListDb" \
     "CosmosDbContainerId=Items"
@@ -287,7 +281,7 @@ az cosmosdb sql container throughput show \
 
 ### Connection Issues
 
-**Problem**: "CosmosDbConnectionString is required when StorageProvider is set to CosmosDb"
+**Problem**: "CosmosDbConnectionString is required"
 
 **Solution**: Ensure `CosmosDbConnectionString` is set in `local.settings.json` or Azure application settings.
 

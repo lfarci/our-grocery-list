@@ -13,8 +13,7 @@ This PR prepares the Our Grocery List application for Azure Cosmos DB integratio
 
 #### Repository Pattern Implementation
 - `api/Repositories/IItemRepository.cs` - Repository interface defining CRUD operations
-- `api/Repositories/InMemoryItemRepository.cs` - In-memory implementation (default for local dev)
-- `api/Repositories/CosmosDbItemRepository.cs` - Cosmos DB implementation (production-ready)
+- `api/Repositories/CosmosDbItemRepository.cs` - Cosmos DB implementation
 
 #### Documentation
 - `docs/cosmosdb-setup.md` - Complete Azure resource provisioning and configuration guide (7,725 characters)
@@ -53,14 +52,15 @@ This PR prepares the Our Grocery List application for Azure Cosmos DB integratio
 
 ### Configuration Options
 ```json
-// In-Memory (Default)
+// Cosmos DB Emulator (Local Development)
 {
-  "StorageProvider": "InMemory"
+  "CosmosDbConnectionString": "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
+  "CosmosDbDatabaseId": "GroceryListDb",
+  "CosmosDbContainerId": "Items"
 }
 
-// Cosmos DB
+// Azure Cosmos DB (Production)
 {
-  "StorageProvider": "CosmosDb",
   "CosmosDbConnectionString": "AccountEndpoint=https://...;AccountKey=...;",
   "CosmosDbDatabaseId": "GroceryListDb",
   "CosmosDbContainerId": "Items"
@@ -167,11 +167,7 @@ All questions can be answered using the comprehensive documentation:
 
 ## Rollback Plan
 
-If issues arise:
-1. Set `StorageProvider=InMemory` in configuration
-2. Restart the API
-3. Application reverts to in-memory storage
-4. No data loss risk (Cosmos DB data remains intact)
+If issues arise, the Cosmos DB Emulator can be stopped and data will be preserved for troubleshooting. The application requires Cosmos DB (emulator or cloud) to function.
 
 ## Summary
 

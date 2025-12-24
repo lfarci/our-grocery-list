@@ -20,53 +20,42 @@ builder.Services.Configure<JsonSerializerOptions>(options =>
     options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
 
-// Configure repository based on storage provider setting
-var storageProvider = builder.Configuration["StorageProvider"] ?? "CosmosDb";
+// Configure Cosmos DB repository
+var cosmosConnectionString = builder.Configuration["CosmosDbConnectionString"];
+var databaseId = builder.Configuration["CosmosDbDatabaseId"] ?? "GroceryListDb";
+var containerId = builder.Configuration["CosmosDbContainerId"] ?? "Items";
 
-if (storageProvider.Equals("CosmosDb", StringComparison.OrdinalIgnoreCase))
+if (string.IsNullOrWhiteSpace(cosmosConnectionString))
 {
-    // Configure Cosmos DB
-    var cosmosConnectionString = builder.Configuration["CosmosDbConnectionString"];
-    var databaseId = builder.Configuration["CosmosDbDatabaseId"] ?? "GroceryListDb";
-    var containerId = builder.Configuration["CosmosDbContainerId"] ?? "Items";
+    throw new InvalidOperationException(
+        "CosmosDbConnectionString is required. " +
+        "Please configure it in local.settings.json or Azure application settings.");
+}
 
-    if (string.IsNullOrWhiteSpace(cosmosConnectionString))
+builder.Services.AddSingleton<CosmosClient>(sp =>
+{
+    var logger = sp.GetRequiredService<ILogger<Program>>();
+    logger.LogInformation("Initializing Cosmos DB client with database: {DatabaseId}, container: {ContainerId}", 
+        databaseId, containerId);
+
+    var clientOptions = new CosmosClientOptions
     {
-        throw new InvalidOperationException(
-            "CosmosDbConnectionString is required when StorageProvider is set to CosmosDb. " +
-            "Please configure it in local.settings.json or Azure application settings.");
-    }
-
-    builder.Services.AddSingleton<CosmosClient>(sp =>
-    {
-        var logger = sp.GetRequiredService<ILogger<Program>>();
-        logger.LogInformation("Initializing Cosmos DB client with database: {DatabaseId}, container: {ContainerId}", 
-            databaseId, containerId);
-
-        var clientOptions = new CosmosClientOptions
+        SerializerOptions = new CosmosSerializationOptions
         {
-            SerializerOptions = new CosmosSerializationOptions
-            {
-                PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
-            },
-            ConnectionMode = ConnectionMode.Direct
-        };
+            PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
+        },
+        ConnectionMode = ConnectionMode.Direct
+    };
 
-        return new CosmosClient(cosmosConnectionString, clientOptions);
-    });
+    return new CosmosClient(cosmosConnectionString, clientOptions);
+});
 
-    builder.Services.AddSingleton<IItemRepository>(sp =>
-    {
-        var cosmosClient = sp.GetRequiredService<CosmosClient>();
-        var logger = sp.GetRequiredService<ILogger<CosmosDbItemRepository>>();
-        return new CosmosDbItemRepository(cosmosClient, logger, databaseId, containerId);
-    });
-}
-else
+builder.Services.AddSingleton<IItemRepository>(sp =>
 {
-    // Default to in-memory storage
-    builder.Services.AddSingleton<IItemRepository, InMemoryItemRepository>();
-}
+    var cosmosClient = sp.GetRequiredService<CosmosClient>();
+    var logger = sp.GetRequiredService<ILogger<CosmosDbItemRepository>>();
+    return new CosmosDbItemRepository(cosmosClient, logger, databaseId, containerId);
+});
 
 // Note: CORS is configured in local.settings.json for local development
 // For Azure deployment, configure CORS in the Azure Portal
@@ -76,9 +65,5 @@ builder.Services
     .ConfigureFunctionsApplicationInsights();
 
 var host = builder.Build();
-
-// Log the configured storage provider
-var logger = host.Services.GetRequiredService<ILogger<Program>>();
-logger.LogInformation("Application started with storage provider: {StorageProvider}", storageProvider);
 
 host.Run();

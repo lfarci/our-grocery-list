@@ -16,12 +16,6 @@ Created a clean abstraction layer for data access:
 - Returns `Task<T>` for async operations
 - Provides abstraction between business logic and data access
 
-**InMemoryItemRepository** (`api/Repositories/InMemoryItemRepository.cs`)
-- Maintains the existing in-memory storage functionality
-- Uses `ConcurrentDictionary` for thread-safe operations
-- Pre-seeded with sample data for easy local development
-- **Default implementation** for local development
-
 **CosmosDbItemRepository** (`api/Repositories/CosmosDbItemRepository.cs`)
 - Full implementation for Azure Cosmos DB
 - Uses partition key "global" for single shared list
@@ -51,7 +45,7 @@ Created a clean abstraction layer for data access:
 - Logs the selected storage provider on startup
 
 **local.settings.json.example** (`api/local.settings.json.example`)
-- Added `StorageProvider` setting (defaults to "InMemory")
+- Added Cosmos DB configuration settings
 - Added `CosmosDbConnectionString` setting
 - Added `CosmosDbDatabaseId` setting (default: "GroceryListDb")
 - Added `CosmosDbContainerId` setting (default: "Items")
@@ -81,20 +75,21 @@ Created comprehensive documentation:
 
 ## Configuration Options
 
-### Local Development (In-Memory)
+### Local Development (Cosmos DB Emulator)
 ```json
 {
   "Values": {
-    "StorageProvider": "InMemory"
+    "CosmosDbConnectionString": "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
+    "CosmosDbDatabaseId": "GroceryListDb",
+    "CosmosDbContainerId": "Items"
   }
 }
 ```
 
-### Local Development (Cosmos DB)
+### Azure Production (Cosmos DB)
 ```json
 {
   "Values": {
-    "StorageProvider": "CosmosDb",
     "CosmosDbConnectionString": "AccountEndpoint=https://...;AccountKey=...;",
     "CosmosDbDatabaseId": "GroceryListDb",
     "CosmosDbContainerId": "Items"
@@ -104,17 +99,17 @@ Created comprehensive documentation:
 
 ### Azure Production (Cosmos DB)
 Set these application settings in Azure Portal or via Azure CLI:
-- `StorageProvider=CosmosDb`
 - `CosmosDbConnectionString=<connection-string>`
 - `CosmosDbDatabaseId=GroceryListDb`
 - `CosmosDbContainerId=Items`
 
 ## Next Steps
 
-### To Test Locally with In-Memory Storage
-1. Ensure `api/local.settings.json` has `StorageProvider` set to "InMemory" (default)
-2. Run `cd api && func start`
-3. Test endpoints at `http://localhost:7071/api/items`
+### To Test Locally with Cosmos DB Emulator
+1. Install Cosmos DB Emulator (see cosmosdb-setup.md)
+2. Create database and container
+3. Run `cd api && func start`
+4. Test endpoints at `http://localhost:7071/api/items`
 
 ### To Provision Azure Cosmos DB Resources
 Follow the guide in [docs/cosmosdb-setup.md](cosmosdb-setup.md):
@@ -199,8 +194,8 @@ Follow the guide in [docs/cosmosdb-setup.md](cosmosdb-setup.md):
 - Configuration-driven behavior
 
 ### 3. **Development Experience**
-- Local development uses in-memory storage (fast, no cost)
-- Production uses Cosmos DB (persistent, scalable)
+- Local development uses Cosmos DB Emulator (realistic, free)
+- Production uses Azure Cosmos DB (persistent, scalable)
 - Same code base for both environments
 
 ### 4. **Production Ready**
@@ -210,32 +205,28 @@ Follow the guide in [docs/cosmosdb-setup.md](cosmosdb-setup.md):
 - Strong consistency model
 
 ### 5. **Cost Conscious**
-- In-memory storage for development (free)
-- Cosmos DB only when needed
+- Cosmos DB Emulator for local development (free)
+- Azure Cosmos DB for production only
 - Documented cost optimization strategies
 
 ## Testing Checklist
 
 - [ ] Build succeeds: `cd api && dotnet build` ✅ (Verified)
-- [ ] Local in-memory mode works: `func start` with `StorageProvider=InMemory`
-- [ ] Cosmos DB resources provisioned (see cosmosdb-setup.md)
-- [ ] Local Cosmos DB mode works: `func start` with `StorageProvider=CosmosDb`
+- [ ] Cosmos DB Emulator installed and running
+- [ ] Local Cosmos DB Emulator mode works: `func start`
 - [ ] GET /api/items returns items from Cosmos DB
 - [ ] POST /api/items creates items in Cosmos DB
 - [ ] PATCH /api/items/{id} updates items in Cosmos DB
 - [ ] DELETE /api/items/{id} deletes items from Cosmos DB
 - [ ] Data persists across API restarts
+- [ ] Azure Cosmos DB resources provisioned (see cosmosdb-setup.md)
 - [ ] Azure deployment with Cosmos DB connection string
 - [ ] Frontend works with Cosmos DB backend
 - [ ] Playwright tests pass with Cosmos DB backend
 
 ## Rollback Plan
 
-If issues arise with Cosmos DB:
-1. Update `StorageProvider` to "InMemory" in application settings
-2. Restart the API
-3. Application will use in-memory storage
-4. Debug Cosmos DB issues separately
+If issues arise with Cosmos DB, the emulator can be stopped and data will be preserved for troubleshooting. The application requires Cosmos DB (emulator or cloud) to function.
 
 ## Support
 
