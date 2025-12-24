@@ -6,70 +6,11 @@ namespace api.Repositories;
 /// <summary>
 /// In-memory implementation of the item repository
 /// Uses ConcurrentDictionary for thread-safe operations
-/// Suitable for local development and testing
+/// Suitable for testing scenarios only - use Cosmos DB Emulator for local development
 /// </summary>
 public class InMemoryItemRepository : IItemRepository
 {
     private static readonly ConcurrentDictionary<string, GroceryItem> _items = new();
-
-    // Static constructor to pre-seed with sample data
-    static InMemoryItemRepository()
-    {
-        var now = DateTime.UtcNow;
-        
-        var sampleItems = new[]
-        {
-            new GroceryItem
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Milk",
-                Notes = "2 gallons, whole milk",
-                IsDone = false,
-                CreatedAt = now.AddMinutes(-10),
-                UpdatedAt = now.AddMinutes(-10)
-            },
-            new GroceryItem
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Bread",
-                Notes = "Whole wheat",
-                IsDone = false,
-                CreatedAt = now.AddMinutes(-8),
-                UpdatedAt = now.AddMinutes(-8)
-            },
-            new GroceryItem
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Eggs",
-                Notes = "1 dozen",
-                IsDone = true,
-                CreatedAt = now.AddMinutes(-5),
-                UpdatedAt = now.AddMinutes(-2)
-            },
-            new GroceryItem
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Apples",
-                IsDone = false,
-                CreatedAt = now.AddMinutes(-3),
-                UpdatedAt = now.AddMinutes(-3)
-            },
-            new GroceryItem
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = "Cheese",
-                Notes = "Cheddar",
-                IsDone = true,
-                CreatedAt = now.AddMinutes(-1),
-                UpdatedAt = now
-            }
-        };
-
-        foreach (var item in sampleItems)
-        {
-            _items.TryAdd(item.Id, item);
-        }
-    }
 
     public Task<IEnumerable<GroceryItem>> GetAllAsync()
     {

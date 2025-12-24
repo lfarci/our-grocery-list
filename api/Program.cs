@@ -21,7 +21,7 @@ builder.Services.Configure<JsonSerializerOptions>(options =>
 });
 
 // Configure repository based on storage provider setting
-var storageProvider = builder.Configuration["StorageProvider"] ?? "InMemory";
+var storageProvider = builder.Configuration["StorageProvider"] ?? "CosmosDb";
 
 if (storageProvider.Equals("CosmosDb", StringComparison.OrdinalIgnoreCase))
 {

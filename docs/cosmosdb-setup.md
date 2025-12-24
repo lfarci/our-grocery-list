@@ -4,18 +4,84 @@ This guide explains how to set up Azure Cosmos DB for the Our Grocery List appli
 
 ## Overview
 
-The application supports two storage providers:
-- **InMemory**: Default for local development, uses ConcurrentDictionary (no persistence)
-- **CosmosDb**: Production-ready persistent storage with Azure Cosmos DB
+The application uses Azure Cosmos DB for persistent storage:
+- **Cosmos DB Emulator**: Default for local development (runs on localhost:8081)
+- **Azure Cosmos DB**: Production persistent storage in the cloud
+- **InMemory**: Testing only (no persistence, no sample data)
 
-## Prerequisites
+## Local Development with Cosmos DB Emulator
+
+### Prerequisites for Local Development
+
+- [Azure Cosmos DB Emulator](https://docs.microsoft.com/azure/cosmos-db/local-emulator) (Windows/Linux)
+- .NET 8.0 SDK
+- Azure Functions Core Tools v4
+
+### Install Cosmos DB Emulator
+
+**Windows:**
+Download and install from: https://aka.ms/cosmosdb-emulator
+
+**Linux/macOS:**
+Use Docker:
+```bash
+docker pull mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
+
+docker run -p 8081:8081 -p 10251:10251 -p 10252:10252 -p 10253:10253 -p 10254:10254 \
+  -e AZURE_COSMOS_EMULATOR_PARTITION_COUNT=10 \
+  -e AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE=true \
+  --name cosmos-emulator \
+  mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
+```
+
+### Configure Local Development
+
+The default `local.settings.json.example` is pre-configured for the Cosmos DB Emulator:
+
+```json
+{
+  "Values": {
+    "StorageProvider": "CosmosDb",
+    "CosmosDbConnectionString": "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
+    "CosmosDbDatabaseId": "GroceryListDb",
+    "CosmosDbContainerId": "Items"
+  }
+}
+```
+
+**Note**: The connection string above is the well-known Cosmos DB Emulator key and is safe to commit.
+
+### Create Database and Container in Emulator
+
+Using Azure Cosmos DB Data Explorer (https://localhost:8081/_explorer/index.html):
+
+1. Open the Data Explorer in your browser (accept SSL certificate warning)
+2. Click "New Database"
+   - Database id: `GroceryListDb`
+3. Click "New Container"
+   - Container id: `Items`
+   - Partition key: `/partitionKey`
+   - Throughput: 400 RU/s (or autoscale)
+
+Or use the Azure CLI with the emulator:
+```bash
+# Set endpoint to emulator
+$env:COSMOS_ENDPOINT = "https://localhost:8081"
+$env:COSMOS_KEY = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
+
+# Or for bash/zsh:
+export COSMOS_ENDPOINT="https://localhost:8081"
+export COSMOS_KEY="C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
+```
+
+## Azure Resources Setup (Production)
+
+### Prerequisites for Production
 
 - Azure subscription
 - Azure CLI installed and configured
 - .NET 8.0 SDK
 - Azure Functions Core Tools v4
-
-## Azure Resources Setup
 
 ### 1. Create Resource Group (if not exists)
 

@@ -168,8 +168,9 @@ All endpoints are prefixed with `/api`:
 
 ### Data Layer
 - **Storage providers**: 
-  - **InMemory**: Default for local development (ConcurrentDictionary)
-  - **Cosmos DB**: Production-ready persistent storage
+  - **Cosmos DB Emulator**: Default for local development (localhost:8081)
+  - **Azure Cosmos DB**: Production persistent storage
+  - **InMemory**: Testing only (ConcurrentDictionary, no persistence, no sample data)
 - **Repository interface**: IItemRepository for abstraction
 - **Cosmos DB specifics**:
   - Document database for items
@@ -178,6 +179,7 @@ All endpoints are prefixed with `/api`:
   - Connection: Configured via connection string
   - Database: GroceryListDb (configurable)
   - Container: Items (configurable)
+  - Emulator connection string: Well-known key for local development
 
 ### Real-time Updates (Planned)
 - **Azure SignalR Service**: Push updates to all clients
@@ -202,13 +204,15 @@ See [frontend/README.md](../frontend/README.md) for detailed local development i
 ### Backend (local.settings.json)
 - `AzureWebJobsStorage`: Storage connection (development)
 - `FUNCTIONS_WORKER_RUNTIME`: dotnet-isolated
-- `StorageProvider`: "InMemory" or "CosmosDb" (default: "InMemory")
-- `CosmosDbConnectionString`: Cosmos DB connection string (required when using CosmosDb)
+- `StorageProvider`: "CosmosDb" or "InMemory" (default: "CosmosDb")
+- `CosmosDbConnectionString`: Cosmos DB connection string
+  - Default: Cosmos DB Emulator (localhost:8081)
+  - Production: Azure Cosmos DB connection string
 - `CosmosDbDatabaseId`: Database name (default: "GroceryListDb")
 - `CosmosDbContainerId`: Container name (default: "Items")
 - `AzureSignalRConnectionString`: SignalR connection (future)
 
-For detailed Cosmos DB setup, see [cosmosdb-setup.md](cosmosdb-setup.md).
+For detailed Cosmos DB setup including the emulator, see [cosmosdb-setup.md](cosmosdb-setup.md).
 
 ## Build and Deployment
 
