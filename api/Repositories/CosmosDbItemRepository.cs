@@ -7,12 +7,13 @@ namespace api.Repositories;
 /// <summary>
 /// Cosmos DB implementation of the item repository
 /// Uses Azure Cosmos DB NoSQL API for persistent storage with strong consistency
+/// Partitions items by listId for efficient querying and future multi-list support
 /// </summary>
 public class CosmosDbItemRepository : IItemRepository
 {
     private readonly Container _container;
     private readonly ILogger<CosmosDbItemRepository> _logger;
-    private const string PartitionKeyValue = "global";
+    private const string DefaultListId = "default";
 
     public CosmosDbItemRepository(
         CosmosClient cosmosClient,
@@ -31,8 +32,8 @@ public class CosmosDbItemRepository : IItemRepository
         {
             _logger.LogInformation("Retrieving all grocery items from Cosmos DB");
 
-            var query = new QueryDefinition("SELECT * FROM c WHERE c.partitionKey = @partitionKey")
-                .WithParameter("@partitionKey", PartitionKeyValue);
+            var query = new QueryDefinition("SELECT * FROM c WHERE c.listId = @listId")
+                .WithParameter("@listId", DefaultListId);
 
             var iterator = _container.GetItemQueryIterator<GroceryItem>(query);
             var items = new List<GroceryItem>();
@@ -61,7 +62,7 @@ public class CosmosDbItemRepository : IItemRepository
 
             var response = await _container.ReadItemAsync<GroceryItem>(
                 id,
-                new PartitionKey(PartitionKeyValue));
+                new PartitionKey(DefaultListId));
 
             return response.Resource;
         }
@@ -83,10 +84,13 @@ public class CosmosDbItemRepository : IItemRepository
         {
             _logger.LogInformation("Creating item {ItemId} in Cosmos DB", item.Id);
 
-            item.PartitionKey = PartitionKeyValue;
+            // Set listId and partitionKey to default for single shared list
+            item.ListId = DefaultListId;
+            item.PartitionKey = DefaultListId;
+            
             var response = await _container.CreateItemAsync(
                 item,
-                new PartitionKey(PartitionKeyValue));
+                new PartitionKey(DefaultListId));
 
             _logger.LogInformation("Created item {ItemId} in Cosmos DB", item.Id);
             return response.Resource;
@@ -104,11 +108,14 @@ public class CosmosDbItemRepository : IItemRepository
         {
             _logger.LogInformation("Updating item {ItemId} in Cosmos DB", item.Id);
 
-            item.PartitionKey = PartitionKeyValue;
+            // Ensure listId and partitionKey are set
+            item.ListId = DefaultListId;
+            item.PartitionKey = DefaultListId;
+            
             var response = await _container.ReplaceItemAsync(
                 item,
                 item.Id,
-                new PartitionKey(PartitionKeyValue));
+                new PartitionKey(DefaultListId));
 
             _logger.LogInformation("Updated item {ItemId} in Cosmos DB", item.Id);
             return response.Resource;
@@ -133,7 +140,7 @@ public class CosmosDbItemRepository : IItemRepository
 
             await _container.DeleteItemAsync<GroceryItem>(
                 id,
-                new PartitionKey(PartitionKeyValue));
+                new PartitionKey(DefaultListId));
 
             _logger.LogInformation("Deleted item {ItemId} from Cosmos DB", id);
             return true;

@@ -103,7 +103,8 @@ interface GroceryItem {
 public class GroceryItem
 {
     public string Id { get; set; }              // Unique identifier (GUID)
-    public string PartitionKey { get; set; }     // Partition key for Cosmos DB (always "global")
+    public string ListId { get; set; }          // List identifier (defaults to "default")
+    public string PartitionKey { get; set; }    // Partition key for Cosmos DB (uses listId value)
     public string Name { get; set; }            // Item name (required)
     public string? Notes { get; set; }          // Optional quantity/notes
     public bool IsDone { get; set; }            // Completion status
@@ -112,7 +113,7 @@ public class GroceryItem
 }
 ```
 
-**Note**: The `PartitionKey` property is used for Cosmos DB partitioning and is always set to "global" to maintain a single shared list. This property is not exposed to the frontend.
+**Note**: The `ListId` property identifies which list an item belongs to (currently defaults to "default" for the single shared list). The `PartitionKey` uses the same value as `ListId` for Cosmos DB partitioning. These properties are not exposed to the frontend.
 
 ### Request/Response Contracts
 
@@ -173,7 +174,8 @@ All endpoints are prefixed with `/api`:
 - **Cosmos DB NoSQL API specifics**:
   - Document database with JSON documents for items
   - SQL-like query syntax (NoSQL API query language)
-  - Partition key: "global" (single partition for global shared list)
+  - Partition key: Uses `listId` property (defaults to "default" for single shared list)
+  - Future-ready for multi-list support by using different listId values
   - Consistency: Strong consistency for operations
   - Connection: Configured via connection string
   - Database: GroceryListDb (configurable)

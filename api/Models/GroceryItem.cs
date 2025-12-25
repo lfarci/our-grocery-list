@@ -17,11 +17,19 @@ public class GroceryItem
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
-    /// Partition key for Cosmos DB (always "global" for single shared list)
+    /// List identifier - identifies which list this item belongs to
+    /// Used as the partition key for Cosmos DB for efficient querying
+    /// </summary>
+    [JsonProperty("listId")]
+    [JsonPropertyName("listId")]
+    public string ListId { get; set; } = "default";
+
+    /// <summary>
+    /// Partition key for Cosmos DB (uses listId value)
     /// </summary>
     [JsonProperty("partitionKey")]
     [JsonPropertyName("partitionKey")]
-    public string PartitionKey { get; set; } = "global";
+    public string PartitionKey { get; set; } = "default";
 
     /// <summary>
     /// Name of the grocery item (required)

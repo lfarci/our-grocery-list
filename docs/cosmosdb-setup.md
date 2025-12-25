@@ -136,7 +136,7 @@ az cosmosdb sql container create \
 
 **Container Configuration**:
 - **API**: NoSQL API (uses `az cosmosdb sql` commands)
-- **Partition Key**: `/partitionKey` (fixed value of "global" for single shared list)
+- **Partition Key**: `/partitionKey` (uses listId value - currently defaults to "default" for single shared list)
 - **Throughput**: 400 RU/s (minimum for manual throughput)
 - **Consistency**: Strong (set at account level)
 
