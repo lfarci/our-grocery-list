@@ -37,7 +37,7 @@ export function GroceryItem({ item, onToggleDone, onDelete }: GroceryItemProps) 
       {/* Delete Button */}
       <button
         onClick={() => onDelete(item.id)}
-        className="text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 rounded p-1 transition-colors"
+        className="text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 rounded p-1 transition-colors cursor-pointer"
         aria-label={`Delete ${item.name}`}
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
