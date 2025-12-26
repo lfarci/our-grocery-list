@@ -45,13 +45,13 @@ export function useSignalR(handlers: SignalRHandlers) {
       setConnectionState('connecting');
       setError(null);
 
-      // Create connection
-      // Use VITE_API_BASE_URL for the SignalR endpoint to support different deployment scenarios
+      // Create connection to Azure SignalR Service via Functions API
+      // Connect to the API base URL - the SignalR SDK will call POST {baseUrl}/negotiate
+      // to get connection info for the Azure SignalR Service
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
-      const negotiateUrl = `${apiBaseUrl}/negotiate`;
       
       const connection = new signalR.HubConnectionBuilder()
-        .withUrl(negotiateUrl, {
+        .withUrl(apiBaseUrl, {
           skipNegotiation: false,
         })
         .withAutomaticReconnect({
