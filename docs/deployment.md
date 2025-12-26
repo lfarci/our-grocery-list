@@ -52,6 +52,18 @@ Alternatively, you can find it in the Azure Portal:
 5. Value: Paste the deployment token from Azure
 6. Click **Add secret**
 
+#### Additional Required Secrets
+
+For preview environment configuration, you also need:
+
+1. **AZURE_CREDENTIALS**: Service principal credentials for Azure CLI
+   - Create using: `az ad sp create-for-rbac --name "github-actions-our-grocery-list" --role contributor --scopes /subscriptions/{subscription-id}/resourceGroups/rg-app-prd-bc --sdk-auth`
+   - Add the entire JSON output as a repository secret
+
+2. **AZURE_STATIC_WEB_APP_NAME**: The name of your Azure Static Web App resource
+   - Value: `stapp-app-prd-bc` (or your resource name)
+   - This is used to configure environment variables for preview deployments
+
 ### 2. Workflow Configuration
 
 The deployment workflow is located at `.github/workflows/azure-static-web-apps-deploy.yml`.
@@ -108,6 +120,32 @@ When you create a pull request targeting the `main` branch:
 - The preview URL is posted as a comment on the pull request
 - **Automated Playwright tests** run immediately after successful deployment
 - The preview deployment is deleted when the pull request is closed
+
+#### Preview Environment Configuration
+
+Preview environments are automatically configured with different settings from production:
+
+- **CosmosDbDatabaseId**: Set to `Preview` (production uses `Production` or `GroceryListDb`)
+  - This ensures preview deployments use a separate Cosmos DB database
+  - Configured automatically by the deployment workflow
+  - Environment name format: `pull/<PR_NUMBER>`
+
+The workflow automatically sets environment variables for preview environments after deployment using Azure CLI. This ensures that preview deployments are isolated from production data.
+
+**Required Secrets for Preview Environment Configuration**:
+- `AZURE_CREDENTIALS`: Service principal credentials for Azure CLI authentication
+- `AZURE_STATIC_WEB_APP_NAME`: Name of the Azure Static Web App resource (e.g., `stapp-app-prd-bc`)
+
+To set up Azure credentials:
+```bash
+# Create a service principal with contributor role
+az ad sp create-for-rbac --name "github-actions-our-grocery-list" \
+  --role contributor \
+  --scopes /subscriptions/{subscription-id}/resourceGroups/rg-app-prd-bc \
+  --sdk-auth
+
+# Add the output JSON as AZURE_CREDENTIALS secret in GitHub
+```
 
 ### 5. Playwright Tests on Pull Requests
 
