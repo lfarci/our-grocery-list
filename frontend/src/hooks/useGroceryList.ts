@@ -35,8 +35,8 @@ export function useGroceryList() {
   const addItem = useCallback(async (item: CreateItemRequest) => {
     try {
       const newItem = await api.createItem(item);
-      // Optimistically add the item (will be confirmed by SignalR broadcast)
-      setItems(prev => [...prev, newItem]);
+      // Don't add optimistically - let SignalR broadcast handle it for consistency
+      // This prevents duplicate items on the creating client
       return newItem;
     } catch (err) {
       console.error('Error creating item:', err);
@@ -69,8 +69,9 @@ export function useGroceryList() {
   // Set up SignalR handlers for real-time updates from other clients
   useSignalR({
     onItemCreated: useCallback((item: GroceryItem) => {
-      // Add item if it doesn't already exist (prevent duplicates from our own actions)
+      // Add item from SignalR broadcast (includes items created by this client)
       setItems(prev => {
+        // Check if item already exists to prevent duplicates
         if (prev.some(i => i.id === item.id)) {
           return prev;
         }
