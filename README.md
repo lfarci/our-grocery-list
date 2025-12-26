@@ -62,7 +62,9 @@ Tests are located in the `tests/` directory and validate the core user flows inc
 
 - **Frontend**: React 19 + TypeScript + Tailwind CSS + Vite + PWA
 - **Backend**: .NET 8.0 Azure Functions (isolated worker)
-- **Storage**: In-memory (ConcurrentDictionary)
+- **Storage**: Azure Cosmos DB with NoSQL API
+  - Cosmos DB Emulator for local development (see [Cosmos DB setup guide](docs/cosmosdb-setup.md))
+  - Azure Cosmos DB for production
 - **Deployment**: Azure Static Web Apps
 
 ## Project Structure
@@ -79,8 +81,11 @@ our-grocery-list/
 ├── api/                   # Azure Functions backend
 │   ├── Functions/         # HTTP endpoints
 │   ├── Models/            # Data models
+│   ├── Repositories/      # Data access layer (repository pattern)
 │   └── Program.cs         # App configuration
 └── docs/                  # Documentation
+    ├── cosmosdb-setup.md  # Cosmos DB setup guide
+    └── ...
 ```
 
 ## Working on the project
@@ -103,6 +108,7 @@ The app is deployed to Azure Static Web Apps (`stapp-app-prd-bc`) with automatic
 - [docs/requirements.md](docs/requirements.md) — detailed Version 1 functional requirements.
 - [docs/architecture.md](docs/architecture.md) — technical architecture overview.
 - [docs/deployment.md](docs/deployment.md) — deployment setup and configuration guide.
+- [docs/cosmosdb-setup.md](docs/cosmosdb-setup.md) — Cosmos DB setup and configuration guide.
 - [.github/copilot-instructions.md](.github/copilot-instructions.md) — guidance for using Copilot effectively on this project.
 
 ## License

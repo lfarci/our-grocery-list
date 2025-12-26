@@ -59,13 +59,22 @@ our-grocery-list/
 ├── api/                        # Azure Functions backend
 │   ├── Functions/              # HTTP trigger functions
 │   │   ├── ItemFunctions.cs    # CRUD endpoints for items
-│   │   └── SignalRFunctions.cs # SignalR negotiate endpoint
+│   │   └── SignalRFunctions.cs # SignalR negotiate endpoint (planned)
 │   ├── Models/                 # Data models
 │   │   └── GroceryItem.cs      # Item model and DTOs
+│   ├── Repositories/           # Data access layer
+│   │   ├── IItemRepository.cs       # Repository interface
+│   │   └── CosmosDbItemRepository.cs # Cosmos DB implementation
 │   ├── Program.cs              # Functions host configuration
 │   ├── host.json               # Functions runtime config
 │   ├── local.settings.json.example # Settings template
 │   └── api.csproj
+├── docs/                       # Documentation
+│   ├── architecture.md         # Architecture overview
+│   ├── requirements.md         # Functional requirements
+│   ├── development.md          # Development setup guide
+│   ├── deployment.md           # Deployment guide
+│   └── cosmosdb-setup.md       # Cosmos DB setup guide
 ├── swa-cli.config.json         # Static Web Apps CLI config
 ├── package.json                # Root workspace configuration
 └── README.md
@@ -93,14 +102,18 @@ interface GroceryItem {
 ```csharp
 public class GroceryItem
 {
-    public string Id { get; set; }
-    public string Name { get; set; }
-    public string? Notes { get; set; }
-    public bool IsDone { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public string Id { get; set; }              // Unique identifier (GUID)
+    public string ListId { get; set; }          // List identifier (defaults to "default")
+    public string PartitionKey { get; set; }    // Partition key for Cosmos DB (uses listId value)
+    public string Name { get; set; }            // Item name (required)
+    public string? Notes { get; set; }          // Optional quantity/notes
+    public bool IsDone { get; set; }            // Completion status
+    public DateTime CreatedAt { get; set; }     // UTC timestamp
+    public DateTime UpdatedAt { get; set; }     // UTC timestamp
 }
 ```
+
+**Note**: The `ListId` property identifies which list an item belongs to (currently defaults to "default" for the single shared list). The `PartitionKey` uses the same value as `ListId` for Cosmos DB partitioning. These properties are not exposed to the frontend.
 
 ### Request/Response Contracts
 
@@ -151,11 +164,24 @@ All endpoints are prefixed with `/api`:
 - **Isolated worker model**: Runs in separate process
 - **HTTP triggers**: RESTful API endpoints
 - **Authorization**: Anonymous (to be enhanced with auth later)
+- **Repository pattern**: Abstraction for data access
 
-### Data Layer (Planned)
-- **Cosmos DB**: Document database for items
-- **Partition key**: Single partition for global list
-- **Consistency**: Strong consistency for operations
+### Data Layer
+- **Storage**: Azure Cosmos DB with **NoSQL API** (formerly SQL API)
+  - **Cosmos DB Emulator**: For local development (localhost:8081)
+  - **Azure Cosmos DB**: For production
+- **Repository interface**: IItemRepository for abstraction
+- **Cosmos DB NoSQL API specifics**:
+  - Document database with JSON documents for items
+  - SQL-like query syntax (NoSQL API query language)
+  - Partition key: Uses `listId` property (defaults to "default" for single shared list)
+  - Future-ready for multi-list support by using different listId values
+  - Consistency: Strong consistency for operations
+  - Connection: Configured via connection string
+  - Database: GroceryListDb (configurable)
+  - Container: Items (configurable)
+  - SDK: Microsoft.Azure.Cosmos (NoSQL API SDK)
+  - Emulator connection string: Well-known key for local development
 
 ### Real-time Updates (Planned)
 - **Azure SignalR Service**: Push updates to all clients
@@ -180,8 +206,14 @@ See [frontend/README.md](../frontend/README.md) for detailed local development i
 ### Backend (local.settings.json)
 - `AzureWebJobsStorage`: Storage connection (development)
 - `FUNCTIONS_WORKER_RUNTIME`: dotnet-isolated
-- `CosmosDbConnectionString`: Cosmos DB connection (future)
+- `CosmosDbConnectionString`: Cosmos DB connection string
+  - Local: Cosmos DB Emulator (localhost:8081)
+  - Production: Azure Cosmos DB connection string
+- `CosmosDbDatabaseId`: Database name (default: "GroceryListDb")
+- `CosmosDbContainerId`: Container name (default: "Items")
 - `AzureSignalRConnectionString`: SignalR connection (future)
+
+For detailed Cosmos DB setup including the emulator, see [cosmosdb-setup.md](cosmosdb-setup.md).
 
 ## Build and Deployment
 
