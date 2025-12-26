@@ -65,8 +65,28 @@ After configuring the secrets:
 
 1. Create a test pull request
 2. Wait for the deployment to complete
-3. Check the workflow logs for "Preview Environment Configuration" step
-4. You should see: "Set CosmosDbDatabaseId=Preview for PR #X"
+3. Check the workflow logs for:
+   - "List Preview Environments" step to see all environment names
+   - "Configure Preview Environment Variables" step
+4. You should see: "Set CosmosDbDatabaseId=Preview for environment <name>"
+
+**Note**: The environment name format may vary. Azure Static Web Apps may use either:
+- `pull/<PR_NUMBER>` (e.g., `pull/14`)
+- Just `<PR_NUMBER>` (e.g., `14`)
+
+The workflow automatically tries both formats.
+
+## Verifying Environment Names
+
+To check what environment name format your Azure Static Web App uses:
+
+```bash
+az staticwebapp environment list \
+  --name stapp-app-prd-bc \
+  --resource-group rg-app-prd-bc
+```
+
+This will list all environments, including preview environments for active PRs.
 
 ## Troubleshooting
 
@@ -78,6 +98,11 @@ After configuring the secrets:
 ### "Resource not found"
 - Verify AZURE_STATIC_WEB_APP_NAME matches your actual resource name
 - Ensure the service principal has access to the resource
+
+### "Configuration Failed: Could not set environment variable"
+- Check the "List Preview Environments" step output to see actual environment names
+- The environment name format may not match what the workflow expects
+- Verify the preview environment was created successfully by the deployment
 
 ### Environment variable not set
 - Check that both secrets are configured
