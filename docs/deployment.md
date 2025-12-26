@@ -52,6 +52,17 @@ Alternatively, you can find it in the Azure Portal:
 5. Value: Paste the deployment token from Azure
 6. Click **Add secret**
 
+#### Additional Required Secrets (For Preview Environments)
+
+For automatic preview environment configuration with federated credentials (OIDC):
+
+1. **AZURE_CLIENT_ID**: App registration client ID
+2. **AZURE_TENANT_ID**: Azure AD tenant ID
+3. **AZURE_SUBSCRIPTION_ID**: Azure subscription ID
+4. **AZURE_STATIC_WEB_APP_NAME**: `stapp-app-prd-bc`
+
+See [Preview Environment Configuration](#preview-environment-configuration) for setup details.
+
 ### 2. Workflow Configuration
 
 The deployment workflow is located at `.github/workflows/azure-static-web-apps-deploy.yml`.
@@ -103,11 +114,49 @@ You can configure environment protection rules in GitHub:
 
 ### 4. Pull Request Deployments
 
-When you create a pull request targeting the `main` branch:
-- A preview deployment is automatically created
-- The preview URL is posted as a comment on the pull request
-- **Automated Playwright tests** run immediately after successful deployment
-- The preview deployment is deleted when the pull request is closed
+Pull requests automatically create preview deployments with:
+- Preview URL posted as a comment on the PR
+- Automated Playwright tests after deployment
+- Automatic cleanup when PR is closed
+
+#### Preview Environment Configuration
+
+Preview environments use separate settings from production:
+- **CosmosDbDatabaseId**: Automatically set to `Preview` (vs. `Production`)
+- **Environment name**: Uses PR number (e.g., `14` for PR #14)
+
+**Setup federated credentials for automatic configuration:**
+
+1. Create app registration and service principal:
+   ```bash
+   az ad app create --display-name "github-actions-our-grocery-list"
+   az ad sp create --id <APP_ID>
+   ```
+
+2. Assign Contributor role:
+   ```bash
+   az role assignment create \
+     --role contributor \
+     --subscription <SUBSCRIPTION_ID> \
+     --assignee-object-id <SERVICE_PRINCIPAL_OBJECT_ID> \
+     --assignee-principal-type ServicePrincipal \
+     --scope /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/rg-app-prd-bc
+   ```
+
+3. Add federated credential:
+   ```bash
+   az ad app federated-credential create \
+     --id <APP_ID> \
+     --parameters '{
+       "name": "github-pr-federated-credential",
+       "issuer": "https://token.actions.githubusercontent.com",
+       "subject": "repo:lfarci/our-grocery-list:pull_request",
+       "audiences": ["api://AzureADTokenExchange"]
+     }'
+   ```
+
+4. Add these GitHub secrets:
+   - `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`, `AZURE_STATIC_WEB_APP_NAME`
 
 ### 5. Playwright Tests on Pull Requests
 
