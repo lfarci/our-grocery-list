@@ -1,8 +1,10 @@
 using System.Net;
+using api.Hubs;
 using api.Models;
 using api.Repositories;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Azure.Functions.Worker.SignalRService;
 using Microsoft.Extensions.Logging;
 
 namespace api.Functions;
@@ -10,6 +12,7 @@ namespace api.Functions;
 /// <summary>
 /// Azure Functions for managing grocery list items
 /// Uses repository pattern for data access abstraction
+/// Broadcasts changes via SignalR for real-time updates
 /// </summary>
 public class ItemFunctions
 {
@@ -42,9 +45,10 @@ public class ItemFunctions
 
     /// <summary>
     /// POST /api/items - Create a new grocery item
+    /// Broadcasts the new item to all connected clients via SignalR
     /// </summary>
     [Function("CreateItem")]
-    public async Task<HttpResponseData> CreateItem(
+    public async Task<CreateItemOutput> CreateItem(
         [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "items")] HttpRequestData req)
     {
         _logger.LogInformation("Creating new grocery item");
@@ -55,7 +59,7 @@ public class ItemFunctions
         {
             var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
             await errorResponse.WriteStringAsync("Item name is required");
-            return errorResponse;
+            return new CreateItemOutput { HttpResponse = errorResponse };
         }
 
         var now = DateTime.UtcNow;
@@ -73,14 +77,28 @@ public class ItemFunctions
 
         var response = req.CreateResponse(HttpStatusCode.Created);
         await response.WriteAsJsonAsync(createdItem);
-        return response;
+        
+        _logger.LogInformation("Broadcasting item created: {ItemId}", createdItem.Id);
+        
+        return new CreateItemOutput
+        {
+            HttpResponse = response,
+            SignalRMessages = new[]
+            {
+                new SignalRMessageAction(GroceryListHub.ItemCreatedMethod)
+                {
+                    Arguments = new[] { createdItem }
+                }
+            }
+        };
     }
 
     /// <summary>
     /// PATCH /api/items/{id} - Update a grocery item (toggle done status)
+    /// Broadcasts the updated item to all connected clients via SignalR
     /// </summary>
     [Function("UpdateItem")]
-    public async Task<HttpResponseData> UpdateItem(
+    public async Task<UpdateItemOutput> UpdateItem(
         [HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "items/{id}")] HttpRequestData req,
         string id)
     {
@@ -89,7 +107,7 @@ public class ItemFunctions
         var existingItem = await _repository.GetByIdAsync(id);
         if (existingItem is null)
         {
-            return req.CreateResponse(HttpStatusCode.NotFound);
+            return new UpdateItemOutput { HttpResponse = req.CreateResponse(HttpStatusCode.NotFound) };
         }
 
         var request = await req.ReadFromJsonAsync<UpdateItemRequest>();
@@ -104,19 +122,33 @@ public class ItemFunctions
         
         if (updatedItem is null)
         {
-            return req.CreateResponse(HttpStatusCode.NotFound);
+            return new UpdateItemOutput { HttpResponse = req.CreateResponse(HttpStatusCode.NotFound) };
         }
 
         var response = req.CreateResponse(HttpStatusCode.OK);
         await response.WriteAsJsonAsync(updatedItem);
-        return response;
+        
+        _logger.LogInformation("Broadcasting item updated: {ItemId}", updatedItem.Id);
+        
+        return new UpdateItemOutput
+        {
+            HttpResponse = response,
+            SignalRMessages = new[]
+            {
+                new SignalRMessageAction(GroceryListHub.ItemUpdatedMethod)
+                {
+                    Arguments = new[] { updatedItem }
+                }
+            }
+        };
     }
 
     /// <summary>
     /// DELETE /api/items/{id} - Delete a grocery item
+    /// Broadcasts the deleted item ID to all connected clients via SignalR
     /// </summary>
     [Function("DeleteItem")]
-    public async Task<HttpResponseData> DeleteItem(
+    public async Task<DeleteItemOutput> DeleteItem(
         [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "items/{id}")] HttpRequestData req,
         string id)
     {
@@ -126,9 +158,57 @@ public class ItemFunctions
 
         if (!deleted)
         {
-            return req.CreateResponse(HttpStatusCode.NotFound);
+            return new DeleteItemOutput { HttpResponse = req.CreateResponse(HttpStatusCode.NotFound) };
         }
 
-        return req.CreateResponse(HttpStatusCode.NoContent);
+        _logger.LogInformation("Broadcasting item deleted: {ItemId}", id);
+        
+        return new DeleteItemOutput
+        {
+            HttpResponse = req.CreateResponse(HttpStatusCode.NoContent),
+            SignalRMessages = new[]
+            {
+                new SignalRMessageAction(GroceryListHub.ItemDeletedMethod)
+                {
+                    Arguments = new[] { id }
+                }
+            }
+        };
     }
+}
+
+/// <summary>
+/// Output binding for CreateItem function with SignalR support
+/// </summary>
+public class CreateItemOutput
+{
+    [HttpResult]
+    public HttpResponseData? HttpResponse { get; set; }
+
+    [SignalROutput(HubName = GroceryListHub.HubName)]
+    public SignalRMessageAction[]? SignalRMessages { get; set; }
+}
+
+/// <summary>
+/// Output binding for UpdateItem function with SignalR support
+/// </summary>
+public class UpdateItemOutput
+{
+    [HttpResult]
+    public HttpResponseData? HttpResponse { get; set; }
+
+    [SignalROutput(HubName = GroceryListHub.HubName)]
+    public SignalRMessageAction[]? SignalRMessages { get; set; }
+}
+
+/// <summary>
+/// Output binding for DeleteItem function with SignalR support
+/// </summary>
+public class DeleteItemOutput
+{
+    [HttpResult]
+    public HttpResponseData? HttpResponse { get; set; }
+
+    [SignalROutput(HubName = GroceryListHub.HubName)]
+    public SignalRMessageAction[]? SignalRMessages { get; set; }
 }
