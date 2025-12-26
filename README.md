@@ -82,10 +82,10 @@ our-grocery-list/
 │   │   ├── types/         # TypeScript types
 │   │   └── storage/       # Local storage utilities
 ├── api/                   # Azure Functions backend
-│   ├── Functions/         # HTTP endpoints with SignalR broadcasting
-│   ├── Hubs/              # SignalR hub definitions
+│   ├── Functions/         # HTTP endpoints with Azure SignalR broadcasting
 │   ├── Models/            # Data models
 │   ├── Repositories/      # Data access layer (repository pattern)
+│   ├── SignalRConstants.cs # SignalR hub name and method constants
 │   └── Program.cs         # App configuration
 └── docs/                  # Documentation
     ├── cosmosdb-setup.md  # Cosmos DB setup guide

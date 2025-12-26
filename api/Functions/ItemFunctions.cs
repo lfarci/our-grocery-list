@@ -1,5 +1,4 @@
 using System.Net;
-using api.Hubs;
 using api.Models;
 using api.Repositories;
 using Microsoft.Azure.Functions.Worker;
@@ -12,7 +11,7 @@ namespace api.Functions;
 /// <summary>
 /// Azure Functions for managing grocery list items
 /// Uses repository pattern for data access abstraction
-/// Broadcasts changes via SignalR for real-time updates
+/// Broadcasts changes via Azure SignalR Service for real-time updates
 /// </summary>
 public class ItemFunctions
 {
@@ -85,7 +84,7 @@ public class ItemFunctions
             HttpResponse = response,
             SignalRMessages = new[]
             {
-                new SignalRMessageAction(GroceryListHub.ItemCreatedMethod)
+                new SignalRMessageAction(SignalRConstants.Methods.ItemCreated)
                 {
                     Arguments = new[] { createdItem }
                 }
@@ -135,7 +134,7 @@ public class ItemFunctions
             HttpResponse = response,
             SignalRMessages = new[]
             {
-                new SignalRMessageAction(GroceryListHub.ItemUpdatedMethod)
+                new SignalRMessageAction(SignalRConstants.Methods.ItemUpdated)
                 {
                     Arguments = new[] { updatedItem }
                 }
@@ -168,7 +167,7 @@ public class ItemFunctions
             HttpResponse = req.CreateResponse(HttpStatusCode.NoContent),
             SignalRMessages = new[]
             {
-                new SignalRMessageAction(GroceryListHub.ItemDeletedMethod)
+                new SignalRMessageAction(SignalRConstants.Methods.ItemDeleted)
                 {
                     Arguments = new[] { id }
                 }
@@ -178,37 +177,37 @@ public class ItemFunctions
 }
 
 /// <summary>
-/// Output binding for CreateItem function with SignalR support
+/// Output binding for CreateItem function with Azure SignalR Service support
 /// </summary>
 public class CreateItemOutput
 {
     [HttpResult]
     public HttpResponseData? HttpResponse { get; set; }
 
-    [SignalROutput(HubName = GroceryListHub.HubName)]
+    [SignalROutput(HubName = SignalRConstants.HubName)]
     public SignalRMessageAction[]? SignalRMessages { get; set; }
 }
 
 /// <summary>
-/// Output binding for UpdateItem function with SignalR support
+/// Output binding for UpdateItem function with Azure SignalR Service support
 /// </summary>
 public class UpdateItemOutput
 {
     [HttpResult]
     public HttpResponseData? HttpResponse { get; set; }
 
-    [SignalROutput(HubName = GroceryListHub.HubName)]
+    [SignalROutput(HubName = SignalRConstants.HubName)]
     public SignalRMessageAction[]? SignalRMessages { get; set; }
 }
 
 /// <summary>
-/// Output binding for DeleteItem function with SignalR support
+/// Output binding for DeleteItem function with Azure SignalR Service support
 /// </summary>
 public class DeleteItemOutput
 {
     [HttpResult]
     public HttpResponseData? HttpResponse { get; set; }
 
-    [SignalROutput(HubName = GroceryListHub.HubName)]
+    [SignalROutput(HubName = SignalRConstants.HubName)]
     public SignalRMessageAction[]? SignalRMessages { get; set; }
 }

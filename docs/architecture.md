@@ -59,15 +59,14 @@ our-grocery-list/
 │   └── package.json
 ├── api/                        # Azure Functions backend
 │   ├── Functions/              # HTTP trigger functions
-│   │   ├── ItemFunctions.cs    # CRUD endpoints for items with SignalR broadcasting
-│   │   └── SignalRFunctions.cs # SignalR negotiate endpoint
-│   ├── Hubs/                   # SignalR hub definitions
-│   │   └── GroceryListHub.cs   # Hub constants and method names
+│   │   ├── ItemFunctions.cs    # CRUD endpoints with Azure SignalR broadcasting
+│   │   └── SignalRFunctions.cs # SignalR negotiation endpoint
 │   ├── Models/                 # Data models
 │   │   └── GroceryItem.cs      # Item model and DTOs
 │   ├── Repositories/           # Data access layer
 │   │   ├── IItemRepository.cs       # Repository interface
 │   │   └── CosmosDbItemRepository.cs # Cosmos DB implementation
+│   ├── SignalRConstants.cs     # SignalR hub name and method constants
 │   ├── Program.cs              # Functions host configuration
 │   ├── host.json               # Functions runtime config
 │   ├── local.settings.json.example # Settings template
@@ -188,9 +187,11 @@ All endpoints are prefixed with `/api`:
   - Emulator connection string: Well-known key for local development
 
 ### Real-time Updates
-- **Azure SignalR Service**: Pushes updates to all connected clients in real-time
+- **Azure SignalR Service**: Managed Azure resource that pushes updates to all connected clients in real-time
+  - No custom hub implementation needed in Functions app
+  - Functions use output bindings to broadcast messages to the managed service
 - **Hub name**: "grocerylist"
-- **Hub methods**: 
+- **Hub methods** (client-side event handlers): 
   - `itemCreated`: Broadcasts newly created items
   - `itemUpdated`: Broadcasts item updates (e.g., done status changes)
   - `itemDeleted`: Broadcasts item deletions
@@ -199,7 +200,7 @@ All endpoints are prefixed with `/api`:
   - Graceful degradation (app works without SignalR)
   - Connection state tracking
   - Prevents duplicate updates from own actions
-- **Broadcasting**: All CRUD operations automatically broadcast to connected clients
+- **Broadcasting**: All CRUD operations automatically broadcast to connected clients via SignalR output bindings
 
 ## Local Development Workflow
 
