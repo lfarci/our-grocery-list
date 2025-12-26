@@ -47,9 +47,15 @@ public class CosmosDbItemRepository : IItemRepository
             _logger.LogInformation("Retrieved {Count} items from Cosmos DB", items.Count);
             return items;
         }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            // Database or container doesn't exist yet - return empty list
+            _logger.LogWarning("Database or container not found in Cosmos DB. Returning empty list.");
+            return new List<GroceryItem>();
+        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving items from Cosmos DB");
+            _logger.LogError(ex, "Error retrieving items from Cosmos DB. Check that CosmosDbConnectionString is properly configured.");
             throw;
         }
     }

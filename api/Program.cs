@@ -25,11 +25,19 @@ var cosmosConnectionString = builder.Configuration["CosmosDbConnectionString"];
 var databaseId = builder.Configuration["CosmosDbDatabaseId"] ?? "GroceryListDb";
 var containerId = builder.Configuration["CosmosDbContainerId"] ?? "Items";
 
+// Log warning if connection string is missing but don't fail startup
+// This allows preview deployments to succeed even without Cosmos DB configured
 if (string.IsNullOrWhiteSpace(cosmosConnectionString))
 {
-    throw new InvalidOperationException(
-        "CosmosDbConnectionString is required. " +
-        "Please configure it in local.settings.json or Azure application settings.");
+    var startupLogger = LoggerFactory.Create(b => b.AddConsole()).CreateLogger<Program>();
+    startupLogger.LogWarning(
+        "CosmosDbConnectionString is not configured. " +
+        "The Functions app will start but API calls will fail. " +
+        "Please configure CosmosDbConnectionString in Azure application settings.");
+    
+    // Use a placeholder connection string to allow app startup
+    // API calls will fail with proper error messages
+    cosmosConnectionString = "AccountEndpoint=https://placeholder.documents.azure.com:443/;AccountKey=placeholder";
 }
 
 builder.Services.AddSingleton<CosmosClient>(sp =>
