@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GroceryItem, CreateItemRequest } from '../types';
 import * as api from '../api';
+import { useSignalR } from './useSignalR';
 
 /**
  * Custom hook for managing grocery list state and operations
+ * Integrates with SignalR for real-time updates across clients
  */
 export function useGroceryList() {
   const [items, setItems] = useState<GroceryItem[]>([]);
@@ -32,6 +34,7 @@ export function useGroceryList() {
   const addItem = useCallback(async (item: CreateItemRequest) => {
     try {
       const newItem = await api.createItem(item);
+      // Optimistically add the item (will be confirmed by SignalR broadcast)
       setItems(prev => [...prev, newItem]);
       return newItem;
     } catch (err) {
@@ -43,6 +46,7 @@ export function useGroceryList() {
   const toggleDone = useCallback(async (id: string, isDone: boolean) => {
     try {
       const updated = await api.updateItem(id, { isDone });
+      // Optimistically update the item (will be confirmed by SignalR broadcast)
       setItems(prev => prev.map(item => item.id === id ? updated : item));
     } catch (err) {
       console.error('Error updating item:', err);
@@ -53,12 +57,36 @@ export function useGroceryList() {
   const removeItem = useCallback(async (id: string) => {
     try {
       await api.deleteItem(id);
+      // Optimistically remove the item (will be confirmed by SignalR broadcast)
       setItems(prev => prev.filter(item => item.id !== id));
     } catch (err) {
       console.error('Error deleting item:', err);
       throw err;
     }
   }, []);
+
+  // Set up SignalR handlers for real-time updates from other clients
+  useSignalR({
+    onItemCreated: useCallback((item: GroceryItem) => {
+      // Add item if it doesn't already exist (prevent duplicates from our own actions)
+      setItems(prev => {
+        if (prev.some(i => i.id === item.id)) {
+          return prev;
+        }
+        return [...prev, item];
+      });
+    }, []),
+
+    onItemUpdated: useCallback((item: GroceryItem) => {
+      // Update item with latest data from server
+      setItems(prev => prev.map(i => i.id === item.id ? item : i));
+    }, []),
+
+    onItemDeleted: useCallback((id: string) => {
+      // Remove item from list
+      setItems(prev => prev.filter(i => i.id !== id));
+    }, []),
+  });
 
   // Sort items: undone first, then done, oldest first within each group
   const sortedItems = [...items].sort((a, b) => {
