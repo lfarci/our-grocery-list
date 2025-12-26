@@ -70,6 +70,12 @@ test.describe('PWA Configuration', () => {
       await expect(appleMeta).toHaveCount(1);
       const content = await appleMeta.getAttribute('content');
       expect(content).toBe('yes');
+      
+      // Verify modern mobile-web-app-capable meta tag is present
+      const mobileMeta = page.locator('meta[name="mobile-web-app-capable"]');
+      await expect(mobileMeta).toHaveCount(1);
+      const mobileContent = await mobileMeta.getAttribute('content');
+      expect(mobileContent).toBe('yes');
     });
   });
 
