@@ -15,6 +15,7 @@ export function useGroceryList() {
   // Load items on mount
   useEffect(() => {
     loadItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadItems = useCallback(async () => {

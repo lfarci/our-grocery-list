@@ -46,8 +46,12 @@ export function useSignalR(handlers: SignalRHandlers) {
       setError(null);
 
       // Create connection
+      // Use VITE_API_BASE_URL for the SignalR endpoint to support different deployment scenarios
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+      const negotiateUrl = `${apiBaseUrl}/negotiate`;
+      
       const connection = new signalR.HubConnectionBuilder()
-        .withUrl('/api/negotiate', {
+        .withUrl(negotiateUrl, {
           skipNegotiation: false,
         })
         .withAutomaticReconnect({
@@ -129,7 +133,8 @@ export function useSignalR(handlers: SignalRHandlers) {
     return () => {
       disconnect();
     };
-  }, [connect, disconnect]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     connectionState,
