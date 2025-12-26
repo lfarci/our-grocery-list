@@ -18,6 +18,16 @@ export function GroceryList() {
       return;
     }
 
+    if (name.trim().length > 50) {
+      setFormError('Item name must be 50 characters or less');
+      return;
+    }
+
+    if (notes.trim().length > 50) {
+      setFormError('Notes must be 50 characters or less');
+      return;
+    }
+
     try {
       await addItem({ name: name.trim(), notes: notes.trim() || undefined });
       setName('');
