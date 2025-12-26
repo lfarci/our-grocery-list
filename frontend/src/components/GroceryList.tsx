@@ -4,6 +4,9 @@ import { ErrorMessage } from './ErrorMessage';
 import { AddItemForm } from './AddItemForm';
 import { GroceryItemsList } from './GroceryItemsList';
 
+const MAX_NAME_LENGTH = 50;
+const MAX_NOTES_LENGTH = 50;
+
 export function GroceryList() {
   const { items, loading, error, loadItems, addItem, toggleDone, removeItem } = useGroceryList();
   const [name, setName] = useState('');
@@ -15,6 +18,16 @@ export function GroceryList() {
     
     if (!name.trim()) {
       setFormError('Please enter an item name');
+      return;
+    }
+
+    if (name.trim().length > MAX_NAME_LENGTH) {
+      setFormError(`Item name must be ${MAX_NAME_LENGTH} characters or less`);
+      return;
+    }
+
+    if (notes.trim().length > MAX_NOTES_LENGTH) {
+      setFormError(`Notes must be ${MAX_NOTES_LENGTH} characters or less`);
       return;
     }
 
