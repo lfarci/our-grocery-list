@@ -65,7 +65,9 @@ For preview environment configuration using federated credentials (OIDC), you ne
 3. **AZURE_SUBSCRIPTION_ID**: Your Azure subscription ID
    - Found in Azure Portal → Subscriptions
 
-**Note**: The Static Web App name is automatically extracted from the deployment URL, so you don't need to configure it as a secret.
+4. **AZURE_STATIC_WEB_APP_NAME**: The name of your Azure Static Web App resource
+   - Value: `stapp-app-prd-bc` (or your resource name)
+   - This is used to configure environment variables for preview deployments
 
 **Setting up federated credentials:**
 
@@ -175,8 +177,7 @@ The workflow automatically sets environment variables for preview environments a
 - `AZURE_CLIENT_ID`: Application (client) ID from Azure AD app registration
 - `AZURE_TENANT_ID`: Azure AD tenant ID
 - `AZURE_SUBSCRIPTION_ID`: Azure subscription ID
-
-**Note**: The Static Web App name is automatically extracted from the deployment URL.
+- `AZURE_STATIC_WEB_APP_NAME`: Name of the Azure Static Web App resource (e.g., `stapp-app-prd-bc`)
 
 **Setting up Federated Credentials**:
 
@@ -220,6 +221,7 @@ The workflow uses OpenID Connect (OIDC) for secure, token-based authentication w
    - `AZURE_CLIENT_ID`: The appId from step 1
    - `AZURE_TENANT_ID`: Your tenant ID
    - `AZURE_SUBSCRIPTION_ID`: Your subscription ID
+   - `AZURE_STATIC_WEB_APP_NAME`: `stapp-app-prd-bc`
 
 **Benefits of Federated Credentials**:
 - No client secrets to manage or rotate
