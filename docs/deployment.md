@@ -54,15 +54,56 @@ Alternatively, you can find it in the Azure Portal:
 
 #### Additional Required Secrets
 
-For preview environment configuration, you also need:
+For preview environment configuration using federated credentials (OIDC), you need:
 
-1. **AZURE_CREDENTIALS**: Service principal credentials for Azure CLI
-   - Create using: `az ad sp create-for-rbac --name "github-actions-our-grocery-list" --role contributor --scopes /subscriptions/{subscription-id}/resourceGroups/rg-app-prd-bc --sdk-auth`
-   - Add the entire JSON output as a repository secret
+1. **AZURE_CLIENT_ID**: The application (client) ID of your Azure AD app registration
+   - Found in Azure Portal → Azure AD → App registrations → Your app → Overview
+   
+2. **AZURE_TENANT_ID**: Your Azure AD tenant ID
+   - Found in Azure Portal → Azure AD → Overview
+   
+3. **AZURE_SUBSCRIPTION_ID**: Your Azure subscription ID
+   - Found in Azure Portal → Subscriptions
 
-2. **AZURE_STATIC_WEB_APP_NAME**: The name of your Azure Static Web App resource
+4. **AZURE_STATIC_WEB_APP_NAME**: The name of your Azure Static Web App resource
    - Value: `stapp-app-prd-bc` (or your resource name)
    - This is used to configure environment variables for preview deployments
+
+**Setting up federated credentials:**
+
+1. Create or use an existing app registration in Azure AD:
+   ```bash
+   az ad app create --display-name "github-actions-our-grocery-list"
+   ```
+
+2. Create a service principal for the app:
+   ```bash
+   az ad sp create --id <APP_ID>
+   ```
+
+3. Assign the Contributor role to the service principal:
+   ```bash
+   az role assignment create \
+     --role contributor \
+     --subscription <SUBSCRIPTION_ID> \
+     --assignee-object-id <SERVICE_PRINCIPAL_OBJECT_ID> \
+     --assignee-principal-type ServicePrincipal \
+     --scope /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/rg-app-prd-bc
+   ```
+
+4. Add a federated credential for GitHub Actions:
+   ```bash
+   az ad app federated-credential create \
+     --id <APP_ID> \
+     --parameters '{
+       "name": "github-actions-federated-credential",
+       "issuer": "https://token.actions.githubusercontent.com",
+       "subject": "repo:lfarci/our-grocery-list:pull_request",
+       "audiences": ["api://AzureADTokenExchange"]
+     }'
+   ```
+
+For more details, see the [Azure federated credentials setup section](#setting-up-federated-credentials) below.
 
 ### 2. Workflow Configuration
 
@@ -131,22 +172,63 @@ Preview environments are automatically configured with different settings from p
   - Environment name format: May be `pull/<PR_NUMBER>` or just `<PR_NUMBER>` (the workflow tries both)
   - The workflow lists all environments for debugging and attempts both naming formats
 
-The workflow automatically sets environment variables for preview environments after deployment using Azure CLI. This ensures that preview deployments are isolated from production data.
+The workflow automatically sets environment variables for preview environments after deployment using Azure CLI with federated credentials (OIDC). This ensures that preview deployments are isolated from production data.
 
 **Required Secrets for Preview Environment Configuration**:
-- `AZURE_CREDENTIALS`: Service principal credentials for Azure CLI authentication
+- `AZURE_CLIENT_ID`: Application (client) ID from Azure AD app registration
+- `AZURE_TENANT_ID`: Azure AD tenant ID
+- `AZURE_SUBSCRIPTION_ID`: Azure subscription ID
 - `AZURE_STATIC_WEB_APP_NAME`: Name of the Azure Static Web App resource (e.g., `stapp-app-prd-bc`)
 
-To set up Azure credentials:
-```bash
-# Create a service principal with contributor role
-az ad sp create-for-rbac --name "github-actions-our-grocery-list" \
-  --role contributor \
-  --scopes /subscriptions/{subscription-id}/resourceGroups/rg-app-prd-bc \
-  --sdk-auth
+**Setting up Federated Credentials**:
 
-# Add the output JSON as AZURE_CREDENTIALS secret in GitHub
-```
+The workflow uses OpenID Connect (OIDC) for secure, token-based authentication without storing secrets.
+
+1. Create an app registration in Azure AD:
+   ```bash
+   az ad app create --display-name "github-actions-our-grocery-list"
+   # Note the appId from the output
+   ```
+
+2. Create a service principal:
+   ```bash
+   az ad sp create --id <APP_ID>
+   # Note the objectId from the output
+   ```
+
+3. Assign Contributor role:
+   ```bash
+   az role assignment create \
+     --role contributor \
+     --subscription <SUBSCRIPTION_ID> \
+     --assignee-object-id <SERVICE_PRINCIPAL_OBJECT_ID> \
+     --assignee-principal-type ServicePrincipal \
+     --scope /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/rg-app-prd-bc
+   ```
+
+4. Add federated credential for pull requests:
+   ```bash
+   az ad app federated-credential create \
+     --id <APP_ID> \
+     --parameters '{
+       "name": "github-pr-federated-credential",
+       "issuer": "https://token.actions.githubusercontent.com",
+       "subject": "repo:lfarci/our-grocery-list:pull_request",
+       "audiences": ["api://AzureADTokenExchange"]
+     }'
+   ```
+
+5. Add the IDs as GitHub secrets:
+   - `AZURE_CLIENT_ID`: The appId from step 1
+   - `AZURE_TENANT_ID`: Your tenant ID
+   - `AZURE_SUBSCRIPTION_ID`: Your subscription ID
+   - `AZURE_STATIC_WEB_APP_NAME`: `stapp-app-prd-bc`
+
+**Benefits of Federated Credentials**:
+- No client secrets to manage or rotate
+- Short-lived tokens for enhanced security
+- Automatic token exchange via OIDC
+- Better audit trail
 
 **Verifying Environment Names**:
 To check the actual environment name format used by your Azure Static Web App:
