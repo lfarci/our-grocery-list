@@ -113,7 +113,7 @@ jobs:
 
   test:
     name: Run Tests
-    needs: build_and_deploy
+    needs: [build_and_deploy, configure_preview_environment]
     if: github.event_name == 'pull_request' && github.event.action != 'closed'
     uses: ./.github/workflows/playwright-tests.yml
     with:
