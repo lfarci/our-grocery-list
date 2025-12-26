@@ -65,6 +65,7 @@ Tests are located in the `tests/` directory and validate the core user flows inc
 - **Storage**: Azure Cosmos DB with NoSQL API
   - Cosmos DB Emulator for local development (see [Cosmos DB setup guide](docs/cosmosdb-setup.md))
   - Azure Cosmos DB for production
+- **Real-time Updates**: Azure SignalR Service (optional for local development)
 - **Deployment**: Azure Static Web Apps
 
 ## Project Structure
@@ -76,12 +77,15 @@ our-grocery-list/
 │   │   ├── api/           # API client
 │   │   ├── components/    # React components
 │   │   ├── hooks/         # Custom hooks
+│   │   │   ├── useGroceryList.ts  # Item management with real-time updates
+│   │   │   └── useSignalR.ts      # SignalR connection management
 │   │   ├── types/         # TypeScript types
 │   │   └── storage/       # Local storage utilities
 ├── api/                   # Azure Functions backend
-│   ├── Functions/         # HTTP endpoints
+│   ├── Functions/         # HTTP endpoints with Azure SignalR broadcasting
 │   ├── Models/            # Data models
 │   ├── Repositories/      # Data access layer (repository pattern)
+│   ├── SignalRConstants.cs # SignalR hub name and method constants
 │   └── Program.cs         # App configuration
 └── docs/                  # Documentation
     ├── cosmosdb-setup.md  # Cosmos DB setup guide

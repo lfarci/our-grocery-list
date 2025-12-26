@@ -16,8 +16,8 @@ This document describes the technical architecture of the Our Grocery List appli
 - **Runtime**: Azure Functions v4 (.NET 10 isolated worker)
 - **Language**: C#
 - **HTTP Framework**: ASP.NET Core
-- **Planned Database**: Azure Cosmos DB
-- **Planned Real-time**: Azure SignalR Service
+- **Database**: Azure Cosmos DB with NoSQL API
+- **Real-time Updates**: Azure SignalR Service
 
 ### Infrastructure
 - **Hosting**: Azure Static Web Apps
@@ -38,7 +38,8 @@ our-grocery-list/
 │   │   │   └── GroceryList.tsx # Main list component
 │   │   ├── hooks/              # Custom React hooks
 │   │   │   ├── index.ts
-│   │   │   └── useGroceryList.ts # Hook for item management
+│   │   │   ├── useGroceryList.ts # Hook for item management with SignalR
+│   │   │   └── useSignalR.ts     # Hook for SignalR connection management
 │   │   ├── pwa/                # PWA service worker registration
 │   │   │   ├── index.ts
 │   │   │   └── register.ts
@@ -58,13 +59,14 @@ our-grocery-list/
 │   └── package.json
 ├── api/                        # Azure Functions backend
 │   ├── Functions/              # HTTP trigger functions
-│   │   ├── ItemFunctions.cs    # CRUD endpoints for items
-│   │   └── SignalRFunctions.cs # SignalR negotiate endpoint (planned)
+│   │   ├── ItemFunctions.cs    # CRUD endpoints with Azure SignalR broadcasting
+│   │   └── SignalRFunctions.cs # SignalR negotiation endpoint
 │   ├── Models/                 # Data models
 │   │   └── GroceryItem.cs      # Item model and DTOs
 │   ├── Repositories/           # Data access layer
 │   │   ├── IItemRepository.cs       # Repository interface
 │   │   └── CosmosDbItemRepository.cs # Cosmos DB implementation
+│   ├── SignalRConstants.cs     # SignalR hub name and method constants
 │   ├── Program.cs              # Functions host configuration
 │   ├── host.json               # Functions runtime config
 │   ├── local.settings.json.example # Settings template
@@ -131,10 +133,10 @@ All endpoints are prefixed with `/api`:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | /items | Get all grocery items |
-| POST | /items | Create a new item |
-| PATCH | /items/{id} | Update an item (toggle done status) |
-| DELETE | /items/{id} | Delete an item |
-| GET/POST | /negotiate | SignalR negotiation endpoint |
+| POST | /items | Create a new item (broadcasts via SignalR) |
+| PATCH | /items/{id} | Update an item (broadcasts via SignalR) |
+| DELETE | /items/{id} | Delete an item (broadcasts via SignalR) |
+| POST | /negotiate | SignalR negotiation endpoint |
 
 ## Frontend Architecture
 
@@ -143,9 +145,10 @@ All endpoints are prefixed with `/api`:
 - **GroceryList.tsx**: Displays the list with sorting and actions
 
 ### State Management
-- **useGroceryList**: Custom hook managing item state and API calls
+- **useGroceryList**: Custom hook managing item state, API calls, and SignalR integration
+- **useSignalR**: Custom hook for managing SignalR connection lifecycle
 - Local state with React hooks
-- Future: SignalR integration for real-time updates
+- Real-time updates via Azure SignalR Service
 
 ### Offline Support
 - **IndexedDB**: Local cache for items
@@ -183,10 +186,21 @@ All endpoints are prefixed with `/api`:
   - SDK: Microsoft.Azure.Cosmos (NoSQL API SDK)
   - Emulator connection string: Well-known key for local development
 
-### Real-time Updates (Planned)
-- **Azure SignalR Service**: Push updates to all clients
-- **Hub method**: Broadcast item changes
-- **Client reconnection**: Automatic retry logic
+### Real-time Updates
+- **Azure SignalR Service**: Managed Azure resource that pushes updates to all connected clients in real-time
+  - No custom hub implementation needed in Functions app
+  - Functions use output bindings to broadcast messages to the managed service
+- **Hub name**: "grocerylist"
+- **Hub methods** (client-side event handlers): 
+  - `itemCreated`: Broadcasts newly created items
+  - `itemUpdated`: Broadcasts item updates (e.g., done status changes)
+  - `itemDeleted`: Broadcasts item deletions
+- **Client features**:
+  - Automatic reconnection with exponential backoff
+  - Graceful degradation (app works without SignalR)
+  - Connection state tracking
+  - Prevents duplicate updates from own actions
+- **Broadcasting**: All CRUD operations automatically broadcast to connected clients via SignalR output bindings
 
 ## Local Development Workflow
 
@@ -201,7 +215,8 @@ See [frontend/README.md](../frontend/README.md) for detailed local development i
 
 ### Frontend (.env)
 - `VITE_API_BASE_URL`: API endpoint (default: `/api`)
-- `VITE_SIGNALR_HUB_URL`: SignalR hub URL (default: `/api/negotiate`)
+  - For SWA CLI: `/api`
+  - For separate services: `http://localhost:7071/api`
 
 ### Backend (local.settings.json)
 - `AzureWebJobsStorage`: Storage connection (development)
@@ -211,7 +226,7 @@ See [frontend/README.md](../frontend/README.md) for detailed local development i
   - Production: Azure Cosmos DB connection string
 - `CosmosDbDatabaseId`: Database name (default: "GroceryListDb")
 - `CosmosDbContainerId`: Container name (default: "Items")
-- `AzureSignalRConnectionString`: SignalR connection (future)
+- `AzureSignalRConnectionString`: Azure SignalR Service connection string (optional for local development)
 
 For detailed Cosmos DB setup including the emulator, see [cosmosdb-setup.md](cosmosdb-setup.md).
 
@@ -240,13 +255,12 @@ npm run build
 
 ## Future Enhancements
 
-1. **Database Integration**: Connect to Cosmos DB
-2. **Real-time Updates**: Implement SignalR broadcasting
-3. **Authentication**: Add Azure AD B2C (if needed)
-4. **Monitoring**: Application Insights integration
-5. **Testing**: Unit tests, integration tests, E2E tests
-6. **CI/CD**: GitHub Actions workflows
-7. **Infrastructure**: Bicep/Terraform templates
+1. **Authentication**: Add Azure AD B2C (if needed for multi-user support)
+2. **Monitoring**: Application Insights integration for telemetry and diagnostics
+3. **Testing**: Comprehensive unit tests, integration tests, and E2E test coverage
+4. **CI/CD**: Enhanced GitHub Actions workflows with automated testing
+5. **Infrastructure as Code**: Bicep/Terraform templates for deployment automation
+6. **Performance**: Caching strategies and optimization
 
 ## Development Guidelines
 

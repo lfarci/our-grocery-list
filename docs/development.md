@@ -166,8 +166,6 @@ VITE_API_BASE_URL=/api
 
 ### Backend Configuration
 
-### Backend Configuration
-
 The API requires `api/local.settings.json` for local configuration.
 
 **Create the file from the example:**
@@ -176,14 +174,18 @@ The API requires `api/local.settings.json` for local configuration.
 cp api/local.settings.json.example api/local.settings.json
 ```
 
-This file configures CORS and is already set up with the correct settings:
+This file configures CORS, Cosmos DB, and SignalR:
 
 ```json
 {
   "IsEncrypted": false,
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated"
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "CosmosDbConnectionString": "YOUR_COSMOS_DB_CONNECTION_STRING_HERE",
+    "CosmosDbDatabaseId": "GroceryListDb",
+    "CosmosDbContainerId": "Items",
+    "AzureSignalRConnectionString": "YOUR_SIGNALR_CONNECTION_STRING_HERE"
   },
   "Host": {
     "CORS": "http://localhost:5173,http://127.0.0.1:5173"
@@ -191,7 +193,49 @@ This file configures CORS and is already set up with the correct settings:
 }
 ```
 
+**Configuration values:**
+
+- **CosmosDbConnectionString**: Connection string for Azure Cosmos DB (see [Cosmos DB setup guide](cosmosdb-setup.md))
+- **CosmosDbDatabaseId**: Database name (default: "GroceryListDb")
+- **CosmosDbContainerId**: Container name (default: "Items")
+- **AzureSignalRConnectionString**: Connection string for Azure SignalR Service (see below)
+
 > **Important:** The `local.settings.json` file is git-ignored and must be created locally. Without it, you'll encounter CORS errors when running services separately.
+
+### SignalR Configuration (Optional for Development)
+
+The application supports real-time updates via Azure SignalR Service. This is **optional for local development** - the app works without SignalR, but changes won't sync automatically across devices.
+
+**To enable SignalR locally:**
+
+1. **Create an Azure SignalR Service** (Free tier available):
+   ```bash
+   az signalr create --name <your-signalr-name> --resource-group <your-rg> --sku Free_F1 --location <region>
+   ```
+
+2. **Get the connection string**:
+   ```bash
+   az signalr key list --name <your-signalr-name> --resource-group <your-rg> --query primaryConnectionString -o tsv
+   ```
+
+3. **Add to `api/local.settings.json`**:
+   ```json
+   {
+     "Values": {
+       "AzureSignalRConnectionString": "Endpoint=https://...;AccessKey=...;Version=1.0;"
+     }
+   }
+   ```
+
+**Without SignalR:**
+- The app will function normally with REST API calls
+- Changes will appear after manual refresh or when other operations trigger a reload
+- Console will show warnings about SignalR connection failures (safe to ignore)
+
+**With SignalR:**
+- Real-time updates across all connected clients
+- Changes instantly appear without page refresh
+- Supports multiple devices/tabs simultaneously
 
 ## Available Scripts
 
