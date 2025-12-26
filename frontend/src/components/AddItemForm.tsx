@@ -15,7 +15,7 @@ export function AddItemForm({
   error, 
   onNameChange, 
   onNotesChange, 
-  onSubmit 
+  onSubmit
 }: AddItemFormProps) {
   return (
     <form onSubmit={onSubmit} className="mb-6 bg-white p-4 rounded-lg shadow">
