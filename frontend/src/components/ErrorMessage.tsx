@@ -9,7 +9,7 @@ export function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
       <p className="text-red-800">{message}</p>
       <button
         onClick={onRetry}
-        className="mt-2 text-red-600 hover:text-red-800 underline"
+        className="mt-2 text-red-600 hover:text-red-800 underline cursor-pointer"
       >
         Retry
       </button>
