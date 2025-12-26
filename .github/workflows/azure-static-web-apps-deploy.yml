@@ -24,6 +24,7 @@ jobs:
       name: production
     outputs:
       deployment_url: ${{ steps.deploy.outputs.static_web_app_url }}
+      app_name: ${{ steps.extract_app_name.outputs.app_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -65,6 +66,21 @@ jobs:
           echo "Deployment URL: ${{ steps.deploy.outputs.static_web_app_url }}"
           echo "::notice title=Deployment URL::${{ steps.deploy.outputs.static_web_app_url }}"
 
+      - name: Extract App Name from URL
+        id: extract_app_name
+        run: |
+          # Extract app name from the deployment URL
+          # URL format: https://<app-name>-<random-string>.<region>.azurestaticapps.net
+          DEPLOYMENT_URL="${{ steps.deploy.outputs.static_web_app_url }}"
+          # Remove https:// prefix and extract hostname
+          HOSTNAME=$(echo "$DEPLOYMENT_URL" | sed 's|https://||' | cut -d'/' -f1)
+          # Extract the first part before the first dash (app name)
+          # For preview environments: app-name-<number>.<region>.azurestaticapps.net
+          # We need just "app-name"
+          APP_NAME=$(echo "$HOSTNAME" | cut -d'-' -f1)
+          echo "app_name=${APP_NAME}" >> $GITHUB_OUTPUT
+          echo "Extracted app name: ${APP_NAME}"
+
   configure_preview_environment:
     name: Configure Preview Environment
     needs: build_and_deploy
@@ -83,9 +99,10 @@ jobs:
           # Set CosmosDbDatabaseId to "Preview" for pull request preview environments
           # Azure Static Web Apps uses the PR number as the environment name
           PR_NUMBER="${{ github.event.pull_request.number }}"
-          APP_NAME="${{ secrets.AZURE_STATIC_WEB_APP_NAME }}"
+          APP_NAME="${{ needs.build_and_deploy.outputs.app_name }}"
           
           echo "Configuring environment for PR #${PR_NUMBER}..."
+          echo "Using app name: ${APP_NAME}"
           
           az staticwebapp appsettings set \
             --name "${APP_NAME}" \
