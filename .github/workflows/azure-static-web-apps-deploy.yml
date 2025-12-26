@@ -73,39 +73,22 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: List Preview Environments
-        if: github.event_name == 'pull_request'
-        run: |
-          echo "Listing all environments to identify preview environment name format..."
-          az staticwebapp environment list --name ${{ secrets.AZURE_STATIC_WEB_APP_NAME }} --output table
-
       - name: Configure Preview Environment Variables
         if: github.event_name == 'pull_request'
         run: |
           # Set CosmosDbDatabaseId to "Preview" for pull request preview environments
-          # Note: Environment name format may be either "pull/<PR_NUMBER>" or just "<PR_NUMBER>"
-          # Try the "pull/<PR_NUMBER>" format first
+          # Azure Static Web Apps uses the PR number as the environment name
           PR_NUMBER="${{ github.event.pull_request.number }}"
           APP_NAME="${{ secrets.AZURE_STATIC_WEB_APP_NAME }}"
           
-          echo "Attempting to configure environment for PR #${PR_NUMBER}..."
+          echo "Configuring environment for PR #${PR_NUMBER}..."
           
-          # Try pull/<PR_NUMBER> format
-          if az staticwebapp appsettings set \
-            --name "${APP_NAME}" \
-            --environment-name "pull/${PR_NUMBER}" \
-            --setting-names CosmosDbDatabaseId=Preview 2>/dev/null; then
-            echo "::notice title=Preview Environment Configuration::Set CosmosDbDatabaseId=Preview for environment pull/${PR_NUMBER}"
-          # If that fails, try just the PR number
-          elif az staticwebapp appsettings set \
+          az staticwebapp appsettings set \
             --name "${APP_NAME}" \
             --environment-name "${PR_NUMBER}" \
-            --setting-names CosmosDbDatabaseId=Preview 2>/dev/null; then
-            echo "::notice title=Preview Environment Configuration::Set CosmosDbDatabaseId=Preview for environment ${PR_NUMBER}"
-          else
-            echo "::error title=Configuration Failed::Could not set environment variable. Check environment name format in the 'List Preview Environments' step above."
-            exit 1
-          fi
+            --setting-names CosmosDbDatabaseId=Preview
+          
+          echo "::notice title=Preview Environment Configuration::Set CosmosDbDatabaseId=Preview for environment ${PR_NUMBER}"
 
   test:
     name: Run Tests

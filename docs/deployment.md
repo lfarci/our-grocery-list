@@ -169,8 +169,7 @@ Preview environments are automatically configured with different settings from p
 - **CosmosDbDatabaseId**: Set to `Preview` (production uses `Production` or `GroceryListDb`)
   - This ensures preview deployments use a separate Cosmos DB database
   - Configured automatically by the deployment workflow
-  - Environment name format: May be `pull/<PR_NUMBER>` or just `<PR_NUMBER>` (the workflow tries both)
-  - The workflow lists all environments for debugging and attempts both naming formats
+  - Environment name: Uses the PR number directly (e.g., `14` for PR #14)
 
 The workflow automatically sets environment variables for preview environments after deployment using Azure CLI with federated credentials (OIDC). This ensures that preview deployments are isolated from production data.
 
@@ -230,11 +229,8 @@ The workflow uses OpenID Connect (OIDC) for secure, token-based authentication w
 - Automatic token exchange via OIDC
 - Better audit trail
 
-**Verifying Environment Names**:
-To check the actual environment name format used by your Azure Static Web App:
-```bash
-az staticwebapp environment list --name stapp-app-prd-bc --resource-group rg-app-prd-bc
-```
+**Environment Names**:
+Preview environments in Azure Static Web Apps use the PR number as the environment name (e.g., PR #14 creates environment `14`).
 
 ### 5. Playwright Tests on Pull Requests
 
