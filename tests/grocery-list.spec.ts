@@ -147,4 +147,356 @@ test.describe('Grocery List Application', () => {
       await expect(page.getByText('Your list is empty. Add something above.')).toBeVisible();
     });
   });
+
+  test('CRUD - Create item with name only', async ({ page }) => {
+    const uniqueItemName = `Apples ${Date.now()}`;
+
+    await test.step('Add item with name only', async () => {
+      const nameInput = page.getByLabel('Item Name *');
+      await nameInput.fill(uniqueItemName);
+
+      const addButton = page.getByRole('button', { name: 'Add Item' });
+      await addButton.click();
+    });
+
+    await test.step('Verify item appears in the list', async () => {
+      await expect(page.getByText(uniqueItemName)).toBeVisible();
+    });
+
+    await test.step('Verify form is cleared after submission', async () => {
+      const nameInput = page.getByLabel('Item Name *');
+      await expect(nameInput).toHaveValue('');
+    });
+  });
+
+  test('CRUD - Create item with name and notes', async ({ page }) => {
+    const uniqueItemName = `Bananas ${Date.now()}`;
+    const itemNotes = '3 bunches, ripe';
+
+    await test.step('Add item with name and notes', async () => {
+      const nameInput = page.getByLabel('Item Name *');
+      await nameInput.fill(uniqueItemName);
+
+      const notesInput = page.getByLabel('Quantity/Notes (optional)');
+      await notesInput.fill(itemNotes);
+
+      const addButton = page.getByRole('button', { name: 'Add Item' });
+      await addButton.click();
+    });
+
+    await test.step('Verify item appears with name and notes', async () => {
+      await expect(page.getByText(uniqueItemName)).toBeVisible();
+      await expect(page.getByText(itemNotes)).toBeVisible();
+    });
+
+    await test.step('Verify form is cleared after submission', async () => {
+      const nameInput = page.getByLabel('Item Name *');
+      const notesInput = page.getByLabel('Quantity/Notes (optional)');
+      await expect(nameInput).toHaveValue('');
+      await expect(notesInput).toHaveValue('');
+    });
+  });
+
+  test('CRUD - Create item with Enter key', async ({ page }) => {
+    const uniqueItemName = `Oranges ${Date.now()}`;
+
+    await test.step('Add item using Enter key in name field', async () => {
+      const nameInput = page.getByLabel('Item Name *');
+      await nameInput.fill(uniqueItemName);
+      await nameInput.press('Enter');
+    });
+
+    await test.step('Verify item appears in the list', async () => {
+      await expect(page.getByText(uniqueItemName)).toBeVisible();
+    });
+  });
+
+  test('CRUD - Update item (toggle done status)', async ({ page }) => {
+    const uniqueItemName = `Bread ${Date.now()}`;
+
+    await test.step('Create a new item', async () => {
+      const nameInput = page.getByLabel('Item Name *');
+      await nameInput.fill(uniqueItemName);
+      await nameInput.press('Enter');
+      await expect(page.getByText(uniqueItemName)).toBeVisible();
+    });
+
+    await test.step('Mark item as done', async () => {
+      const checkbox = page.getByRole('checkbox', { name: new RegExp(`Mark ${uniqueItemName} as done`, 'i') });
+      await checkbox.check();
+      await expect(checkbox).toBeChecked();
+    });
+
+    await test.step('Verify item is visually de-emphasized', async () => {
+      const itemText = page.getByText(uniqueItemName);
+      // Check that the item has line-through styling (indicates done state)
+      await expect(itemText).toHaveClass(/line-through/);
+    });
+
+    await test.step('Mark item as not done', async () => {
+      const checkbox = page.getByRole('checkbox', { name: new RegExp(`Mark ${uniqueItemName} as not done`, 'i') });
+      await checkbox.uncheck();
+      await expect(checkbox).not.toBeChecked();
+    });
+
+    await test.step('Verify item is no longer de-emphasized', async () => {
+      const itemText = page.getByText(uniqueItemName);
+      // Check that the item no longer has line-through styling
+      await expect(itemText).not.toHaveClass(/line-through/);
+    });
+  });
+
+  test('CRUD - Delete item', async ({ page }) => {
+    const uniqueItemName = `Milk ${Date.now()}`;
+
+    await test.step('Create a new item', async () => {
+      const nameInput = page.getByLabel('Item Name *');
+      await nameInput.fill(uniqueItemName);
+      await nameInput.press('Enter');
+      await expect(page.getByText(uniqueItemName)).toBeVisible();
+    });
+
+    await test.step('Delete the item', async () => {
+      const deleteButton = page.getByRole('button', { name: new RegExp(`Delete ${uniqueItemName}`, 'i') });
+      await deleteButton.click();
+    });
+
+    await test.step('Verify item is removed from the list', async () => {
+      await expect(page.getByText(uniqueItemName)).not.toBeVisible();
+    });
+  });
+
+  test('CRUD - Multiple operations on different items', async ({ page }) => {
+    const item1 = `Eggs ${Date.now()}`;
+    const item2 = `Cheese ${Date.now() + 1}`;
+    const item3 = `Yogurt ${Date.now() + 2}`;
+
+    await test.step('Create three items', async () => {
+      const nameInput = page.getByLabel('Item Name *');
+      
+      // Add item 1
+      await nameInput.fill(item1);
+      await nameInput.press('Enter');
+      await expect(page.getByText(item1)).toBeVisible();
+      
+      // Add item 2
+      await nameInput.fill(item2);
+      await nameInput.press('Enter');
+      await expect(page.getByText(item2)).toBeVisible();
+      
+      // Add item 3
+      await nameInput.fill(item3);
+      await nameInput.press('Enter');
+      await expect(page.getByText(item3)).toBeVisible();
+    });
+
+    await test.step('Mark second item as done', async () => {
+      const checkbox = page.getByRole('checkbox', { name: new RegExp(`Mark ${item2} as done`, 'i') });
+      await checkbox.check();
+      await expect(checkbox).toBeChecked();
+    });
+
+    await test.step('Delete first item', async () => {
+      const deleteButton = page.getByRole('button', { name: new RegExp(`Delete ${item1}`, 'i') });
+      await deleteButton.click();
+      await expect(page.getByText(item1)).not.toBeVisible();
+    });
+
+    await test.step('Verify remaining items', async () => {
+      // Item 1 should be deleted
+      await expect(page.getByText(item1)).not.toBeVisible();
+      
+      // Item 2 should still be visible and marked as done
+      await expect(page.getByText(item2)).toBeVisible();
+      const checkbox2 = page.getByRole('checkbox', { name: new RegExp(`Mark ${item2} as not done`, 'i') });
+      await expect(checkbox2).toBeChecked();
+      
+      // Item 3 should still be visible and not done
+      await expect(page.getByText(item3)).toBeVisible();
+      const checkbox3 = page.getByRole('checkbox', { name: new RegExp(`Mark ${item3} as done`, 'i') });
+      await expect(checkbox3).not.toBeChecked();
+    });
+  });
+
+  test('Item decoration - Display item properties correctly', async ({ page }) => {
+    const itemName = `Tomatoes ${Date.now()}`;
+    const itemNotes = '2 lbs, organic';
+
+    await test.step('Create item with name and notes', async () => {
+      const nameInput = page.getByLabel('Item Name *');
+      await nameInput.fill(itemName);
+      
+      const notesInput = page.getByLabel('Quantity/Notes (optional)');
+      await notesInput.fill(itemNotes);
+      
+      await nameInput.press('Enter');
+    });
+
+    await test.step('Verify item has checkbox', async () => {
+      const checkbox = page.getByRole('checkbox', { name: new RegExp(`Mark ${itemName} as done`, 'i') });
+      await expect(checkbox).toBeVisible();
+      await expect(checkbox).not.toBeChecked();
+    });
+
+    await test.step('Verify item displays name prominently', async () => {
+      const itemNameElement = page.getByText(itemName);
+      await expect(itemNameElement).toBeVisible();
+      // Check that name has appropriate styling (font-medium class)
+      await expect(itemNameElement).toHaveClass(/font-medium/);
+    });
+
+    await test.step('Verify item displays notes', async () => {
+      const notesElement = page.getByText(itemNotes);
+      await expect(notesElement).toBeVisible();
+      // Check that notes have smaller text styling
+      await expect(notesElement).toHaveClass(/text-sm/);
+    });
+
+    await test.step('Verify item has delete button', async () => {
+      const deleteButton = page.getByRole('button', { name: new RegExp(`Delete ${itemName}`, 'i') });
+      await expect(deleteButton).toBeVisible();
+    });
+
+    await test.step('Verify done item styling', async () => {
+      const checkbox = page.getByRole('checkbox', { name: new RegExp(`Mark ${itemName} as done`, 'i') });
+      await checkbox.check();
+      
+      // Name should have line-through and muted color
+      const itemNameElement = page.getByText(itemName);
+      await expect(itemNameElement).toHaveClass(/line-through/);
+      await expect(itemNameElement).toHaveClass(/text-gray-500/);
+      
+      // Notes should also be muted
+      const notesElement = page.getByText(itemNotes);
+      await expect(notesElement).toHaveClass(/text-gray-400/);
+    });
+  });
+
+  test('List ordering - Not-done items first, then done items', async ({ page }) => {
+    await test.step('Clear existing items', async () => {
+      await page.waitForLoadState('networkidle');
+      const deleteButtons = page.getByRole('button', { name: /delete/i });
+      const count = await deleteButtons.count();
+      
+      if (count > 0) {
+        for (let i = 0; i < count; i++) {
+          await deleteButtons.first().click();
+          await page.waitForTimeout(200);
+        }
+      }
+    });
+
+    const item1 = `First Item ${Date.now()}`;
+    const item2 = `Second Item ${Date.now() + 1}`;
+    const item3 = `Third Item ${Date.now() + 2}`;
+
+    await test.step('Create three items', async () => {
+      const nameInput = page.getByLabel('Item Name *');
+      
+      await nameInput.fill(item1);
+      await nameInput.press('Enter');
+      await page.waitForTimeout(100);
+      
+      await nameInput.fill(item2);
+      await nameInput.press('Enter');
+      await page.waitForTimeout(100);
+      
+      await nameInput.fill(item3);
+      await nameInput.press('Enter');
+      await page.waitForTimeout(100);
+    });
+
+    await test.step('Mark second item as done', async () => {
+      const checkbox = page.getByRole('checkbox', { name: new RegExp(`Mark ${item2} as done`, 'i') });
+      await checkbox.check();
+      await page.waitForTimeout(300);
+    });
+
+    await test.step('Verify ordering: not-done items first', async () => {
+      // Get all item containers
+      const items = page.locator('.bg-white.p-4.rounded-lg.shadow');
+      
+      // Get text content of each item
+      const itemTexts = await items.allTextContents();
+      
+      // Find indices
+      const index1 = itemTexts.findIndex(text => text.includes(item1));
+      const index2 = itemTexts.findIndex(text => text.includes(item2));
+      const index3 = itemTexts.findIndex(text => text.includes(item3));
+      
+      // item1 and item3 (not done) should come before item2 (done)
+      expect(index1).toBeLessThan(index2);
+      expect(index3).toBeLessThan(index2);
+    });
+
+    await test.step('Mark first item as done', async () => {
+      const checkbox = page.getByRole('checkbox', { name: new RegExp(`Mark ${item1} as done`, 'i') });
+      await checkbox.check();
+      await page.waitForTimeout(300);
+    });
+
+    await test.step('Verify updated ordering', async () => {
+      const items = page.locator('.bg-white.p-4.rounded-lg.shadow');
+      const itemTexts = await items.allTextContents();
+      
+      const index1 = itemTexts.findIndex(text => text.includes(item1));
+      const index2 = itemTexts.findIndex(text => text.includes(item2));
+      const index3 = itemTexts.findIndex(text => text.includes(item3));
+      
+      // Only item3 is not done, so it should be first
+      expect(index3).toBeLessThan(index1);
+      expect(index3).toBeLessThan(index2);
+      
+      // Done items maintain their order (item1 done after item2, so item2 comes first among done)
+      expect(index2).toBeLessThan(index1);
+    });
+  });
+
+  test('List ordering - Oldest items stay on top within each group', async ({ page }) => {
+    await test.step('Clear existing items', async () => {
+      await page.waitForLoadState('networkidle');
+      const deleteButtons = page.getByRole('button', { name: /delete/i });
+      const count = await deleteButtons.count();
+      
+      if (count > 0) {
+        for (let i = 0; i < count; i++) {
+          await deleteButtons.first().click();
+          await page.waitForTimeout(200);
+        }
+      }
+    });
+
+    const item1 = `Oldest ${Date.now()}`;
+    const item2 = `Middle ${Date.now() + 1}`;
+    const item3 = `Newest ${Date.now() + 2}`;
+
+    await test.step('Create three items in sequence', async () => {
+      const nameInput = page.getByLabel('Item Name *');
+      
+      await nameInput.fill(item1);
+      await nameInput.press('Enter');
+      await page.waitForTimeout(100);
+      
+      await nameInput.fill(item2);
+      await nameInput.press('Enter');
+      await page.waitForTimeout(100);
+      
+      await nameInput.fill(item3);
+      await nameInput.press('Enter');
+      await page.waitForTimeout(100);
+    });
+
+    await test.step('Verify items are in creation order (oldest first)', async () => {
+      const items = page.locator('.bg-white.p-4.rounded-lg.shadow');
+      const itemTexts = await items.allTextContents();
+      
+      const index1 = itemTexts.findIndex(text => text.includes(item1));
+      const index2 = itemTexts.findIndex(text => text.includes(item2));
+      const index3 = itemTexts.findIndex(text => text.includes(item3));
+      
+      // Items should be in creation order
+      expect(index1).toBeLessThan(index2);
+      expect(index2).toBeLessThan(index3);
+    });
+  });
 });
