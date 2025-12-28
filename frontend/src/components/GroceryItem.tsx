@@ -9,8 +9,8 @@ interface GroceryItemProps {
 export function GroceryItem({ item, onToggleDone, onDelete }: GroceryItemProps) {
   return (
     <div
-      className={`bg-white p-4 rounded-lg shadow flex items-start gap-3 ${
-        item.isDone ? 'opacity-60' : ''
+      className={`p-4 rounded-lg shadow flex items-start gap-3 ${
+        item.isDone ? 'bg-softmint' : 'bg-cream'
       }`}
     >
       {/* Done Toggle */}
@@ -18,17 +18,17 @@ export function GroceryItem({ item, onToggleDone, onDelete }: GroceryItemProps) 
         type="checkbox"
         checked={item.isDone}
         onChange={() => onToggleDone(item.id, !item.isDone)}
-        className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+        className="mt-1 h-5 w-5 rounded border-warmsand text-freshgreen focus:ring-softblue cursor-pointer"
         aria-label={`Mark ${item.name} as ${item.isDone ? 'not done' : 'done'}`}
       />
 
       {/* Item Content */}
       <div className="flex-1 min-w-0">
-        <div className={`font-medium break-words ${item.isDone ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+        <div className={`font-medium break-words ${item.isDone ? 'line-through text-softbrowngray' : 'text-warmcharcoal'}`}>
           {item.name}
         </div>
         {item.notes && (
-          <div className={`text-sm mt-1 break-words ${item.isDone ? 'text-gray-400' : 'text-gray-600'}`}>
+          <div className={`text-sm mt-1 break-words ${item.isDone ? 'text-softbrowngray' : 'text-softbrowngray'}`}>
             {item.notes}
           </div>
         )}
@@ -37,7 +37,7 @@ export function GroceryItem({ item, onToggleDone, onDelete }: GroceryItemProps) 
       {/* Delete Button */}
       <button
         onClick={() => onDelete(item.id)}
-        className="text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 rounded p-1 transition-colors cursor-pointer"
+        className="text-mutedcoral hover:text-opacity-80 focus:outline-none focus:ring-2 focus:ring-softblue rounded p-1 transition-colors cursor-pointer"
         aria-label={`Delete ${item.name}`}
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
