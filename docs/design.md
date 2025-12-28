@@ -79,7 +79,7 @@ A warm, friendly design system for Our Grocery List, featuring honey yellow back
 | Buttons | Nunito | SemiBold | text-base |
 | Item names | Nunito | SemiBold | text-base |
 | Item notes | Nunito | Regular | text-sm |
-| Empty state | Baloo 2 | Regular | text-lg |
+| Empty state | Baloo 2 | Bold | text-lg |
 | Error messages | Nunito | SemiBold | text-sm |
 
 ## Tailwind Configuration
@@ -103,8 +103,8 @@ Colors and fonts are defined using the `@theme` directive in `index.css`:
   --color-warmsand: #EADFC8;
   
   /* Fonts */
-  --font-sans: 'Nunito', system-ui, sans-serif;
-  --font-display: 'Baloo 2', system-ui, sans-serif;
+  --font-sans: 'Nunito', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Baloo 2', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 ```
 
