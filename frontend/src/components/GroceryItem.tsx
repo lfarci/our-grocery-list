@@ -24,7 +24,7 @@ export function GroceryItem({ item, onToggleDone, onDelete }: GroceryItemProps) 
 
       {/* Item Content */}
       <div className="flex-1 min-w-0">
-        <div className={`font-medium break-words ${item.isDone ? 'line-through text-softbrowngray' : 'text-warmcharcoal'}`}>
+        <div className={`font-semibold break-words ${item.isDone ? 'line-through text-softbrowngray' : 'text-warmcharcoal'}`}>
           {item.name}
         </div>
         {item.notes && (

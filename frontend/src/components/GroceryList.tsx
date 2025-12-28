@@ -52,7 +52,7 @@ export function GroceryList() {
   return (
     <div className="min-h-screen bg-honey">
       <div className="max-w-2xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-warmcharcoal mb-6 text-center">
+        <h1 className="text-3xl font-bold text-warmcharcoal mb-6 text-center font-display">
           Our Grocery List
         </h1>
 

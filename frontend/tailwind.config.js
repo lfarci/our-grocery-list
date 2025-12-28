@@ -18,6 +18,10 @@ export default {
         softbrowngray: '#6F6254',
         warmsand: '#EADFC8',
       },
+      fontFamily: {
+        sans: ['Nunito', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        display: ['Baloo 2', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+      },
     },
   },
   plugins: [],

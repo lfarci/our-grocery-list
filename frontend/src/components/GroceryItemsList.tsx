@@ -10,7 +10,7 @@ interface GroceryItemsListProps {
 export function GroceryItemsList({ items, onToggleDone, onDelete }: GroceryItemsListProps) {
   if (items.length === 0) {
     return (
-      <div className="text-center py-12 text-softbrowngray">
+      <div className="text-center py-12 text-softbrowngray font-display text-lg">
         Your list is empty. Add something above.
       </div>
     );
