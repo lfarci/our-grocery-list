@@ -14,6 +14,9 @@ test.describe('Item CRUD Operations', () => {
 
       const addButton = page.getByRole('button', { name: 'Add Item' });
       await addButton.click();
+      
+      // Wait for the item to be added
+      await page.waitForTimeout(500);
     });
 
     await test.step('Verify item appears in the list', async () => {
@@ -39,6 +42,9 @@ test.describe('Item CRUD Operations', () => {
 
       const addButton = page.getByRole('button', { name: 'Add Item' });
       await addButton.click();
+      
+      // Wait for the item to be added
+      await page.waitForTimeout(500);
     });
 
     await test.step('Verify item appears with name and notes', async () => {
@@ -61,6 +67,9 @@ test.describe('Item CRUD Operations', () => {
       const nameInput = page.getByLabel('Item Name *');
       await nameInput.fill(uniqueItemName);
       await nameInput.press('Enter');
+      
+      // Wait for the item to be added
+      await page.waitForTimeout(500);
     });
 
     await test.step('Verify item appears in the list', async () => {
@@ -75,12 +84,18 @@ test.describe('Item CRUD Operations', () => {
       const nameInput = page.getByLabel('Item Name *');
       await nameInput.fill(uniqueItemName);
       await nameInput.press('Enter');
+      
+      // Wait for the item to be added
+      await page.waitForTimeout(500);
       await expect(page.getByText(uniqueItemName)).toBeVisible();
     });
 
     await test.step('Mark item as done', async () => {
       const checkbox = page.getByRole('checkbox', { name: new RegExp(`Mark ${uniqueItemName} as done`, 'i') });
       await checkbox.check();
+      
+      // Wait for the update to complete
+      await page.waitForTimeout(300);
       await expect(checkbox).toBeChecked();
     });
 
@@ -93,6 +108,9 @@ test.describe('Item CRUD Operations', () => {
     await test.step('Mark item as not done', async () => {
       const checkbox = page.getByRole('checkbox', { name: new RegExp(`Mark ${uniqueItemName} as not done`, 'i') });
       await checkbox.uncheck();
+      
+      // Wait for the update to complete
+      await page.waitForTimeout(300);
       await expect(checkbox).not.toBeChecked();
     });
 
@@ -110,12 +128,18 @@ test.describe('Item CRUD Operations', () => {
       const nameInput = page.getByLabel('Item Name *');
       await nameInput.fill(uniqueItemName);
       await nameInput.press('Enter');
+      
+      // Wait for the item to be added
+      await page.waitForTimeout(500);
       await expect(page.getByText(uniqueItemName)).toBeVisible();
     });
 
     await test.step('Delete the item', async () => {
       const deleteButton = page.getByRole('button', { name: new RegExp(`Delete ${uniqueItemName}`, 'i') });
       await deleteButton.click();
+      
+      // Wait for the deletion to complete
+      await page.waitForTimeout(300);
     });
 
     await test.step('Verify item is removed from the list', async () => {
@@ -134,28 +158,33 @@ test.describe('Item CRUD Operations', () => {
       // Add item 1
       await nameInput.fill(item1);
       await nameInput.press('Enter');
+      await page.waitForTimeout(300);
       await expect(page.getByText(item1)).toBeVisible();
       
       // Add item 2
       await nameInput.fill(item2);
       await nameInput.press('Enter');
+      await page.waitForTimeout(300);
       await expect(page.getByText(item2)).toBeVisible();
       
       // Add item 3
       await nameInput.fill(item3);
       await nameInput.press('Enter');
+      await page.waitForTimeout(300);
       await expect(page.getByText(item3)).toBeVisible();
     });
 
     await test.step('Mark second item as done', async () => {
       const checkbox = page.getByRole('checkbox', { name: new RegExp(`Mark ${item2} as done`, 'i') });
       await checkbox.check();
+      await page.waitForTimeout(300);
       await expect(checkbox).toBeChecked();
     });
 
     await test.step('Delete first item', async () => {
       const deleteButton = page.getByRole('button', { name: new RegExp(`Delete ${item1}`, 'i') });
       await deleteButton.click();
+      await page.waitForTimeout(300);
       await expect(page.getByText(item1)).not.toBeVisible();
     });
 

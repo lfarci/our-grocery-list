@@ -28,21 +28,21 @@ test.describe('List Ordering', () => {
       
       await nameInput.fill(item1);
       await nameInput.press('Enter');
-      await page.waitForTimeout(100);
+      await page.waitForTimeout(500);
       
       await nameInput.fill(item2);
       await nameInput.press('Enter');
-      await page.waitForTimeout(100);
+      await page.waitForTimeout(500);
       
       await nameInput.fill(item3);
       await nameInput.press('Enter');
-      await page.waitForTimeout(100);
+      await page.waitForTimeout(500);
     });
 
     await test.step('Mark second item as done', async () => {
       const checkbox = page.getByRole('checkbox', { name: new RegExp(`Mark ${item2} as done`, 'i') });
       await checkbox.check();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(500);
     });
 
     await test.step('Verify ordering: not-done items first', async () => {
@@ -65,7 +65,7 @@ test.describe('List Ordering', () => {
     await test.step('Mark first item as done', async () => {
       const checkbox = page.getByRole('checkbox', { name: new RegExp(`Mark ${item1} as done`, 'i') });
       await checkbox.check();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(500);
     });
 
     await test.step('Verify updated ordering', async () => {
@@ -108,15 +108,15 @@ test.describe('List Ordering', () => {
       
       await nameInput.fill(item1);
       await nameInput.press('Enter');
-      await page.waitForTimeout(100);
+      await page.waitForTimeout(500);
       
       await nameInput.fill(item2);
       await nameInput.press('Enter');
-      await page.waitForTimeout(100);
+      await page.waitForTimeout(500);
       
       await nameInput.fill(item3);
       await nameInput.press('Enter');
-      await page.waitForTimeout(100);
+      await page.waitForTimeout(500);
     });
 
     await test.step('Verify items are in creation order (oldest first)', async () => {

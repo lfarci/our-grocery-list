@@ -17,6 +17,9 @@ test.describe('Item Display', () => {
       await notesInput.fill(itemNotes);
       
       await nameInput.press('Enter');
+      
+      // Wait for the item to be added
+      await page.waitForTimeout(500);
     });
 
     await test.step('Verify item has checkbox', async () => {
@@ -47,6 +50,9 @@ test.describe('Item Display', () => {
     await test.step('Verify done item styling', async () => {
       const checkbox = page.getByRole('checkbox', { name: new RegExp(`Mark ${itemName} as done`, 'i') });
       await checkbox.check();
+      
+      // Wait for the update to complete
+      await page.waitForTimeout(300);
       
       // Name should have line-through and muted color
       const itemNameElement = page.getByText(itemName);
