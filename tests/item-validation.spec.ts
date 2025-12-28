@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Grocery List Application - Item Validation', () => {
+test.describe('Item Validation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
   });
