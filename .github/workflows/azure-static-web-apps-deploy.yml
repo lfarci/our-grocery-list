@@ -1,6 +1,11 @@
 name: Azure Static Web Apps - Deploy
 
-run-name: ${{ github.event_name == 'push' && format('Deploy to Production - {0}', github.sha) || (github.event.action == 'closed' && format('Close PR #{0} Preview Environment', github.event.pull_request.number) || format('Deploy PR #{0} Preview Environment', github.event.pull_request.number)) }}
+run-name: >-
+  ${{
+    github.event_name == 'push' && format('Deploy to Production - {0}', github.sha) ||
+    github.event.action == 'closed' && format('Close PR #{0} Preview Environment', github.event.pull_request.number) ||
+    format('Deploy PR #{0} Preview Environment', github.event.pull_request.number)
+  }}
 
 on:
   push:
