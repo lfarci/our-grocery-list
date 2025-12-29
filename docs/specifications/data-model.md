@@ -1,12 +1,13 @@
 # Data Model (Minimal)
 
 ```ts
+type ItemState = 'active' | 'checked' | 'archived'
+
 Item {
   id: string
   name: string
   category: string
-  completed: boolean
-  archived: boolean
+  state: ItemState
   createdAt: Date
 }
 ```
