@@ -15,5 +15,6 @@ This project is a simple shared grocery list web app with one global list.
 ## How to use these instructions
 
 - Treat [docs/requirements.md](../docs/requirements.md) as the source of truth; align suggestions and code to it.
+- For behavioral guidance and state model, refer to [docs/behavior.md](../docs/behavior.md) which defines the expected app behavior, gestures, and state transitions.
 - When uncertain, pick the simplest behavior that satisfies the requirements; avoid inventing features (auth, multiple lists, categories, text editing).
 - Keep UI and copy concise and accessible; prefer clear, obvious interactions over complexity.

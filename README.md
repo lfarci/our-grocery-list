@@ -110,6 +110,7 @@ The app is deployed to Azure Static Web Apps (`stapp-app-prd-bc`) with automatic
 
 - [docs/development.md](docs/development.md) — complete development setup guide.
 - [docs/requirements.md](docs/requirements.md) — detailed Version 1 functional requirements.
+- [docs/behavior.md](docs/behavior.md) — behavioral guide for expected app behavior and state model.
 - [docs/architecture.md](docs/architecture.md) — technical architecture overview.
 - [docs/deployment.md](docs/deployment.md) — deployment setup and configuration guide.
 - [docs/cosmosdb-setup.md](docs/cosmosdb-setup.md) — Cosmos DB setup and configuration guide.
