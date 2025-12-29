@@ -40,6 +40,10 @@ export function GroceryList() {
   const handleNameChange = useCallback((value: string) => {
     setName(value);
     setFormError('');
+    // Clear suggestions when user clears the input or types less than 2 characters
+    if (value.trim().length < 2) {
+      setSuggestions([]);
+    }
   }, []);
 
   const handleSelectSuggestion = useCallback(async (item: GroceryItem) => {

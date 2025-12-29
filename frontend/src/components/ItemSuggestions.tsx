@@ -19,7 +19,10 @@ export function ItemSuggestions({
 
   const activeSuggestions = suggestions.filter(item => item.state === 'active');
   const archivedSuggestions = suggestions.filter(item => item.state === 'archived');
-  const hasExactMatch = suggestions.some(
+  const hasExactActiveMatch = activeSuggestions.some(
+    item => item.name.toLowerCase() === searchQuery.toLowerCase()
+  );
+  const hasExactArchivedMatch = archivedSuggestions.some(
     item => item.name.toLowerCase() === searchQuery.toLowerCase()
   );
 
@@ -75,7 +78,7 @@ export function ItemSuggestions({
         </div>
       )}
 
-      {searchQuery && (!hasExactMatch || activeSuggestions.length > 0) && (
+      {searchQuery && !hasExactArchivedMatch && (
         <div className="py-1 border-t border-warmsand">
           <button
             onClick={onAddNew}
@@ -89,7 +92,11 @@ export function ItemSuggestions({
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span>Add "{searchQuery}" as new item</span>
+            <span>
+              {hasExactActiveMatch 
+                ? `Add another "${searchQuery}"`
+                : `Add "${searchQuery}" as new item`}
+            </span>
           </button>
         </div>
       )}
