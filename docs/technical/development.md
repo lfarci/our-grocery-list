@@ -335,7 +335,7 @@ All endpoints are prefixed with `/api`:
 |--------|----------|-------------|
 | GET | `/api/items` | Get all grocery items |
 | POST | `/api/items` | Create a new item |
-| PATCH | `/api/items/{id}` | Update an item (toggle done status) |
+| PATCH | `/api/items/{id}` | Update an item state |
 | DELETE | `/api/items/{id}` | Delete an item |
 
 ## Data Model
@@ -347,7 +347,7 @@ interface GroceryItem {
   id: string;           // GUID
   name: string;         // Required
   notes?: string;       // Optional quantity/notes
-  isDone: boolean;      // Completion status
+  state: 'active' | 'checked' | 'archived'; // Item state
   createdAt: string;    // ISO 8601 timestamp
   updatedAt: string;    // ISO 8601 timestamp
 }

@@ -105,7 +105,7 @@ interface GroceryItem {
   id: string;                    // Unique identifier (GUID)
   name: string;                  // Item name (required)
   notes?: string;                // Optional quantity/notes
-  isDone: boolean;               // Completion status
+  state: 'active' | 'checked' | 'archived'; // Item state
   createdAt: string;             // ISO 8601 timestamp
   updatedAt: string;             // ISO 8601 timestamp
 }
@@ -120,7 +120,7 @@ public class GroceryItem
     public string PartitionKey { get; set; }    // Partition key for Cosmos DB (uses listId value)
     public string Name { get; set; }            // Item name (required)
     public string? Notes { get; set; }          // Optional quantity/notes
-    public bool IsDone { get; set; }            // Completion status
+    public string State { get; set; }           // Item state (active, checked, archived)
     public DateTime CreatedAt { get; set; }     // UTC timestamp
     public DateTime UpdatedAt { get; set; }     // UTC timestamp
 }
@@ -135,7 +135,7 @@ public class GroceryItem
 - `notes` (optional): Quantity or notes
 
 **UpdateItemRequest**:
-- `isDone` (optional): Completion status
+- `state` (optional): Item state (`active`, `checked`, `archived`)
 
 ## API Endpoints
 

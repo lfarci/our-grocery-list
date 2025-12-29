@@ -67,7 +67,7 @@ public class ItemFunctions
             Id = Guid.NewGuid().ToString(),
             Name = request.Name,
             Notes = request.Notes,
-            IsDone = false,
+            State = ItemState.Active,
             CreatedAt = now,
             UpdatedAt = now
         };
@@ -93,7 +93,7 @@ public class ItemFunctions
     }
 
     /// <summary>
-    /// PATCH /api/items/{id} - Update a grocery item (toggle done status)
+    /// PATCH /api/items/{id} - Update a grocery item state
     /// Broadcasts the updated item to all connected clients via SignalR
     /// </summary>
     [Function("UpdateItem")]
@@ -111,9 +111,16 @@ public class ItemFunctions
 
         var request = await req.ReadFromJsonAsync<UpdateItemRequest>();
         
-        if (request?.IsDone is not null)
+        if (request?.State is not null)
         {
-            existingItem.IsDone = request.IsDone.Value;
+            if (!ItemState.IsValid(request.State))
+            {
+                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await errorResponse.WriteStringAsync("Invalid item state");
+                return new UpdateItemOutput { HttpResponse = errorResponse };
+            }
+
+            existingItem.State = ItemState.Normalize(request.State);
             existingItem.UpdatedAt = DateTime.UtcNow;
         }
 

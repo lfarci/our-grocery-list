@@ -247,7 +247,7 @@ az functionapp log tail \
   "partitionKey": "global",
   "name": "Milk",
   "notes": "2 gallons",
-  "isDone": false,
+  "state": "active",
   "createdAt": "2025-12-24T09:00:00.000Z",
   "updatedAt": "2025-12-24T09:00:00.000Z"
 }
@@ -258,7 +258,7 @@ az functionapp log tail \
 - `partitionKey`: Fixed value "global" for single shared list
 - `name`: Item name (required)
 - `notes`: Optional quantity/notes
-- `isDone`: Completion status
+- `state`: Item state (`active`, `checked`, `archived`)
 - `createdAt`: UTC timestamp when item was created
 - `updatedAt`: UTC timestamp when item was last modified
 
