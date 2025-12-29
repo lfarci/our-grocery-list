@@ -14,7 +14,22 @@ No special prerequisites are needed for Copilot Workspace - the environment come
 
 When you first open the project in Copilot Workspace:
 
-### 1. Install Dependencies
+### Automated Setup (Recommended)
+
+The project includes a GitHub Actions workflow (`.github/workflows/copilot-setup.yml`) that automatically runs when you create a Copilot Workspace session. This workflow:
+- Installs all dependencies
+- Sets up environment files
+- Builds the project
+- Verifies Playwright installation
+- Runs smoke tests
+
+You can also trigger this workflow manually from the Actions tab.
+
+### Manual Setup
+
+If you prefer manual setup or the workflow hasn't run:
+
+#### 1. Install Dependencies
 
 ```bash
 npm install
@@ -26,7 +41,7 @@ This will:
 - Restore .NET API dependencies
 - **Automatically install Playwright browsers** for testing
 
-### 2. Verify Playwright Installation
+#### 2. Verify Playwright Installation
 
 The `postinstall` script now detects Copilot Workspace and automatically installs Playwright browsers. You can verify the installation:
 
@@ -39,6 +54,24 @@ If browsers were not installed for any reason, you can manually install them:
 ```bash
 npm run playwright:install
 ```
+
+### Using VS Code Tasks
+
+The project includes preconfigured VS Code tasks (`.vscode/tasks.json`) for common operations:
+
+- **Copilot Workspace: Quick Start** - Default task that installs dependencies and sets up environment files
+- **Install Dependencies** - Run `npm install`
+- **Install Playwright Browsers** - Manually install Playwright browsers
+- **Start Frontend Dev Server** - Start the Vite dev server
+- **Start API Server** - Start the Azure Functions API
+- **Run All Tests** - Execute all Playwright tests
+- **Run Tests (UI Mode)** - Open Playwright's interactive test UI
+- **Build Frontend** - Build the React application
+- **Build API** - Build the .NET API
+
+Access these tasks via:
+- Command Palette: `Ctrl+Shift+P` → "Tasks: Run Task"
+- Or use the default build task: `Ctrl+Shift+B`
 
 ## Running the Application
 
@@ -164,12 +197,27 @@ The `postinstall` script detects these and installs Playwright browsers appropri
 | Environment | Your machine | Cloud-based container |
 | Port Access | Direct access | Through forwarded ports |
 
+## Recommended VS Code Extensions
+
+The project includes recommended VS Code extensions (`.vscode/extensions.json`) that enhance the development experience:
+
+- **Playwright Test for VSCode** - Run and debug Playwright tests
+- **ESLint** - JavaScript/TypeScript linting
+- **Prettier** - Code formatting
+- **Tailwind CSS IntelliSense** - CSS class autocomplete
+- **C# DevKit** - C# language support
+- **Azure Functions** - Azure Functions development tools
+- **GitHub Copilot** - AI-powered code suggestions
+
+VS Code will prompt you to install these extensions when you open the workspace.
+
 ## Tips for Effective Testing
 
 1. **Use UI Mode for Debugging**: `npm run test:ui` provides an interactive interface to debug tests
 2. **Check Traces**: Failed tests automatically capture traces - use `npm run test:report` to view them
 3. **Run Specific Tests**: Use `npx playwright test tests/grocery-list.spec.ts` to run a single test file
 4. **Watch Mode**: Run tests in watch mode with `npx playwright test --ui` for rapid iteration
+5. **Use VS Code Tasks**: Press `Ctrl+Shift+B` for quick access to build and test tasks
 
 ## Next Steps
 
@@ -181,4 +229,5 @@ The `postinstall` script detects these and installs Playwright browsers appropri
 
 - [Playwright Documentation](https://playwright.dev/)
 - [GitHub Copilot Workspace Documentation](https://githubnext.com/projects/copilot-workspace)
+- [5 Tips for Using GitHub Copilot Workspace](https://github.blog/ai-and-ml/github-copilot/5-tips-and-tricks-when-using-github-copilot-workspace/)
 - [Azure Static Web Apps Documentation](https://learn.microsoft.com/azure/static-web-apps/)

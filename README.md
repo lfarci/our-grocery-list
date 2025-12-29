@@ -58,7 +58,7 @@ Tests are located in the `tests/` directory and validate the core user flows inc
 - Validation prevents empty item names
 - Empty state message displays when list is empty
 
-📖 **Testing in Copilot Workspace**: See [docs/copilot-workspace.md](docs/copilot-workspace.md) for setup instructions.
+📖 **Testing in Copilot Workspace**: See [docs/copilot-workspace.md](docs/copilot-workspace.md) for setup instructions including automated setup workflow and VS Code tasks.
 
 ## Tech Stack
 
