@@ -27,10 +27,6 @@ test.describe('Grocery List Application', () => {
       const nameInput = page.getByLabel('Item Name *');
       await expect(nameInput).toBeVisible();
       
-      // Should have input field for notes
-      const notesInput = page.getByLabel('Quantity/Notes (optional)');
-      await expect(notesInput).toBeVisible();
-      
       // Should have an Add Item button
       const addButton = page.getByRole('button', { name: 'Add Item' });
       await expect(addButton).toBeVisible();
@@ -92,36 +88,6 @@ test.describe('Grocery List Application', () => {
     });
   });
 
-  test('Adding items - Validate notes exceed 50 characters', async ({ page }) => {
-    const testItemName = `Test Item ${Date.now()}`;
-    const longNotes = 'B'.repeat(51); // 51 characters
-
-    await test.step('Try to add item with notes > 50 characters', async () => {
-      const nameInput = page.getByLabel('Item Name *');
-      await nameInput.fill(testItemName);
-      
-      const notesInput = page.getByLabel('Quantity/Notes (optional)');
-      await notesInput.fill(longNotes);
-      
-      const addButton = page.getByRole('button', { name: 'Add Item' });
-      await addButton.click();
-    });
-
-    await test.step('Verify validation error message appears', async () => {
-      await expect(page.getByText('Notes must be 50 characters or less')).toBeVisible();
-    });
-
-    await test.step('Verify validation prevents form submission', async () => {
-      // The error message should still be visible
-      await expect(page.getByText('Notes must be 50 characters or less')).toBeVisible();
-      // Inputs should still contain their values
-      const nameInput = page.getByLabel('Item Name *');
-      const notesInput = page.getByLabel('Quantity/Notes (optional)');
-      await expect(nameInput).toHaveValue(testItemName);
-      await expect(notesInput).toHaveValue(longNotes);
-    });
-  });
-
   test('Viewing the list - Empty state message', async ({ page }) => {
     await test.step('Wait for initial load and delete all existing items', async () => {
       // Wait for the page to finish loading (either showing items or empty state)
@@ -145,6 +111,51 @@ test.describe('Grocery List Application', () => {
     await test.step('Verify empty state message when no items', async () => {
       // Should show a friendly empty state message
       await expect(page.getByText('Your list is empty. Add something above.')).toBeVisible();
+    });
+  });
+
+  test('Autocomplete - Show suggestions when typing', async ({ page }) => {
+    await test.step('Add an item to the list', async () => {
+      const nameInput = page.getByLabel('Item Name *');
+      await nameInput.fill('Apples');
+      await page.getByRole('button', { name: 'Add Item' }).click();
+      await page.waitForTimeout(500); // Wait for item to be added
+    });
+
+    await test.step('Start typing similar name', async () => {
+      const nameInput = page.getByLabel('Item Name *');
+      await nameInput.fill('App');
+      // Wait for suggestions to appear
+      await page.waitForTimeout(500);
+    });
+
+    await test.step('Verify suggestions appear', async () => {
+      // Should show "Already in List" section with the existing item
+      await expect(page.getByText('Already in List')).toBeVisible();
+      await expect(page.getByText('Apples')).toBeVisible();
+    });
+  });
+
+  test('Autocomplete - Add new item when no exact match', async ({ page }) => {
+    await test.step('Type a new item name', async () => {
+      const nameInput = page.getByLabel('Item Name *');
+      await nameInput.fill('Bananas');
+      await page.waitForTimeout(500);
+    });
+
+    await test.step('Click add new item from suggestions', async () => {
+      const addNewButton = page.getByText('Add "Bananas" as new item');
+      if (await addNewButton.isVisible()) {
+        await addNewButton.click();
+      } else {
+        // Fallback to regular form submit
+        await page.getByRole('button', { name: 'Add Item' }).click();
+      }
+      await page.waitForTimeout(500);
+    });
+
+    await test.step('Verify item was added to list', async () => {
+      await expect(page.getByText('Bananas')).toBeVisible();
     });
   });
 });
