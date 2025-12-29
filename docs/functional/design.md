@@ -51,42 +51,13 @@ A warm, friendly design system for Our Grocery List, featuring honey yellow back
 
 ## Typography
 
-### Font Families
-
-**Nunito** - Body font for all UI elements, forms, and content
-- Weights: Regular (400), SemiBold (600), Bold (700)
-- Class: `font-sans`
-
-**Baloo 2** - Display font for headings and emphasis
-- Weight: Bold (700)
-- Class: `font-display`
-
-### Typography Scale
-
-| Size | Class | Usage |
-|------|-------|-------|
-| 30px | `text-3xl` | Main app title |
-| 18px | `text-lg` | Empty state, subheadings |
-| 16px | `text-base` | Body text, item names |
-| 14px | `text-sm` | Labels, notes, helper text |
-
-### Component Typography
-
-| Component | Font | Weight | Size |
-|-----------|------|--------|------|
-| App title | Baloo 2 | Bold | text-3xl |
-| Form labels | Nunito | SemiBold | text-sm |
-| Buttons | Nunito | SemiBold | text-base |
-| Item names | Nunito | SemiBold | text-base |
-| Item notes | Nunito | Regular | text-sm |
-| Empty state | Baloo 2 | Bold | text-lg |
-| Error messages | Nunito | SemiBold | text-sm |
+Typography rules and font usage live in `typography.md`.
 
 ## Tailwind Configuration
 
 ### Tailwind CSS v4 Setup
 
-Colors and fonts are defined using the `@theme` directive in `index.css`:
+Colors are defined using the `@theme` directive in `index.css`:
 
 ```css
 @theme {
@@ -101,10 +72,6 @@ Colors and fonts are defined using the `@theme` directive in `index.css`:
   --color-warmcharcoal: #3A2E1F;
   --color-softbrowngray: #6F6254;
   --color-warmsand: #EADFC8;
-  
-  /* Fonts */
-  --font-sans: 'Nunito', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Baloo 2', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 ```
 
@@ -123,9 +90,6 @@ Colors and fonts are defined using the `@theme` directive in `index.css`:
 // Buttons and actions
 <button className="bg-softblue text-cream">  {/* Primary button */}
 
-// Typography
-<h1 className="font-display text-3xl">   {/* Display heading */}
-<p className="font-sans font-semibold">  {/* Body text */}
 ```
 
 ## Design Principles

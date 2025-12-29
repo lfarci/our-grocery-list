@@ -32,7 +32,7 @@ cd api && func start
 
 Visit `http://localhost:5173` to see the app.
 
-📖 **Full setup guide**: See [docs/development.md](docs/development.md) for detailed instructions.
+📖 **Full setup guide**: See [docs/technical/development.md](docs/technical/development.md) for detailed instructions.
 
 ## Testing
 
@@ -63,7 +63,7 @@ Tests are located in the `tests/` directory and validate the core user flows inc
 - **Frontend**: React 19 + TypeScript + Tailwind CSS + Vite + PWA
 - **Backend**: .NET 8.0 Azure Functions (isolated worker)
 - **Storage**: Azure Cosmos DB with NoSQL API
-  - Cosmos DB Emulator for local development (see [Cosmos DB setup guide](docs/cosmosdb-setup.md))
+  - Cosmos DB Emulator for local development (see [Cosmos DB setup guide](docs/technical/cosmosdb-setup.md))
   - Azure Cosmos DB for production
 - **Real-time Updates**: Azure SignalR Service (optional for local development)
 - **Deployment**: Azure Static Web Apps
@@ -87,9 +87,10 @@ our-grocery-list/
 │   ├── Repositories/      # Data access layer (repository pattern)
 │   ├── SignalRConstants.cs # SignalR hub name and method constants
 │   └── Program.cs         # App configuration
-└── docs/                  # Documentation
-    ├── cosmosdb-setup.md  # Cosmos DB setup guide
-    └── ...
+└── docs/                       # Documentation
+    ├── functional/             # Functional/product docs
+    ├── technical/              # Technical docs
+    └── README.md               # Docs index
 ```
 
 ## Working on the project
@@ -104,16 +105,15 @@ The app is deployed to Azure Static Web Apps (`stapp-app-prd-bc`) with automatic
 
 🚀 **Live app**: Check the [Actions tab](../../actions) for the deployment URL, or find it in the Azure Portal under the Static Web App resource.
 
-📖 **Deployment guide**: See [docs/deployment.md](docs/deployment.md) for deployment setup and troubleshooting.
+📖 **Deployment guide**: See [docs/technical/deployment.md](docs/technical/deployment.md) for deployment setup and troubleshooting.
 
 ## Reference documents
 
-- [docs/development.md](docs/development.md) — complete development setup guide.
-- [docs/requirements.md](docs/requirements.md) — detailed Version 1 functional requirements.
-- [docs/behavior.md](docs/behavior.md) — behavioral guide for expected app behavior and state model.
-- [docs/architecture.md](docs/architecture.md) — technical architecture overview.
-- [docs/deployment.md](docs/deployment.md) — deployment setup and configuration guide.
-- [docs/cosmosdb-setup.md](docs/cosmosdb-setup.md) — Cosmos DB setup and configuration guide.
+- [docs/technical/development.md](docs/technical/development.md) — complete development setup guide.
+- [docs/functional/specifications.md](docs/functional/specifications.md) — Version 1 requirements and behavior.
+- [docs/technical/architecture.md](docs/technical/architecture.md) — technical architecture overview.
+- [docs/technical/deployment.md](docs/technical/deployment.md) — deployment setup and configuration guide.
+- [docs/technical/cosmosdb-setup.md](docs/technical/cosmosdb-setup.md) — Cosmos DB setup and configuration guide.
 - [.github/copilot-instructions.md](.github/copilot-instructions.md) — guidance for using Copilot effectively on this project.
 
 ## License

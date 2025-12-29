@@ -72,11 +72,16 @@ our-grocery-list/
 │   ├── local.settings.json.example # Settings template
 │   └── api.csproj
 ├── docs/                       # Documentation
-│   ├── architecture.md         # Architecture overview
-│   ├── requirements.md         # Functional requirements
-│   ├── development.md          # Development setup guide
-│   ├── deployment.md           # Deployment guide
-│   └── cosmosdb-setup.md       # Cosmos DB setup guide
+│   ├── functional/             # Functional/product docs
+│   │   ├── specifications.md   # Requirements + behavioral guide
+│   │   ├── design.md           # Design system (colors/layout rules)
+│   │   └── typography.md       # Font system and typography rules
+│   ├── technical/              # Technical docs
+│   │   ├── architecture.md     # Architecture overview
+│   │   ├── development.md      # Development setup guide
+│   │   ├── deployment.md       # Deployment guide
+│   │   └── cosmosdb-setup.md   # Cosmos DB setup guide
+│   └── README.md               # Docs index
 ├── swa-cli.config.json         # Static Web Apps CLI config
 ├── package.json                # Root workspace configuration
 └── README.md
