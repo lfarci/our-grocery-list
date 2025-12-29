@@ -6,15 +6,16 @@ This project is a simple shared grocery list web app with one global list.
 
 - Single shared list for everyone; no accounts, rooms, or multiple lists.
 - One main screen: list title, add form, and vertical list of items; keep flows simple and touch-friendly.
-- Add item: required name, optional quantity/notes; Enter should submit; block empty names with simple validation.
-- Item display and actions: show done toggle, name, and optional notes; items can be marked done/undone or deleted. Text editing after creation is out of scope for Version 1 (delete and re-add instead).
+- Add item: simplified to name-only input with autocomplete suggestions; Enter should submit; block empty names with simple validation.
+- Autocomplete: shows suggestions as user types (2+ characters), including archived items (which can be restored) and existing active items (allowing duplicates).
+- Item display and actions: show done toggle and name; items can be marked done/undone or deleted. Text editing after creation is out of scope for Version 1 (delete and re-add instead).
 - Ordering: not-done items first, done items after; within each group, keep oldest items on top.
 - Multi-device behavior: changes should eventually appear for all users without reload; if changes conflict, last applied change wins and the UI should reflect the stored state.
 - PWA-friendly: installed app should open directly to the list and remain usable on mobile and desktop.
 
 ## How to use these instructions
 
-- Treat [docs/requirements.md](../docs/requirements.md) as the source of truth; align suggestions and code to it.
-- For behavioral guidance and state model, refer to [docs/behavior.md](../docs/behavior.md) which defines the expected app behavior, gestures, and state transitions.
-- When uncertain, pick the simplest behavior that satisfies the requirements; avoid inventing features (auth, multiple lists, categories, text editing).
+- Treat <a>docs/requirements.md</a> as the source of truth; align suggestions and code to it.
+- For behavioral guidance and state model, refer to <a>docs/behavior.md</a> which defines the expected app behavior, gestures, and state transitions.
+- When uncertain, pick the simplest behavior that satisfies the requirements; avoid inventing features (auth, multiple lists, categories).
 - Keep UI and copy concise and accessible; prefer clear, obvious interactions over complexity.

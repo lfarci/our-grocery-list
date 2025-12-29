@@ -2,22 +2,26 @@
 
 ## Adding Items
 
-- Entry via a single "Add Item" button.
-- Name is required; quantity/notes are optional.
-- Pressing Enter in the name field also adds the item.
+- Entry via a single text input field for the item name.
+- Name is required and is the only field needed to add an item.
+- Pressing Enter in the name field submits and adds the item.
 - Empty names are blocked with a simple validation message.
-- Input filters both active and archived items; results update as the user types.
-- Selecting a search result:
-  - Archived item: unarchive and add.
-  - Active item: optionally mark checked or ignore duplicate.
-- Creating a new item: pressing "+" creates a new item.
-- Default category: `Other` (or last-used).
+- As the user types, the input shows autocomplete suggestions from both active and archived items.
+- Suggestions are displayed in two sections:
+  - "Recently Used (Archived)": Shows archived items that match the search query
+  - "Already in List": Shows active items that match the search query
+- Selecting a suggestion:
+  - Archived item: automatically unarchived and restored to the active list.
+  - Active item: shown as already added; user can still add a duplicate by continuing to type and submitting.
+- Creating a new item: user can type a name and submit to add it without any additional details.
+- Autocomplete appears when typing 2 or more characters.
 - Default state: Active.
 
 ## Viewing the List
 
 - Items appear in a vertical list.
-- Each item shows a done checkbox/toggle, item name, and quantity/notes if present.
+- Each item shows a done checkbox/toggle and item name.
+- Notes/quantity details were removed for simplicity.
 - Empty state: friendly message with a primary "Add Item" action.
 - Layout should feel natural on both mobile and desktop.
 
