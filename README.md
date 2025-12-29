@@ -88,14 +88,14 @@ our-grocery-list/
 │   ├── SignalRConstants.cs # SignalR hub name and method constants
 │   └── Program.cs         # App configuration
 └── docs/                       # Documentation
-    ├── functional/             # Functional/product docs
+    ├── specifications/         # Product specifications
     ├── technical/              # Technical docs
     └── README.md               # Docs index
 ```
 
 ## Working on the project
 
-- Treat the requirements as the source of truth for behavior and scope; avoid adding new features without updating the requirements first.
+- Treat the specifications as the source of truth for behavior and scope; avoid adding new features without updating them first.
 - Keep interactions simple and touch-friendly for both mobile and desktop; PWA install should open straight to the list.
 - When in doubt about edge cases, prefer the simplest behavior that still matches the requirements.
 
@@ -110,7 +110,7 @@ The app is deployed to Azure Static Web Apps (`stapp-app-prd-bc`) with automatic
 ## Reference documents
 
 - [docs/technical/development.md](docs/technical/development.md) — complete development setup guide.
-- [docs/functional/specifications.md](docs/functional/specifications.md) — Version 1 requirements and behavior.
+- [docs/specifications/README.md](docs/specifications/README.md) — Version 1 specifications index.
 - [docs/technical/architecture.md](docs/technical/architecture.md) — technical architecture overview.
 - [docs/technical/deployment.md](docs/technical/deployment.md) — deployment setup and configuration guide.
 - [docs/technical/cosmosdb-setup.md](docs/technical/cosmosdb-setup.md) — Cosmos DB setup and configuration guide.

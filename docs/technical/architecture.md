@@ -72,10 +72,16 @@ our-grocery-list/
 │   ├── local.settings.json.example # Settings template
 │   └── api.csproj
 ├── docs/                       # Documentation
-│   ├── functional/             # Functional/product docs
-│   │   ├── specifications.md   # Requirements + behavioral guide
-│   │   ├── design.md           # Design system (colors/layout rules)
-│   │   └── typography.md       # Font system and typography rules
+│   ├── specifications/         # Product specifications
+│   │   ├── overview.md         # Scope, principles, platform notes
+│   │   ├── requirements.md     # Functional requirements
+│   │   ├── behavior.md         # Behavioral model
+│   │   ├── error-handling.md   # Error handling guidance
+│   │   ├── data-model.md       # Minimal data model
+│   │   ├── design/             # Design specs
+│   │   │   ├── color.md        # Color system
+│   │   │   └── typography.md   # Typography system
+│   │   └── README.md           # Specifications index
 │   ├── technical/              # Technical docs
 │   │   ├── architecture.md     # Architecture overview
 │   │   ├── development.md      # Development setup guide

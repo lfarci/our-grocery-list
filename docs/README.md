@@ -2,11 +2,16 @@
 
 Use this directory as the source of truth for project docs. Each file has a focused scope to avoid duplication.
 
-## Functional docs
+## Specifications
 
-- `functional/specifications.md` - Requirements and behavioral guidance
-- `functional/design.md` - Color palette and visual rules
-- `functional/typography.md` - Font system and typographic usage
+- `specifications/README.md` - Specifications index
+- `specifications/overview.md` - Scope, principles, and platform notes
+- `specifications/requirements.md` - Functional requirements
+- `specifications/behavior.md` - Behavioral model
+- `specifications/error-handling.md` - Error handling guidance
+- `specifications/data-model.md` - Minimal data model
+- `specifications/design/color.md` - Color system
+- `specifications/design/typography.md` - Typography system
 
 ## Technical docs
 

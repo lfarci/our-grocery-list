@@ -1,6 +1,6 @@
-# Design System
+# Color System
 
-A warm, friendly design system for Our Grocery List, featuring honey yellow backgrounds, rounded typography, and inviting colors.
+A warm, friendly color system for Our Grocery List, featuring honey yellow backgrounds and inviting accents.
 
 ## Color Palette
 
@@ -34,28 +34,22 @@ A warm, friendly design system for Our Grocery List, featuring honey yellow back
 |-------|-----|-------|
 | **Warm Sand** | `#EADFC8` | Borders, dividers, input outlines |
 
-### Color Usage Rules
+## Color Usage Rules
 
 **DO:**
-- Use Honey Yellow as the main background
-- Use Soft Blue only for primary actions and focus states
-- Use Fresh Green only for success indicators
-- Use Warm Cream for all card surfaces
-- Use no pure white or pure black
+- Use Honey Yellow as the main background.
+- Use Soft Blue only for primary actions and focus states.
+- Use Fresh Green only for success indicators.
+- Use Warm Cream for all card surfaces.
+- Use no pure white or pure black.
 
 **DON'T:**
-- Use yellow for buttons or actionable elements
-- Mix multiple accent colors in the same component
-- Use harsh, saturated colors
-- Use red for errors (use Muted Coral instead)
-
-## Typography
-
-Typography rules and font usage live in `typography.md`.
+- Use yellow for buttons or actionable elements.
+- Mix multiple accent colors in the same component.
+- Use harsh, saturated colors.
+- Use red for errors (use Muted Coral instead).
 
 ## Tailwind Configuration
-
-### Tailwind CSS v4 Setup
 
 Colors are defined using the `@theme` directive in `index.css`:
 
@@ -75,7 +69,7 @@ Colors are defined using the `@theme` directive in `index.css`:
 }
 ```
 
-### Usage Examples
+## Usage Examples
 
 ```jsx
 // Background colors
@@ -89,21 +83,10 @@ Colors are defined using the `@theme` directive in `index.css`:
 
 // Buttons and actions
 <button className="bg-softblue text-cream">  {/* Primary button */}
-
 ```
-
-## Design Principles
-
-1. **Warm & Friendly**: Use rounded shapes, warm colors, and inviting typography
-2. **Mobile-First**: Ensure touch-friendly targets and readable text sizes
-3. **Accessible**: Maintain sufficient color contrast and clear visual hierarchy
-4. **Consistent**: Apply colors and typography consistently across all components
-5. **Simple**: Keep the design clean and uncluttered
 
 ## Accessibility
 
-- All text meets WCAG AA contrast requirements
-- Touch targets are minimum 44×44px
-- Focus states are clearly visible with Soft Blue outlines
-- Fonts are highly legible at all sizes
-- Color is never the only indicator of meaning
+- Ensure text meets WCAG AA contrast requirements against Honey Yellow and Warm Cream.
+- Do not rely on color alone to convey meaning.
+- Use Soft Blue focus rings on interactive elements.
