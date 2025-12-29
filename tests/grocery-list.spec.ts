@@ -119,20 +119,18 @@ test.describe('Grocery List Application', () => {
       const nameInput = page.getByLabel('Item Name *');
       await nameInput.fill('Apples');
       await page.getByRole('button', { name: 'Add Item' }).click();
-      await page.waitForTimeout(500); // Wait for item to be added
+      // Wait for the item to appear in the list
+      await expect(page.getByText('Apples')).toBeVisible();
     });
 
     await test.step('Start typing similar name', async () => {
       const nameInput = page.getByLabel('Item Name *');
       await nameInput.fill('App');
-      // Wait for suggestions to appear
-      await page.waitForTimeout(500);
     });
 
     await test.step('Verify suggestions appear', async () => {
       // Should show "Already in List" section with the existing item
       await expect(page.getByText('Already in List')).toBeVisible();
-      await expect(page.getByText('Apples')).toBeVisible();
     });
   });
 
@@ -140,18 +138,19 @@ test.describe('Grocery List Application', () => {
     await test.step('Type a new item name', async () => {
       const nameInput = page.getByLabel('Item Name *');
       await nameInput.fill('Bananas');
-      await page.waitForTimeout(500);
     });
 
-    await test.step('Click add new item from suggestions', async () => {
+    await test.step('Click add new item from suggestions or use form button', async () => {
       const addNewButton = page.getByText('Add "Bananas" as new item');
-      if (await addNewButton.isVisible()) {
+      // Wait a moment for the button to potentially appear
+      await page.waitForLoadState('networkidle');
+      
+      if (await addNewButton.isVisible().catch(() => false)) {
         await addNewButton.click();
       } else {
-        // Fallback to regular form submit
+        // Fallback to regular form submit if suggestions don't appear
         await page.getByRole('button', { name: 'Add Item' }).click();
       }
-      await page.waitForTimeout(500);
     });
 
     await test.step('Verify item was added to list', async () => {

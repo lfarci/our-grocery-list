@@ -25,6 +25,14 @@ export function ItemSuggestions({
   const hasExactArchivedMatch = archivedSuggestions.some(
     item => item.name.toLowerCase() === searchQuery.toLowerCase()
   );
+  
+  // Show "Add new" button logic:
+  // - Always show if there's a search query, unless...
+  // - Hide if there's an exact archived match (user should restore instead)
+  const shouldShowAddButton = searchQuery && !hasExactArchivedMatch;
+  const addButtonText = hasExactActiveMatch 
+    ? `Add another "${searchQuery}"`
+    : `Add "${searchQuery}" as new item`;
 
   return (
     <div className="absolute z-10 w-full mt-1 bg-cream border border-warmsand rounded-md shadow-lg max-h-60 overflow-auto">
@@ -78,7 +86,7 @@ export function ItemSuggestions({
         </div>
       )}
 
-      {searchQuery && !hasExactArchivedMatch && (
+      {shouldShowAddButton && (
         <div className="py-1 border-t border-warmsand">
           <button
             onClick={onAddNew}
@@ -92,11 +100,7 @@ export function ItemSuggestions({
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span>
-              {hasExactActiveMatch 
-                ? `Add another "${searchQuery}"`
-                : `Add "${searchQuery}" as new item`}
-            </span>
+            <span>{addButtonText}</span>
           </button>
         </div>
       )}
