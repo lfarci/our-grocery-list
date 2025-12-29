@@ -152,3 +152,49 @@ Item {
   createdAt: Date
 }
 ```
+
+**No additional fields unless explicitly requested.**
+
+---
+
+## What NOT to Implement
+
+Copilot must NOT introduce:
+
+- Inventory counts
+- "Almost out" toggles
+- Shopping modes
+- Basket screens
+- Notifications or reminders
+- Predictive logic
+- Multiple lists
+- User accounts
+
+These are intentionally out of scope.
+
+---
+
+## UX Constraints
+
+- No required confirmations except delete
+- No blocking modals
+- No complex animations
+- No onboarding flows
+- No settings screen (for now)
+
+---
+
+## Guiding Rule
+
+**If a feature increases cognitive load, it should not be implemented.**
+
+Copilot should prioritize clarity and speed over flexibility.
+
+---
+
+## When in Doubt
+
+- Choose the simplest implementation
+- Prefer implicit behavior over explicit UI
+- Avoid adding new concepts
+- Follow this document strictly
