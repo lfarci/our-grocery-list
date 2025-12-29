@@ -171,4 +171,45 @@ public class CosmosDbItemRepository : IItemRepository
             throw;
         }
     }
+
+    public async Task<IEnumerable<GroceryItem>> SearchByNameAsync(string namePattern)
+    {
+        try
+        {
+            _logger.LogInformation("Searching for items matching pattern: {Pattern}", namePattern);
+
+            // Use CONTAINS for case-insensitive partial match in Cosmos DB
+            var query = new QueryDefinition(
+                "SELECT * FROM c WHERE c.listId = @listId AND CONTAINS(LOWER(c.name), @pattern)")
+                .WithParameter("@listId", DefaultListId)
+                .WithParameter("@pattern", namePattern.ToLower());
+
+            var iterator = _container.GetItemQueryIterator<GroceryItem>(query);
+            var items = new List<GroceryItem>();
+
+            while (iterator.HasMoreResults)
+            {
+                var response = await iterator.ReadNextAsync();
+                items.AddRange(response);
+            }
+
+            foreach (var item in items)
+            {
+                item.EnsureState();
+            }
+
+            _logger.LogInformation("Found {Count} items matching pattern: {Pattern}", items.Count, namePattern);
+            return items;
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            _logger.LogWarning("Database or container not found in Cosmos DB. Returning empty list.");
+            return new List<GroceryItem>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error searching items in Cosmos DB");
+            throw;
+        }
+    }
 }

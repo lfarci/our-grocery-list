@@ -32,4 +32,10 @@ public interface IItemRepository
     /// Delete a grocery item by ID
     /// </summary>
     Task<bool> DeleteAsync(string id);
+
+    /// <summary>
+    /// Search for grocery items by name pattern (case-insensitive)
+    /// Includes both active and archived items
+    /// </summary>
+    Task<IEnumerable<GroceryItem>> SearchByNameAsync(string namePattern);
 }
