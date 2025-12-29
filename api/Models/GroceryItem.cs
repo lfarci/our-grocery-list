@@ -3,46 +3,6 @@ using Newtonsoft.Json;
 
 namespace api.Models;
 
-public static class ItemState
-{
-    public const string Active = "active";
-    public const string Checked = "checked";
-    public const string Archived = "archived";
-
-    private static readonly HashSet<string> ValidStates = new(StringComparer.OrdinalIgnoreCase)
-    {
-        Active,
-        Checked,
-        Archived
-    };
-
-    public static string Normalize(string? state)
-    {
-        if (string.IsNullOrWhiteSpace(state))
-        {
-            return Active;
-        }
-
-        var trimmed = state.Trim();
-        if (!ValidStates.Contains(trimmed))
-        {
-            return Active;
-        }
-
-        return trimmed.ToLowerInvariant();
-    }
-
-    public static bool IsValid(string? state)
-    {
-        if (string.IsNullOrWhiteSpace(state))
-        {
-            return false;
-        }
-
-        return ValidStates.Contains(state.Trim());
-    }
-}
-
 /// <summary>
 /// Represents a grocery list item
 /// Configured for both Cosmos DB storage and API serialization
@@ -93,14 +53,6 @@ public class GroceryItem
     public string State { get; set; } = ItemState.Active;
 
     /// <summary>
-    /// Legacy completion flag from older records (use State instead)
-    /// </summary>
-    [JsonProperty("isDone", NullValueHandling = NullValueHandling.Ignore)]
-    [JsonPropertyName("isDone")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public bool? LegacyIsDone { get; set; }
-
-    /// <summary>
     /// Timestamp when the item was created (UTC)
     /// </summary>
     [JsonProperty("createdAt")]
@@ -116,16 +68,7 @@ public class GroceryItem
 
     public void EnsureState()
     {
-        if (string.IsNullOrWhiteSpace(State))
-        {
-            State = LegacyIsDone == true ? ItemState.Checked : ItemState.Active;
-        }
-        else
-        {
-            State = ItemState.Normalize(State);
-        }
-
-        LegacyIsDone = null;
+        State = string.IsNullOrWhiteSpace(State) ? ItemState.Active : ItemState.Normalize(State);
     }
 }
 
