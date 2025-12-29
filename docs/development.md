@@ -266,7 +266,15 @@ The application uses **Playwright** for end-to-end testing.
 
 ### Prerequisites
 
-Playwright browsers are installed automatically when you run `npm install` in the root directory. If you need to install them manually:
+Playwright browsers are installed automatically when you run `npm install` in the root directory. 
+
+**For GitHub Copilot Workspace:** If you're working in GitHub Copilot Workspace and Playwright browsers were not installed during `npm install`, run:
+
+```bash
+npm run playwright:install
+```
+
+If you need to install them manually in other environments:
 
 ```bash
 npx playwright install chromium

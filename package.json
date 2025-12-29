@@ -7,7 +7,7 @@
     "frontend"
   ],
   "scripts": {
-    "postinstall": "cd api && dotnet restore && (test -z \"$CI\" && npx playwright install chromium --with-deps || echo 'Skipping Playwright installation in CI')",
+    "postinstall": "cd api && dotnet restore && (test -z \"$CI\" && npx playwright install chromium --with-deps || test -n \"$COPILOT_AGENT_ACTION\" && npx playwright install chromium --with-deps || echo 'Skipping Playwright installation in CI')",
     "dev": "swa start http://localhost:5173 --api-location ./api",
     "dev:frontend": "cd frontend && npm run dev",
     "start": "npm run dev",
@@ -17,6 +17,7 @@
     "clean": "npm run clean:frontend && npm run clean:api",
     "clean:frontend": "cd frontend && rm -rf node_modules dist",
     "clean:api": "cd api && rm -rf bin obj",
+    "playwright:install": "npx playwright install chromium --with-deps",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",

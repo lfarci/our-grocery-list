@@ -58,6 +58,8 @@ Tests are located in the `tests/` directory and validate the core user flows inc
 - Validation prevents empty item names
 - Empty state message displays when list is empty
 
+📖 **Testing in Copilot Workspace**: See [docs/copilot-workspace.md](docs/copilot-workspace.md) for setup instructions.
+
 ## Tech Stack
 
 - **Frontend**: React 19 + TypeScript + Tailwind CSS + Vite + PWA
@@ -109,6 +111,7 @@ The app is deployed to Azure Static Web Apps (`stapp-app-prd-bc`) with automatic
 ## Reference documents
 
 - [docs/development.md](docs/development.md) — complete development setup guide.
+- [docs/copilot-workspace.md](docs/copilot-workspace.md) — GitHub Copilot Workspace setup and testing guide.
 - [docs/requirements.md](docs/requirements.md) — detailed Version 1 functional requirements.
 - [docs/architecture.md](docs/architecture.md) — technical architecture overview.
 - [docs/deployment.md](docs/deployment.md) — deployment setup and configuration guide.
