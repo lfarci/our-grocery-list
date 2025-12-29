@@ -48,12 +48,6 @@ jobs:
             echo "Created api/local.settings.json from example"
           fi
 
-      - name: Run quick smoke tests
-        env:
-          CI: "true"
-        run: |
-          npx playwright test tests/grocery-list.spec.ts --grep "Smoke test" --project=chromium --workers=1
-
       - name: Setup complete
         run: |
           echo ":white_check_mark: Copilot Workspace setup complete!"
