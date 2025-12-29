@@ -13,15 +13,15 @@ export function GroceryList() {
   const [name, setName] = useState('');
   const [formError, setFormError] = useState('');
   const [suggestions, setSuggestions] = useState<GroceryItem[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Compute whether to show suggestions based on name length and suggestions
+  const trimmedName = name.trim();
+  const shouldShowSuggestions = trimmedName.length >= 2;
+  const showSuggestions = shouldShowSuggestions && suggestions.length > 0;
 
   // Debounced search for suggestions
   useEffect(() => {
-    const trimmedName = name.trim();
-    
-    if (!trimmedName || trimmedName.length < 2) {
-      setSuggestions([]);
-      setShowSuggestions(false);
+    if (!shouldShowSuggestions) {
       return;
     }
 
@@ -29,15 +29,13 @@ export function GroceryList() {
       try {
         const results = await api.searchItems(trimmedName);
         setSuggestions(results);
-        setShowSuggestions(true);
       } catch (err) {
         console.error('Error searching items:', err);
-        setSuggestions([]);
       }
     }, 300); // 300ms debounce
 
     return () => clearTimeout(timeoutId);
-  }, [name]);
+  }, [trimmedName, shouldShowSuggestions]);
 
   const handleNameChange = useCallback((value: string) => {
     setName(value);
@@ -45,15 +43,13 @@ export function GroceryList() {
   }, []);
 
   const handleSelectSuggestion = useCallback(async (item: GroceryItem) => {
-    setShowSuggestions(false);
-    
     if (item.state === 'archived') {
       // Unarchive and add to list
       try {
         await toggleChecked(item.id, 'active');
         setName('');
         setFormError('');
-      } catch (err) {
+      } catch {
         setFormError('Failed to restore item. Please try again.');
       }
     } else if (item.state === 'active') {
@@ -81,8 +77,7 @@ export function GroceryList() {
       await addItem({ name: name.trim() });
       setName('');
       setFormError('');
-      setShowSuggestions(false);
-    } catch (err) {
+    } catch {
       setFormError('Failed to add item. Please try again.');
     }
   };
