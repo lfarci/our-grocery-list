@@ -1,30 +1,32 @@
-import { GroceryItem as GroceryItemType } from '../types';
+import { GroceryItem as GroceryItemType, ItemState } from '../types';
 
 interface GroceryItemProps {
   item: GroceryItemType;
-  onToggleDone: (id: string, isDone: boolean) => void;
+  onToggleChecked: (id: string, state: ItemState) => void;
   onDelete: (id: string) => void;
 }
 
-export function GroceryItem({ item, onToggleDone, onDelete }: GroceryItemProps) {
+export function GroceryItem({ item, onToggleChecked, onDelete }: GroceryItemProps) {
+  const isChecked = item.state === 'checked';
+
   return (
     <div
       className={`p-4 rounded-lg shadow flex items-start gap-3 ${
-        item.isDone ? 'bg-softmint' : 'bg-cream'
+        isChecked ? 'bg-softmint' : 'bg-cream'
       }`}
     >
       {/* Done Toggle */}
       <input
         type="checkbox"
-        checked={item.isDone}
-        onChange={() => onToggleDone(item.id, !item.isDone)}
+        checked={isChecked}
+        onChange={() => onToggleChecked(item.id, isChecked ? 'active' : 'checked')}
         className="mt-1 h-5 w-5 rounded border-warmsand text-freshgreen focus:ring-softblue cursor-pointer"
-        aria-label={`Mark ${item.name} as ${item.isDone ? 'not done' : 'done'}`}
+        aria-label={`Mark ${item.name} as ${isChecked ? 'not checked' : 'checked'}`}
       />
 
       {/* Item Content */}
       <div className="flex-1 min-w-0">
-        <div className={`font-semibold break-words ${item.isDone ? 'line-through text-softbrowngray' : 'text-warmcharcoal'}`}>
+        <div className={`font-semibold break-words ${isChecked ? 'line-through text-softbrowngray' : 'text-warmcharcoal'}`}>
           {item.name}
         </div>
         {item.notes && (

@@ -8,7 +8,7 @@ const MAX_NAME_LENGTH = 50;
 const MAX_NOTES_LENGTH = 50;
 
 export function GroceryList() {
-  const { items, loading, error, loadItems, addItem, toggleDone, removeItem } = useGroceryList();
+  const { items, loading, error, loadItems, addItem, toggleChecked, removeItem } = useGroceryList();
   const [name, setName] = useState('');
   const [notes, setNotes] = useState('');
   const [formError, setFormError] = useState('');
@@ -69,7 +69,7 @@ export function GroceryList() {
 
         <GroceryItemsList
           items={items}
-          onToggleDone={toggleDone}
+          onToggleChecked={toggleChecked}
           onDelete={removeItem}
         />
       </div>

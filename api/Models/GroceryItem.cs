@@ -46,11 +46,11 @@ public class GroceryItem
     public string? Notes { get; set; }
 
     /// <summary>
-    /// Whether the item has been marked as done
+    /// State of the item (active, checked, archived)
     /// </summary>
-    [JsonProperty("isDone")]
-    [JsonPropertyName("isDone")]
-    public bool IsDone { get; set; }
+    [JsonProperty("state")]
+    [JsonPropertyName("state")]
+    public string State { get; set; } = ItemState.Active;
 
     /// <summary>
     /// Timestamp when the item was created (UTC)
@@ -65,6 +65,11 @@ public class GroceryItem
     [JsonProperty("updatedAt")]
     [JsonPropertyName("updatedAt")]
     public DateTime UpdatedAt { get; set; }
+
+    public void EnsureState()
+    {
+        State = string.IsNullOrWhiteSpace(State) ? ItemState.Active : ItemState.Normalize(State);
+    }
 }
 
 /// <summary>
@@ -81,5 +86,5 @@ public class CreateItemRequest
 /// </summary>
 public class UpdateItemRequest
 {
-    public bool? IsDone { get; set; }
+    public string? State { get; set; }
 }

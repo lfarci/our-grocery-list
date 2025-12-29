@@ -5,10 +5,12 @@ export interface GroceryItem {
   id: string;
   name: string;
   notes?: string;
-  isDone: boolean;
+  state: ItemState;
   createdAt: string;
   updatedAt: string;
 }
+
+export type ItemState = 'active' | 'checked' | 'archived';
 
 /**
  * Request payload for creating a new grocery item
@@ -22,5 +24,5 @@ export interface CreateItemRequest {
  * Request payload for updating a grocery item
  */
 export interface UpdateItemRequest {
-  isDone?: boolean;
+  state?: ItemState;
 }

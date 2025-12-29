@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { GroceryItem, CreateItemRequest } from '../types';
+import { GroceryItem, CreateItemRequest, ItemState } from '../types';
 import * as api from '../api';
 import { useSignalR } from './useSignalR';
 
@@ -44,9 +44,9 @@ export function useGroceryList() {
     }
   }, []);
 
-  const toggleDone = useCallback(async (id: string, isDone: boolean) => {
+  const toggleChecked = useCallback(async (id: string, state: ItemState) => {
     try {
-      const updated = await api.updateItem(id, { isDone });
+      const updated = await api.updateItem(id, { state });
       // Optimistically update the item (will be confirmed by SignalR broadcast)
       setItems(prev => prev.map(item => item.id === id ? updated : item));
     } catch (err) {
@@ -90,10 +90,17 @@ export function useGroceryList() {
     }, []),
   });
 
-  // Sort items: undone first, then done, oldest first within each group
-  const sortedItems = [...items].sort((a, b) => {
-    if (a.isDone !== b.isDone) {
-      return a.isDone ? 1 : -1;
+  const visibleItems = items.filter(item => item.state !== 'archived');
+  const stateOrder: Record<ItemState, number> = {
+    active: 0,
+    checked: 1,
+    archived: 2
+  };
+
+  // Sort items: active first, then checked, oldest first within each group
+  const sortedItems = [...visibleItems].sort((a, b) => {
+    if (a.state !== b.state) {
+      return stateOrder[a.state] - stateOrder[b.state];
     }
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
   });
@@ -104,7 +111,7 @@ export function useGroceryList() {
     error,
     loadItems,
     addItem,
-    toggleDone,
+    toggleChecked,
     removeItem,
   };
 }

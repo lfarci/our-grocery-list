@@ -44,6 +44,11 @@ public class CosmosDbItemRepository : IItemRepository
                 items.AddRange(response);
             }
 
+            foreach (var item in items)
+            {
+                item.EnsureState();
+            }
+
             _logger.LogInformation("Retrieved {Count} items from Cosmos DB", items.Count);
             return items;
         }
@@ -70,7 +75,9 @@ public class CosmosDbItemRepository : IItemRepository
                 id,
                 new PartitionKey(DefaultListId));
 
-            return response.Resource;
+            var item = response.Resource;
+            item.EnsureState();
+            return item;
         }
         catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
@@ -93,6 +100,7 @@ public class CosmosDbItemRepository : IItemRepository
             // Set listId and partitionKey to default for single shared list
             item.ListId = DefaultListId;
             item.PartitionKey = DefaultListId;
+            item.EnsureState();
             
             var response = await _container.CreateItemAsync(
                 item,
@@ -117,6 +125,7 @@ public class CosmosDbItemRepository : IItemRepository
             // Ensure listId and partitionKey are set
             item.ListId = DefaultListId;
             item.PartitionKey = DefaultListId;
+            item.EnsureState();
             
             var response = await _container.ReplaceItemAsync(
                 item,

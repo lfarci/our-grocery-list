@@ -1,13 +1,13 @@
-import { GroceryItem as GroceryItemType } from '../types';
+import { GroceryItem as GroceryItemType, ItemState } from '../types';
 import { GroceryItem } from './GroceryItem';
 
 interface GroceryItemsListProps {
   items: GroceryItemType[];
-  onToggleDone: (id: string, isDone: boolean) => void;
+  onToggleChecked: (id: string, state: ItemState) => void;
   onDelete: (id: string) => void;
 }
 
-export function GroceryItemsList({ items, onToggleDone, onDelete }: GroceryItemsListProps) {
+export function GroceryItemsList({ items, onToggleChecked, onDelete }: GroceryItemsListProps) {
   if (items.length === 0) {
     return (
       <div className="text-center py-12 text-softbrowngray font-display text-lg">
@@ -22,7 +22,7 @@ export function GroceryItemsList({ items, onToggleDone, onDelete }: GroceryItems
         <GroceryItem
           key={item.id}
           item={item}
-          onToggleDone={onToggleDone}
+          onToggleChecked={onToggleChecked}
           onDelete={onDelete}
         />
       ))}
