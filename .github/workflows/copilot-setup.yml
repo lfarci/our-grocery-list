@@ -48,15 +48,11 @@ jobs:
             echo "Created api/local.settings.json from example"
           fi
 
-      - name: Build frontend
-        run: npm run build:frontend
-
-      - name: Build API
-        run: npm run build:api
-
       - name: Run quick smoke tests
+        env:
+          CI: "true"
         run: |
-          npx playwright test tests/grocery-list.spec.ts --grep "Smoke test" --project=chromium
+          npx playwright test tests/grocery-list.spec.ts --grep "Smoke test" --project=chromium --workers=1
 
       - name: Setup complete
         run: |
