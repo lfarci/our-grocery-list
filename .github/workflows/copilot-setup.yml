@@ -56,16 +56,7 @@ jobs:
 
       - name: Run quick smoke tests
         run: |
-          cd frontend && npm run dev &
-          FRONTEND_PID=$!
-          
-          echo "Waiting for frontend server..."
-          timeout 60 bash -c 'until curl -f http://localhost:5173 > /dev/null 2>&1; do sleep 1; done'
-          
-          cd ..
           npx playwright test tests/grocery-list.spec.ts --grep "Smoke test" --project=chromium
-          
-          kill $FRONTEND_PID || true
 
       - name: Setup complete
         run: |
@@ -77,6 +68,5 @@ jobs:
           echo "  • Run 'npm run test:ui' for interactive test debugging"
           echo ""
           echo ":books: Documentation:"
-          echo "  • docs/copilot-workspace.md - Copilot Workspace guide"
           echo "  • docs/development.md - Development setup"
           echo "  • README.md - Quick reference"
