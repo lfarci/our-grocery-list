@@ -1,9 +1,7 @@
 name: Copilot Workspace Setup
 
 on:
-  # Run when a new Copilot Workspace session is created
   workflow_dispatch:
-  # Also run on push to ensure dependencies are always ready
   push:
     branches:
       - 'copilot/**'
@@ -40,13 +38,11 @@ jobs:
 
       - name: Setup environment files
         run: |
-          # Create frontend environment file if it doesn't exist
           if [ ! -f frontend/.env ]; then
             cp frontend/.env.example frontend/.env
             echo "Created frontend/.env from example"
           fi
           
-          # Create API local settings if they don't exist
           if [ ! -f api/local.settings.json ]; then
             cp api/local.settings.json.example api/local.settings.json
             echo "Created api/local.settings.json from example"
@@ -60,31 +56,27 @@ jobs:
 
       - name: Run quick smoke tests
         run: |
-          # Start frontend dev server in background
           cd frontend && npm run dev &
           FRONTEND_PID=$!
           
-          # Wait for server to be ready
           echo "Waiting for frontend server..."
           timeout 60 bash -c 'until curl -f http://localhost:5173 > /dev/null 2>&1; do sleep 1; done'
           
-          # Run quick smoke test
           cd ..
           npx playwright test tests/grocery-list.spec.ts --grep "Smoke test" --project=chromium
           
-          # Kill frontend server
           kill $FRONTEND_PID || true
 
       - name: Setup complete
         run: |
-          echo "✅ Copilot Workspace setup complete!"
+          echo ":white_check_mark: Copilot Workspace setup complete!"
           echo ""
-          echo "📋 Next steps:"
+          echo ":clipboard: Next steps:"
           echo "  • Run 'npm run dev' to start the development servers"
           echo "  • Run 'npm test' to execute all Playwright tests"
           echo "  • Run 'npm run test:ui' for interactive test debugging"
           echo ""
-          echo "📚 Documentation:"
+          echo ":books: Documentation:"
           echo "  • docs/copilot-workspace.md - Copilot Workspace guide"
           echo "  • docs/development.md - Development setup"
           echo "  • README.md - Quick reference"
