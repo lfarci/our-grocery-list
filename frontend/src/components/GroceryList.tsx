@@ -14,6 +14,7 @@ export function GroceryList() {
   const [formError, setFormError] = useState('');
   const [suggestions, setSuggestions] = useState<GroceryItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
   const [shouldRefocus, setShouldRefocus] = useState(false);
 
   // Compute whether to show suggestions based on name length and suggestions
@@ -28,6 +29,28 @@ export function GroceryList() {
       setShouldRefocus(false);
     }
   }, [shouldRefocus]);
+
+  // Handle click outside to close suggestions and clear input
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (formRef.current && !formRef.current.contains(event.target as Node)) {
+        // Only clear if there's text in the input
+        if (name.trim()) {
+          setName('');
+          setSuggestions([]);
+          setFormError('');
+        }
+      }
+    };
+
+    // Add event listener
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    return () => {
+      // Cleanup event listener
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [name]);
 
   // Debounced search for suggestions
   useEffect(() => {
@@ -129,6 +152,7 @@ export function GroceryList() {
           onSelectSuggestion={handleSelectSuggestion}
           showSuggestions={showSuggestions}
           inputRef={inputRef}
+          formRef={formRef}
         />
 
         <GroceryItemsList

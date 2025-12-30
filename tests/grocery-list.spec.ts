@@ -189,4 +189,33 @@ test.describe('Grocery List Application', () => {
       await expect(page.getByRole('checkbox', { name: /Mark Bananas as/ })).toBeVisible({ timeout: 10000 });
     });
   });
+
+  test('Autocomplete - Close suggestions and clear input on outside click', async ({ page }) => {
+    await test.step('Type in the input to show suggestions', async () => {
+      const nameInput = page.getByPlaceholder('Add an item...');
+      await nameInput.fill('Apples');
+      // Wait for debounced search
+      await page.waitForTimeout(400);
+    });
+
+    await test.step('Verify input has text', async () => {
+      const nameInput = page.getByPlaceholder('Add an item...');
+      await expect(nameInput).toHaveValue('Apples');
+    });
+
+    await test.step('Click outside the form area', async () => {
+      // Click on the main heading which is outside the form
+      const heading = page.getByRole('heading', { name: /Our Grocery List/i });
+      await heading.click();
+    });
+
+    await test.step('Verify input is cleared and suggestions are closed', async () => {
+      const nameInput = page.getByPlaceholder('Add an item...');
+      await expect(nameInput).toHaveValue('');
+      
+      // Verify suggestions are not visible
+      const suggestionsBox = page.locator('.absolute.z-10.w-full');
+      await expect(suggestionsBox).not.toBeVisible();
+    });
+  });
 });
