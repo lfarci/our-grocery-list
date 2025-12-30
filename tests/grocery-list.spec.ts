@@ -120,8 +120,8 @@ test.describe('Grocery List Application', () => {
       const nameInput = page.getByLabel('Item Name *');
       await nameInput.fill('Apples');
       await page.getByRole('button', { name: 'Add Item' }).click();
-      // Wait for the item to appear in the list - use more specific locator
-      await expect(page.locator('.bg-white').filter({ hasText: 'Apples' })).toBeVisible();
+      // Wait for the item to appear in the list - use role-based locator
+      await expect(page.getByRole('checkbox', { name: /Mark Apples as/ })).toBeVisible();
     });
 
     await test.step('Start typing similar name', async () => {
@@ -167,8 +167,8 @@ test.describe('Grocery List Application', () => {
     });
 
     await test.step('Verify item was added to list', async () => {
-      // Use more specific locator to avoid confusion
-      await expect(page.locator('.bg-white').filter({ hasText: 'Bananas' })).toBeVisible();
+      // Use role-based locator to find the checkbox for the item
+      await expect(page.getByRole('checkbox', { name: /Mark Bananas as/ })).toBeVisible();
     });
   });
 });
