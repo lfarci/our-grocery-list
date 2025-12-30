@@ -44,6 +44,7 @@ export function ItemSuggestions({
           {archivedSuggestions.map(item => (
             <button
               key={item.id}
+              type="button"
               onClick={() => onSelect(item)}
               className="w-full text-left px-3 py-2 hover:bg-softblue hover:bg-opacity-10 cursor-pointer flex items-center gap-2"
             >
@@ -69,6 +70,7 @@ export function ItemSuggestions({
           {activeSuggestions.map(item => (
             <button
               key={item.id}
+              type="button"
               onClick={() => onSelect(item)}
               className="w-full text-left px-3 py-2 hover:bg-softblue hover:bg-opacity-10 cursor-pointer flex items-center gap-2"
             >
@@ -90,6 +92,7 @@ export function ItemSuggestions({
       {shouldShowAddButton && (
         <div className="py-1 border-t border-warmsand">
           <button
+            type="button"
             onClick={onAddNew}
             className="w-full text-left px-3 py-2 hover:bg-softblue hover:bg-opacity-10 cursor-pointer flex items-center gap-2 font-semibold text-softblue"
           >
