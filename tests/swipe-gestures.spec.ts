@@ -31,9 +31,36 @@ async function deleteItemBySwipe(page: Page, itemName: string) {
   }
 }
 
+/**
+ * Helper function to clean up all test items (Bananas, Apples, Oranges)
+ */
+async function cleanupTestItems(page: Page) {
+  const testItems = ['Bananas', 'Apples', 'Oranges'];
+  
+  for (const itemName of testItems) {
+    // Delete all instances of this item
+    while (true) {
+      const checkbox = page.getByRole('checkbox', { name: new RegExp(`Mark ${itemName} as`) });
+      const count = await checkbox.count();
+      
+      if (count === 0) break;
+      
+      try {
+        await deleteItemBySwipe(page, itemName);
+        await page.waitForTimeout(300);
+      } catch (error) {
+        // Item might have been deleted already or not found
+        break;
+      }
+    }
+  }
+}
+
 test.describe('Swipe Gestures', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
+    // Clean up any existing test items from previous runs
+    await cleanupTestItems(page);
   });
 
   test('Swipe left to delete item', async ({ page }) => {
