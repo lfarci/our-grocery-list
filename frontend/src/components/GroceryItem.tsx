@@ -50,6 +50,12 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
   }, [isSwiping, item.id, onArchive, onDelete]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    // Don't start swipe if touching an interactive element
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'BUTTON') {
+      return;
+    }
+    
     startXRef.current = e.touches[0].clientX;
     currentXRef.current = e.touches[0].clientX;
     setIsSwiping(true);
@@ -66,6 +72,12 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
 
   // Mouse events for desktop support
   const handleMouseDown = (e: React.MouseEvent) => {
+    // Don't start swipe if clicking on an interactive element
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'BUTTON') {
+      return;
+    }
+    
     startXRef.current = e.clientX;
     currentXRef.current = e.clientX;
     setIsSwiping(true);

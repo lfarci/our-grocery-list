@@ -94,17 +94,37 @@ test.describe('Grocery List Application', () => {
       // Wait for the page to finish loading (either showing items or empty state)
       await page.waitForLoadState('networkidle');
       
-      // The API seeds sample data by default. Delete all items if any exist.
-      const deleteButtons = page.getByRole('button', { name: /delete/i });
-      const count = await deleteButtons.count();
+      // The API seeds sample data by default. Delete all items if any exist using swipe gestures.
+      const checkboxes = page.getByRole('checkbox');
+      const count = await checkboxes.count();
       
       if (count > 0) {
-        // Delete all items one by one
+        // Delete all items one by one using swipe left gesture
         for (let i = 0; i < count; i++) {
-          // Always click the first delete button since items shift after deletion
-          await deleteButtons.first().click();
-          // Wait for the item to be removed
-          await page.waitForTimeout(200);
+          // Always get the first checkbox since items shift after deletion
+          const firstCheckbox = checkboxes.first();
+          
+          // Get the item container (parent of the checkbox)
+          const itemContainer = firstCheckbox.locator('..').locator('..');
+          
+          // Get bounding box for swipe calculation
+          const box = await itemContainer.boundingBox();
+          if (box) {
+            // Perform swipe left gesture (swipe from right to left)
+            const startX = box.x + box.width - 20;
+            const startY = box.y + box.height / 2;
+            const endX = box.x + 20; // Swipe more than threshold (100px)
+            const endY = startY;
+            
+            // Simulate mouse swipe
+            await page.mouse.move(startX, startY);
+            await page.mouse.down();
+            await page.mouse.move(endX, endY, { steps: 10 });
+            await page.mouse.up();
+            
+            // Wait for the item to be removed
+            await page.waitForTimeout(500);
+          }
         }
       }
     });
