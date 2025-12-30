@@ -10,7 +10,7 @@ interface AddItemFormProps {
   suggestions: GroceryItem[];
   onSelectSuggestion: (item: GroceryItem) => void;
   showSuggestions: boolean;
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
 }
 
 export function AddItemForm({ 
