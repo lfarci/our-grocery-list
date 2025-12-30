@@ -168,20 +168,27 @@ test.describe('Grocery List Application', () => {
       
       const buttonVisible = await addNewButton.isVisible().catch(() => false);
       
-      // Wait for the API call to complete when adding item
-      const responsePromise = page.waitForResponse(response => 
-        response.url().includes('/api/items') && response.request().method() === 'POST'
-      ).catch(() => null);
-      
       if (buttonVisible) {
+        // Wait for the API call to complete when adding item
+        const responsePromise = page.waitForResponse(response => 
+          response.url().includes('/api/items') && response.request().method() === 'POST'
+        ).catch(() => null);
+        
         await addNewButton.click();
+        
+        // Wait for response or timeout
+        await responsePromise;
       } else {
         // Fallback to regular form submit if suggestions don't appear
+        const responsePromise = page.waitForResponse(response => 
+          response.url().includes('/api/items') && response.request().method() === 'POST'
+        ).catch(() => null);
+        
         await page.getByRole('button', { name: 'Add Item' }).click();
+        
+        // Wait for response or timeout
+        await responsePromise;
       }
-      
-      // Wait for response or timeout
-      await responsePromise;
     });
 
     await test.step('Verify item was added to list', async () => {
