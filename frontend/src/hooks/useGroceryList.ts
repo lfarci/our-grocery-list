@@ -66,6 +66,17 @@ export function useGroceryList() {
     }
   }, []);
 
+  const archiveItem = useCallback(async (id: string) => {
+    try {
+      const updated = await api.updateItem(id, { state: 'archived' });
+      // Optimistically update the item (will be confirmed by SignalR broadcast)
+      setItems(prev => prev.map(item => item.id === id ? updated : item));
+    } catch (err) {
+      console.error('Error archiving item:', err);
+      throw err;
+    }
+  }, []);
+
   // Set up SignalR handlers for real-time updates from other clients
   useSignalR({
     onItemCreated: useCallback((item: GroceryItem) => {
@@ -113,5 +124,6 @@ export function useGroceryList() {
     addItem,
     toggleChecked,
     removeItem,
+    archiveItem,
   };
 }
