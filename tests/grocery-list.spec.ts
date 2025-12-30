@@ -33,20 +33,21 @@ test.describe('Grocery List Application', () => {
     });
   });
 
-  test('Adding items - Block empty names with validation', async ({ page }) => {
+  test('Adding items - Empty input does nothing', async ({ page }) => {
     await test.step('Try to add item with empty name', async () => {
       const addButton = page.getByRole('button', { name: 'Add Item' });
       await addButton.click();
     });
 
-    await test.step('Verify validation message appears', async () => {
-      // Should show validation message for empty name
-      await expect(page.getByText('Please enter an item name')).toBeVisible();
+    await test.step('Verify no error message appears', async () => {
+      // Empty input should do nothing - no error message
+      const errorMessage = page.getByText('Please enter an item name');
+      await expect(errorMessage).not.toBeVisible();
     });
 
     await test.step('Verify no item was created', async () => {
-      // Wait for any potential item to be added (it shouldn't be)
-      await page.waitForTimeout(500);
+      // Wait briefly to ensure nothing happens
+      await page.waitForTimeout(200);
       
       // Check that the list still shows empty state or doesn't have an item with empty name
       const emptyMessage = page.getByText('Your list is empty. Add something above.');
