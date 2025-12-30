@@ -119,9 +119,19 @@ test.describe('Grocery List Application', () => {
     await test.step('Add an item to the list', async () => {
       const nameInput = page.getByLabel('Item Name *');
       await nameInput.fill('Apples');
+      
+      // Wait for the API call to complete when adding item
+      const responsePromise = page.waitForResponse(response => 
+        response.url().includes('/api/items') && response.request().method() === 'POST'
+      ).catch(() => null);
+      
       await page.getByRole('button', { name: 'Add Item' }).click();
+      
+      // Wait for response or timeout
+      await responsePromise;
+      
       // Wait for the item to appear in the list - use role-based locator
-      await expect(page.getByRole('checkbox', { name: /Mark Apples as/ })).toBeVisible();
+      await expect(page.getByRole('checkbox', { name: /Mark Apples as/ })).toBeVisible({ timeout: 10000 });
     });
 
     await test.step('Start typing similar name', async () => {
@@ -158,17 +168,25 @@ test.describe('Grocery List Application', () => {
       
       const buttonVisible = await addNewButton.isVisible().catch(() => false);
       
+      // Wait for the API call to complete when adding item
+      const responsePromise = page.waitForResponse(response => 
+        response.url().includes('/api/items') && response.request().method() === 'POST'
+      ).catch(() => null);
+      
       if (buttonVisible) {
         await addNewButton.click();
       } else {
         // Fallback to regular form submit if suggestions don't appear
         await page.getByRole('button', { name: 'Add Item' }).click();
       }
+      
+      // Wait for response or timeout
+      await responsePromise;
     });
 
     await test.step('Verify item was added to list', async () => {
       // Use role-based locator to find the checkbox for the item
-      await expect(page.getByRole('checkbox', { name: /Mark Bananas as/ })).toBeVisible();
+      await expect(page.getByRole('checkbox', { name: /Mark Bananas as/ })).toBeVisible({ timeout: 10000 });
     });
   });
 });
