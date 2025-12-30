@@ -14,11 +14,20 @@ export function GroceryList() {
   const [formError, setFormError] = useState('');
   const [suggestions, setSuggestions] = useState<GroceryItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [shouldRefocus, setShouldRefocus] = useState(false);
 
   // Compute whether to show suggestions based on name length and suggestions
   const trimmedName = name.trim();
   const shouldShowSuggestions = trimmedName.length >= 2;
   const showSuggestions = shouldShowSuggestions && suggestions.length > 0;
+
+  // Refocus input after operations complete
+  useEffect(() => {
+    if (shouldRefocus) {
+      inputRef.current?.focus();
+      setShouldRefocus(false);
+    }
+  }, [shouldRefocus]);
 
   // Debounced search for suggestions
   useEffect(() => {
@@ -54,8 +63,7 @@ export function GroceryList() {
         await toggleChecked(item.id, 'active');
         setName('');
         setFormError('');
-        // Maintain focus after action
-        setTimeout(() => inputRef.current?.focus(), 0);
+        setShouldRefocus(true);
       } catch {
         setFormError('Failed to restore item. Please try again.');
       }
@@ -65,8 +73,7 @@ export function GroceryList() {
         await addItem({ name: item.name });
         setName('');
         setFormError('');
-        // Maintain focus after action
-        setTimeout(() => inputRef.current?.focus(), 0);
+        setShouldRefocus(true);
       } catch {
         setFormError('Failed to add item. Please try again.');
       }
@@ -90,8 +97,7 @@ export function GroceryList() {
       await addItem({ name: name.trim() });
       setName('');
       setFormError('');
-      // Maintain focus after adding
-      setTimeout(() => inputRef.current?.focus(), 0);
+      setShouldRefocus(true);
     } catch {
       setFormError('Failed to add item. Please try again.');
     }
