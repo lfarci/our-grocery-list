@@ -26,7 +26,8 @@ export function AddItemForm({
   // Focus input on mount for better UX
   useEffect(() => {
     inputRef.current?.focus();
-  }, [inputRef]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleAddNew = () => {
     // Trigger form submission to add the current name as new item
