@@ -5,8 +5,9 @@ Simple shared grocery list PWA with one global list that works on phones and des
 ## What the app does
 
 - One **global list**; no accounts, rooms, or multiple lists.
-- Single screen with title, add form (name required, notes optional, Enter submits, block blanks), and the vertical list.
-- Items show a done toggle, name, optional notes, and delete; editing text is out of scope for Version 1.
+- Single screen with title, simple add form (name only, Enter submits, block blanks with autocomplete suggestions), and the vertical list.
+- Autocomplete suggests items as you type: archived items can be restored, existing items are shown, and new items can be added.
+- Items show a done toggle, name, and delete button; text editing is out of scope for Version 1.
 - Ordering: not-done first, then done; oldest items stay on top within each group.
 - Changes sync across devices eventually without reload.
 

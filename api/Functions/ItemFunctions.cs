@@ -43,6 +43,33 @@ public class ItemFunctions
     }
 
     /// <summary>
+    /// GET /api/items/search?q={query} - Search grocery items by name
+    /// Returns both active and archived items matching the search query
+    /// </summary>
+    [Function("SearchItems")]
+    public async Task<HttpResponseData> SearchItems(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "items/search")] HttpRequestData req)
+    {
+        _logger.LogInformation("Searching grocery items");
+
+        var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
+        var searchQuery = query["q"] ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            var emptyResponse = req.CreateResponse(HttpStatusCode.OK);
+            await emptyResponse.WriteAsJsonAsync(Array.Empty<GroceryItem>());
+            return emptyResponse;
+        }
+
+        var items = await _repository.SearchByNameAsync(searchQuery);
+
+        var response = req.CreateResponse(HttpStatusCode.OK);
+        await response.WriteAsJsonAsync(items);
+        return response;
+    }
+
+    /// <summary>
     /// POST /api/items - Create a new grocery item
     /// Broadcasts the new item to all connected clients via SignalR
     /// </summary>

@@ -34,6 +34,14 @@ export async function getItems(): Promise<GroceryItem[]> {
 }
 
 /**
+ * Search for grocery items by name pattern
+ */
+export async function searchItems(query: string): Promise<GroceryItem[]> {
+  const encodedQuery = encodeURIComponent(query);
+  return apiFetch<GroceryItem[]>(`/items/search?q=${encodedQuery}`);
+}
+
+/**
  * Create a new grocery item
  */
 export async function createItem(item: CreateItemRequest): Promise<GroceryItem> {
