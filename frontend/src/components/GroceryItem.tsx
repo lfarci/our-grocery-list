@@ -77,22 +77,22 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
   };
 
   // Add global mouse up listener when swiping
+  const handleGlobalMouseUp = useCallback(() => {
+    completeSwipe();
+  }, [completeSwipe]);
+
   useEffect(() => {
     if (!isSwiping) return;
-
-    const handleGlobalMouseUp = () => {
-      completeSwipe();
-    };
     
     window.addEventListener('mouseup', handleGlobalMouseUp);
     return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
-  }, [isSwiping, completeSwipe]);
+  }, [isSwiping, handleGlobalMouseUp]);
 
   const showArchiveHint = translateX > 30;
   const showDeleteHint = translateX < -30;
 
   return (
-    <div className="relative overflow-hidden rounded-lg">
+    <div className="relative overflow-hidden rounded-lg" data-testid={`item-container-${item.name}`}>
       {/* Background hints */}
       <div className="absolute inset-0 flex items-center justify-between px-6">
         <div className={`flex items-center gap-2 transition-opacity ${showArchiveHint ? 'opacity-100' : 'opacity-0'}`}>
@@ -114,7 +114,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
         ref={containerRef}
         className={`p-4 rounded-lg shadow flex items-start gap-3 relative ${
           isChecked ? 'bg-softmint' : 'bg-cream'
-        } transition-transform touch-pan-y`}
+        } transition-transform touch-none`}
         style={{
           transform: `translateX(${translateX}px)`,
           transition: isSwiping ? 'none' : 'transform 0.3s ease-out',

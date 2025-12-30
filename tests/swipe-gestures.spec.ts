@@ -4,7 +4,7 @@ import { test, expect, Page } from '@playwright/test';
  * Helper function to get the item container element
  */
 async function getItemContainer(page: Page, itemName: string) {
-  return page.locator('div').filter({ hasText: new RegExp(`^${itemName}$`) }).first().locator('..');
+  return page.getByTestId(`item-container-${itemName}`);
 }
 
 test.describe('Swipe Gestures', () => {
