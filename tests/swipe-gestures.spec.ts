@@ -9,10 +9,13 @@ async function getItemContainer(page: Page, itemName: string) {
 
 /**
  * Helper function to delete an item using swipe gesture
+ * Uses checkbox to find the item, then navigates to parent container
  */
 async function deleteItemBySwipe(page: Page, itemName: string) {
-  const itemContainer = await getItemContainer(page, itemName);
-  const box = await itemContainer.first().boundingBox();
+  //Get the first checkbox for this item and navigate to its container
+  const checkbox = page.getByRole('checkbox', { name: new RegExp(`Mark ${itemName} as`) }).first();
+  const itemContainer = checkbox.locator('xpath=ancestor::div[@data-testid]');
+  const box = await itemContainer.boundingBox();
   
   if (box) {
     // Perform swipe left gesture (swipe from right to left)
@@ -27,7 +30,7 @@ async function deleteItemBySwipe(page: Page, itemName: string) {
     await page.mouse.up();
     
     // Wait for delete to complete
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1000);
   }
 }
 
@@ -50,7 +53,8 @@ async function cleanupTestItems(page: Page) {
       
       try {
         await deleteItemBySwipe(page, itemName);
-        await page.waitForTimeout(500);
+        // Wait longer to ensure the delete API call completes and UI updates
+        await page.waitForTimeout(1000);
         attempts++;
       } catch (error) {
         // Item might have been deleted already or not found
