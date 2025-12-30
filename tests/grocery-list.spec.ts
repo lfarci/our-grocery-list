@@ -123,7 +123,7 @@ test.describe('Grocery List Application', () => {
             await page.mouse.up();
             
             // Wait for the item to be removed
-            await page.waitForTimeout(500);
+            await page.waitForTimeout(200);
           }
         }
       }

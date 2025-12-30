@@ -19,6 +19,11 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
   const SWIPE_THRESHOLD = 100; // pixels to trigger action
   const MAX_SWIPE = 150; // maximum swipe distance
 
+  // Helper to check if target is an interactive element
+  const isInteractiveElement = (target: HTMLElement): boolean => {
+    return target.tagName === 'INPUT' || target.tagName === 'BUTTON';
+  };
+
   // Shared function to update swipe position
   const updateSwipePosition = (clientX: number) => {
     currentXRef.current = clientX;
@@ -52,7 +57,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
   const handleTouchStart = (e: React.TouchEvent) => {
     // Don't start swipe if touching an interactive element
     const target = e.target as HTMLElement;
-    if (target.tagName === 'INPUT' || target.tagName === 'BUTTON') {
+    if (isInteractiveElement(target)) {
       return;
     }
     
@@ -74,7 +79,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
   const handleMouseDown = (e: React.MouseEvent) => {
     // Don't start swipe if clicking on an interactive element
     const target = e.target as HTMLElement;
-    if (target.tagName === 'INPUT' || target.tagName === 'BUTTON') {
+    if (isInteractiveElement(target)) {
       return;
     }
     
