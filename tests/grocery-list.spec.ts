@@ -24,7 +24,7 @@ test.describe('Grocery List Application', () => {
 
     await test.step('Verify add item form is present', async () => {
       // Should have input field for item name
-      const nameInput = page.getByLabel('Item Name *');
+      const nameInput = page.getByPlaceholder('Add an item...');
       await expect(nameInput).toBeVisible();
       
       // Should have an Add Item button
@@ -69,7 +69,7 @@ test.describe('Grocery List Application', () => {
     const longItemName = 'A'.repeat(51); // 51 characters
 
     await test.step('Try to add item with name > 50 characters', async () => {
-      const nameInput = page.getByLabel('Item Name *');
+      const nameInput = page.getByPlaceholder('Add an item...');
       await nameInput.fill(longItemName);
       
       const addButton = page.getByRole('button', { name: 'Add Item' });
@@ -84,7 +84,7 @@ test.describe('Grocery List Application', () => {
       // The error message should still be visible, indicating form wasn't submitted
       await expect(page.getByText('Item name must be 50 characters or less')).toBeVisible();
       // Input should still contain the invalid value
-      const nameInput = page.getByLabel('Item Name *');
+      const nameInput = page.getByPlaceholder('Add an item...');
       await expect(nameInput).toHaveValue(longItemName);
     });
   });
@@ -117,7 +117,7 @@ test.describe('Grocery List Application', () => {
 
   test('Autocomplete - Show suggestions when typing', async ({ page }) => {
     await test.step('Add an item to the list', async () => {
-      const nameInput = page.getByLabel('Item Name *');
+      const nameInput = page.getByPlaceholder('Add an item...');
       await nameInput.fill('Apples');
       
       // Wait for the API call to complete when adding item
@@ -135,7 +135,7 @@ test.describe('Grocery List Application', () => {
     });
 
     await test.step('Start typing similar name', async () => {
-      const nameInput = page.getByLabel('Item Name *');
+      const nameInput = page.getByPlaceholder('Add an item...');
       await nameInput.fill('App');
       // Wait a moment for the debounced search to trigger
       await page.waitForTimeout(400);
@@ -157,7 +157,7 @@ test.describe('Grocery List Application', () => {
 
   test('Autocomplete - Add new item when no exact match', async ({ page }) => {
     await test.step('Type a new item name', async () => {
-      const nameInput = page.getByLabel('Item Name *');
+      const nameInput = page.getByPlaceholder('Add an item...');
       await nameInput.fill('Bananas');
       // Wait for debounced search
       await page.waitForTimeout(400);
