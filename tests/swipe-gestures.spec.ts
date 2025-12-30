@@ -7,6 +7,30 @@ async function getItemContainer(page: Page, itemName: string) {
   return page.getByTestId(`item-container-${itemName}`);
 }
 
+/**
+ * Helper function to delete an item using swipe gesture
+ */
+async function deleteItemBySwipe(page: Page, itemName: string) {
+  const itemContainer = await getItemContainer(page, itemName);
+  const box = await itemContainer.boundingBox();
+  
+  if (box) {
+    // Perform swipe left gesture (swipe from right to left)
+    const startX = box.x + box.width - 20;
+    const startY = box.y + box.height / 2;
+    const endX = box.x + 20;
+    const endY = startY;
+    
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    await page.mouse.move(endX, endY, { steps: 10 });
+    await page.mouse.up();
+    
+    // Wait for delete to complete
+    await page.waitForTimeout(500);
+  }
+}
+
 test.describe('Swipe Gestures', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
@@ -67,6 +91,8 @@ test.describe('Swipe Gestures', () => {
       // Item should be removed from the list
       await expect(page.getByRole('checkbox', { name: /Mark Bananas as/ })).not.toBeVisible({ timeout: 5000 });
     });
+    
+    // No cleanup needed - item was deleted as part of the test
   });
 
   test('Swipe right to archive item', async ({ page }) => {
@@ -124,9 +150,13 @@ test.describe('Swipe Gestures', () => {
       // Item should be removed from the visible list (archived items are filtered out)
       await expect(page.getByRole('checkbox', { name: /Mark Apples as/ })).not.toBeVisible({ timeout: 5000 });
     });
+    
+    // No cleanup needed - item was archived as part of the test
   });
 
   test('Short swipe does not trigger action', async ({ page }) => {
+    let itemCreated = false;
+    
     await test.step('Add an item to the list', async () => {
       const nameInput = page.getByPlaceholder('Add an item...');
       await nameInput.fill('Oranges');
@@ -143,6 +173,7 @@ test.describe('Swipe Gestures', () => {
       
       // Wait for the item to appear in the list
       await expect(page.getByRole('checkbox', { name: /Mark Oranges as/ })).toBeVisible({ timeout: 10000 });
+      itemCreated = true;
     });
 
     await test.step('Perform short swipe that does not exceed threshold', async () => {
@@ -173,5 +204,18 @@ test.describe('Swipe Gestures', () => {
       // Item should still be visible
       await expect(page.getByRole('checkbox', { name: /Mark Oranges as/ })).toBeVisible();
     });
+    
+    // Clean up: Delete the test item
+    if (itemCreated) {
+      await test.step('Clean up test data', async () => {
+        try {
+          await deleteItemBySwipe(page, 'Oranges');
+          // Verify cleanup
+          await expect(page.getByRole('checkbox', { name: /Mark Oranges as/ })).not.toBeVisible({ timeout: 5000 });
+        } catch (error) {
+          console.error('Failed to clean up test item:', error);
+        }
+      });
+    }
   });
 });
