@@ -1,4 +1,4 @@
-import { FormEvent, useRef, useEffect } from 'react';
+import { FormEvent, useEffect } from 'react';
 import { GroceryItem } from '../types';
 import { ItemSuggestions } from './ItemSuggestions';
 
@@ -10,6 +10,7 @@ interface AddItemFormProps {
   suggestions: GroceryItem[];
   onSelectSuggestion: (item: GroceryItem) => void;
   showSuggestions: boolean;
+  inputRef: React.RefObject<HTMLInputElement>;
 }
 
 export function AddItemForm({ 
@@ -19,14 +20,13 @@ export function AddItemForm({
   onSubmit,
   suggestions,
   onSelectSuggestion,
-  showSuggestions
+  showSuggestions,
+  inputRef
 }: AddItemFormProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
   // Focus input on mount for better UX
   useEffect(() => {
     inputRef.current?.focus();
-  }, []);
+  }, [inputRef]);
 
   const handleAddNew = () => {
     // Trigger form submission to add the current name as new item

@@ -1,4 +1,4 @@
-import { useState, FormEvent, useCallback, useEffect } from 'react';
+import { useState, FormEvent, useCallback, useEffect, useRef } from 'react';
 import { useGroceryList } from '../hooks';
 import { ErrorMessage } from './ErrorMessage';
 import { AddItemForm } from './AddItemForm';
@@ -13,6 +13,7 @@ export function GroceryList() {
   const [name, setName] = useState('');
   const [formError, setFormError] = useState('');
   const [suggestions, setSuggestions] = useState<GroceryItem[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Compute whether to show suggestions based on name length and suggestions
   const trimmedName = name.trim();
@@ -48,27 +49,35 @@ export function GroceryList() {
 
   const handleSelectSuggestion = useCallback(async (item: GroceryItem) => {
     if (item.state === 'archived') {
-      // Unarchive and add to list
+      // Unarchive and restore to active list immediately
       try {
         await toggleChecked(item.id, 'active');
         setName('');
         setFormError('');
+        // Maintain focus after action
+        setTimeout(() => inputRef.current?.focus(), 0);
       } catch {
         setFormError('Failed to restore item. Please try again.');
       }
     } else if (item.state === 'active') {
-      // Item already exists - user can still add duplicate by typing and submitting
-      // Just clear the input to let them know it's already there
-      setName('');
-      setFormError('');
+      // Allow creating a duplicate of an active item
+      try {
+        await addItem({ name: item.name });
+        setName('');
+        setFormError('');
+        // Maintain focus after action
+        setTimeout(() => inputRef.current?.focus(), 0);
+      } catch {
+        setFormError('Failed to add item. Please try again.');
+      }
     }
-  }, [toggleChecked]);
+  }, [toggleChecked, addItem]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
+    // Empty input does nothing - no error message
     if (!name.trim()) {
-      setFormError('Please enter an item name');
       return;
     }
 
@@ -81,6 +90,8 @@ export function GroceryList() {
       await addItem({ name: name.trim() });
       setName('');
       setFormError('');
+      // Maintain focus after adding
+      setTimeout(() => inputRef.current?.focus(), 0);
     } catch {
       setFormError('Failed to add item. Please try again.');
     }
@@ -111,6 +122,7 @@ export function GroceryList() {
           suggestions={suggestions}
           onSelectSuggestion={handleSelectSuggestion}
           showSuggestions={showSuggestions}
+          inputRef={inputRef}
         />
 
         <GroceryItemsList
