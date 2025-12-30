@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { GroceryItem as GroceryItemType, ItemState } from '../types';
 
 interface GroceryItemProps {
@@ -19,16 +19,9 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
   const SWIPE_THRESHOLD = 100; // pixels to trigger action
   const MAX_SWIPE = 150; // maximum swipe distance
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    startXRef.current = e.touches[0].clientX;
-    currentXRef.current = e.touches[0].clientX;
-    setIsSwiping(true);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isSwiping) return;
-    
-    currentXRef.current = e.touches[0].clientX;
+  // Shared function to update swipe position
+  const updateSwipePosition = (clientX: number) => {
+    currentXRef.current = clientX;
     const deltaX = currentXRef.current - startXRef.current;
     
     // Limit the swipe distance
@@ -36,7 +29,8 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
     setTranslateX(limitedDeltaX);
   };
 
-  const handleTouchEnd = () => {
+  // Shared function to complete swipe action
+  const completeSwipe = useCallback(() => {
     if (!isSwiping) return;
     
     const deltaX = currentXRef.current - startXRef.current;
@@ -53,6 +47,21 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
     // Reset position
     setTranslateX(0);
     setIsSwiping(false);
+  }, [isSwiping, item.id, onArchive, onDelete]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    startXRef.current = e.touches[0].clientX;
+    currentXRef.current = e.touches[0].clientX;
+    setIsSwiping(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isSwiping) return;
+    updateSwipePosition(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    completeSwipe();
   };
 
   // Mouse events for desktop support
@@ -64,13 +73,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isSwiping) return;
-    
-    currentXRef.current = e.clientX;
-    const deltaX = currentXRef.current - startXRef.current;
-    
-    // Limit the swipe distance
-    const limitedDeltaX = Math.max(-MAX_SWIPE, Math.min(MAX_SWIPE, deltaX));
-    setTranslateX(limitedDeltaX);
+    updateSwipePosition(e.clientX);
   };
 
   // Add global mouse up listener when swiping
@@ -78,25 +81,12 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
     if (!isSwiping) return;
 
     const handleGlobalMouseUp = () => {
-      const deltaX = currentXRef.current - startXRef.current;
-      
-      // Swipe right → Archive
-      if (deltaX > SWIPE_THRESHOLD) {
-        onArchive(item.id);
-      }
-      // Swipe left → Delete
-      else if (deltaX < -SWIPE_THRESHOLD) {
-        onDelete(item.id);
-      }
-      
-      // Reset position
-      setTranslateX(0);
-      setIsSwiping(false);
+      completeSwipe();
     };
     
     window.addEventListener('mouseup', handleGlobalMouseUp);
     return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
-  }, [isSwiping, item.id, onArchive, onDelete]);
+  }, [isSwiping, completeSwipe]);
 
   const showArchiveHint = translateX > 30;
   const showDeleteHint = translateX < -30;

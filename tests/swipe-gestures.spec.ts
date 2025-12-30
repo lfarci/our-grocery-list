@@ -1,4 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
+
+/**
+ * Helper function to get the item container element
+ */
+async function getItemContainer(page: Page, itemName: string) {
+  return page.locator('div').filter({ hasText: new RegExp(`^${itemName}$`) }).first().locator('..');
+}
 
 test.describe('Swipe Gestures', () => {
   test.beforeEach(async ({ page }) => {
@@ -26,7 +33,7 @@ test.describe('Swipe Gestures', () => {
 
     await test.step('Swipe left on the item to reveal delete action', async () => {
       // Find the item container
-      const itemContainer = page.locator('div').filter({ hasText: /^Bananas$/ }).first().locator('..');
+      const itemContainer = await getItemContainer(page, 'Bananas');
       
       // Get the bounding box to calculate swipe coordinates
       const box = await itemContainer.boundingBox();
@@ -83,7 +90,7 @@ test.describe('Swipe Gestures', () => {
 
     await test.step('Swipe right on the item to reveal archive action', async () => {
       // Find the item container
-      const itemContainer = page.locator('div').filter({ hasText: /^Apples$/ }).first().locator('..');
+      const itemContainer = await getItemContainer(page, 'Apples');
       
       // Get the bounding box to calculate swipe coordinates
       const box = await itemContainer.boundingBox();
@@ -140,7 +147,7 @@ test.describe('Swipe Gestures', () => {
 
     await test.step('Perform short swipe that does not exceed threshold', async () => {
       // Find the item container
-      const itemContainer = page.locator('div').filter({ hasText: /^Oranges$/ }).first().locator('..');
+      const itemContainer = await getItemContainer(page, 'Oranges');
       
       // Get the bounding box to calculate swipe coordinates
       const box = await itemContainer.boundingBox();
