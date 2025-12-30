@@ -12,7 +12,7 @@ async function getItemContainer(page: Page, itemName: string) {
  */
 async function deleteItemBySwipe(page: Page, itemName: string) {
   const itemContainer = await getItemContainer(page, itemName);
-  const box = await itemContainer.boundingBox();
+  const box = await itemContainer.first().boundingBox();
   
   if (box) {
     // Perform swipe left gesture (swipe from right to left)
@@ -39,7 +39,10 @@ async function cleanupTestItems(page: Page) {
   
   for (const itemName of testItems) {
     // Delete all instances of this item
-    while (true) {
+    let attempts = 0;
+    const maxAttempts = 20; // Prevent infinite loops
+    
+    while (attempts < maxAttempts) {
       const checkbox = page.getByRole('checkbox', { name: new RegExp(`Mark ${itemName} as`) });
       const count = await checkbox.count();
       
@@ -47,11 +50,17 @@ async function cleanupTestItems(page: Page) {
       
       try {
         await deleteItemBySwipe(page, itemName);
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(500);
+        attempts++;
       } catch (error) {
         // Item might have been deleted already or not found
+        console.log(`Error deleting ${itemName}:`, error);
         break;
       }
+    }
+    
+    if (attempts >= maxAttempts) {
+      console.warn(`Max cleanup attempts reached for ${itemName}`);
     }
   }
 }
