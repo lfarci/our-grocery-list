@@ -183,7 +183,14 @@ You can manually trigger Playwright tests against any URL:
 2. Select the "Playwright Tests" workflow
 3. Click **Run workflow**
 4. Enter the deployment URL to test
-5. Click **Run workflow**
+5. **Enter the branch name** you want to checkout and test from (e.g., `main`, `develop`, or a feature branch)
+6. Click **Run workflow**
+
+**Branch Selection:**
+- The workflow will verify that the specified branch exists before proceeding
+- If the branch doesn't exist, the workflow will fail with a clear error message
+- If the branch exists, the workflow will checkout the code from that branch and run the tests
+- This allows you to test code from any branch against a deployed URL
 
 #### Viewing Test Results
 
