@@ -9,7 +9,7 @@ import * as api from '../api';
 const MAX_NAME_LENGTH = 50;
 
 export function GroceryList() {
-  const { items, loading, error, loadItems, addItem, toggleChecked, removeItem } = useGroceryList();
+  const { items, loading, error, loadItems, addItem, toggleChecked, removeItem, archiveItem } = useGroceryList();
   const [name, setName] = useState('');
   const [formError, setFormError] = useState('');
   const [suggestions, setSuggestions] = useState<GroceryItem[]>([]);
@@ -135,6 +135,7 @@ export function GroceryList() {
           items={items}
           onToggleChecked={toggleChecked}
           onDelete={removeItem}
+          onArchive={archiveItem}
         />
       </div>
     </div>

@@ -5,9 +5,10 @@ interface GroceryItemsListProps {
   items: GroceryItemType[];
   onToggleChecked: (id: string, state: ItemState) => void;
   onDelete: (id: string) => void;
+  onArchive: (id: string) => void;
 }
 
-export function GroceryItemsList({ items, onToggleChecked, onDelete }: GroceryItemsListProps) {
+export function GroceryItemsList({ items, onToggleChecked, onDelete, onArchive }: GroceryItemsListProps) {
   if (items.length === 0) {
     return (
       <div className="text-center py-12 text-softbrowngray font-display text-lg">
@@ -24,6 +25,7 @@ export function GroceryItemsList({ items, onToggleChecked, onDelete }: GroceryIt
           item={item}
           onToggleChecked={onToggleChecked}
           onDelete={onDelete}
+          onArchive={onArchive}
         />
       ))}
     </div>

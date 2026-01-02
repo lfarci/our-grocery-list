@@ -1,8 +1,16 @@
 import { test, expect } from '@playwright/test';
+import {
+  addItem,
+  getItemCheckbox,
+  cleanupTestItems,
+  deleteAllItems,
+  TEST_ITEMS,
+} from './test-utils';
 
 test.describe('Grocery List Application', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
+    await cleanupTestItems(page, [...TEST_ITEMS]);
   });
 
   test('Smoke test - Application loads successfully', async ({ page }) => {
@@ -23,11 +31,9 @@ test.describe('Grocery List Application', () => {
     });
 
     await test.step('Verify add item form is present', async () => {
-      // Should have input field for item name
       const nameInput = page.getByPlaceholder('Add an item...');
       await expect(nameInput).toBeVisible();
       
-      // Should have an Add Item button
       const addButton = page.getByRole('button', { name: 'Add Item' });
       await expect(addButton).toBeVisible();
     });
@@ -40,33 +46,27 @@ test.describe('Grocery List Application', () => {
     });
 
     await test.step('Verify no error message appears', async () => {
-      // Empty input should do nothing - no error message
       const errorMessage = page.getByText('Please enter an item name');
       await expect(errorMessage).not.toBeVisible();
     });
 
-    await test.step('Verify no item was created', async () => {
-      // Wait briefly to ensure nothing happens
+    await test.step('Verify no item with empty name was created', async () => {
       await page.waitForTimeout(200);
       
-      // Check that the list still shows empty state or doesn't have an item with empty name
-      const emptyMessage = page.getByText('Your list is empty. Add something above.');
-      const itemsExist = await emptyMessage.isVisible().catch(() => false);
+      // Verify list structure remains valid (no empty items)
+      const items = page.locator('[data-testid^="item-container-"]');
+      const count = await items.count();
       
-      // If list is not empty (has seeded data), verify no item has empty name
-      if (!itemsExist) {
-        const items = page.locator('.bg-white.p-4.rounded-lg.shadow');
-        const count = await items.count();
-        for (let i = 0; i < count; i++) {
-          const itemText = await items.nth(i).textContent();
-          expect(itemText).not.toBe('');
-        }
+      for (let i = 0; i < count; i++) {
+        const testId = await items.nth(i).getAttribute('data-testid');
+        // Test ID format is item-container-{name}, so name should not be empty
+        expect(testId).not.toBe('item-container-');
       }
     });
   });
 
   test('Adding items - Validate item name exceeds 50 characters', async ({ page }) => {
-    const longItemName = 'A'.repeat(51); // 51 characters
+    const longItemName = 'A'.repeat(51);
 
     await test.step('Try to add item with name > 50 characters', async () => {
       const nameInput = page.getByPlaceholder('Add an item...');
@@ -81,75 +81,42 @@ test.describe('Grocery List Application', () => {
     });
 
     await test.step('Verify validation prevents form submission', async () => {
-      // The error message should still be visible, indicating form wasn't submitted
       await expect(page.getByText('Item name must be 50 characters or less')).toBeVisible();
-      // Input should still contain the invalid value
       const nameInput = page.getByPlaceholder('Add an item...');
       await expect(nameInput).toHaveValue(longItemName);
     });
   });
 
   test('Viewing the list - Empty state message', async ({ page }) => {
-    await test.step('Wait for initial load and delete all existing items', async () => {
-      // Wait for the page to finish loading (either showing items or empty state)
+    await test.step('Delete all existing items', async () => {
       await page.waitForLoadState('networkidle');
-      
-      // The API seeds sample data by default. Delete all items if any exist.
-      const deleteButtons = page.getByRole('button', { name: /delete/i });
-      const count = await deleteButtons.count();
-      
-      if (count > 0) {
-        // Delete all items one by one
-        for (let i = 0; i < count; i++) {
-          // Always click the first delete button since items shift after deletion
-          await deleteButtons.first().click();
-          // Wait for the item to be removed
-          await page.waitForTimeout(200);
-        }
-      }
+      await deleteAllItems(page);
     });
 
     await test.step('Verify empty state message when no items', async () => {
-      // Should show a friendly empty state message
-      await expect(page.getByText('Your list is empty. Add something above.')).toBeVisible();
+      await expect(page.getByText('Your list is empty. Add something above.')).toBeVisible({ timeout: 5000 });
     });
   });
 
   test('Autocomplete - Show suggestions when typing', async ({ page }) => {
     await test.step('Add an item to the list', async () => {
-      const nameInput = page.getByPlaceholder('Add an item...');
-      await nameInput.fill('Apples');
-      
-      // Wait for the API call to complete when adding item
-      const responsePromise = page.waitForResponse(response => 
-        response.url().includes('/api/items') && response.request().method() === 'POST'
-      ).catch(() => null);
-      
-      await page.getByRole('button', { name: 'Add Item' }).click();
-      
-      // Wait for response or timeout
-      await responsePromise;
-      
-      // Wait for the item to appear in the list - use role-based locator
-      await expect(page.getByRole('checkbox', { name: /Mark Apples as/ })).toBeVisible({ timeout: 10000 });
+      await addItem(page, 'Apples');
     });
 
     await test.step('Start typing similar name', async () => {
       const nameInput = page.getByPlaceholder('Add an item...');
       await nameInput.fill('App');
-      // Wait a moment for the debounced search to trigger
+      // Wait for debounced search to trigger
       await page.waitForTimeout(400);
     });
 
     await test.step('Verify suggestions appear', async () => {
-      // Check if suggestions are visible (requires backend API)
       const suggestionsVisible = await page.getByText('Already in List').isVisible().catch(() => false);
       
       if (suggestionsVisible) {
-        // Backend is available - verify suggestion appears
         await expect(page.getByText('Already in List')).toBeVisible();
       } else {
-        // Backend not available - skip this verification
+        // Backend may not be available - log and continue
         console.log('Autocomplete requires backend API - skipping suggestion verification');
       }
     });
@@ -159,14 +126,16 @@ test.describe('Grocery List Application', () => {
     await test.step('Type a new item name', async () => {
       const nameInput = page.getByPlaceholder('Add an item...');
       await nameInput.fill('Bananas');
-      // Wait for debounced search
       await page.waitForTimeout(400);
     });
 
-    await test.step('Click add new item from suggestions or use form button', async () => {
+    await test.step('Add item from suggestions or form button', async () => {
       const addNewButton = page.getByText('Add "Bananas" as new item');
-      
       const buttonVisible = await addNewButton.isVisible().catch(() => false);
+      
+      const responsePromise = page.waitForResponse(
+        response => response.url().includes('/api/items') && response.request().method() === 'POST'
+      ).catch(() => null);
       
       if (buttonVisible) {
         // Wait for the API call to complete when adding item
@@ -179,21 +148,17 @@ test.describe('Grocery List Application', () => {
         // Wait for response or timeout
         await responsePromise;
       } else {
-        // Fallback to regular form submit if suggestions don't appear
-        const responsePromise = page.waitForResponse(response => 
-          response.url().includes('/api/items') && response.request().method() === 'POST'
-        ).catch(() => null);
-        
         await page.getByRole('button', { name: 'Add Item' }).click();
         
         // Wait for response or timeout
         await responsePromise;
       }
+      
+      await responsePromise;
     });
 
     await test.step('Verify item was added to list', async () => {
-      // Use role-based locator to find the checkbox for the item
-      await expect(page.getByRole('checkbox', { name: /Mark Bananas as/ })).toBeVisible({ timeout: 10000 });
+      await expect(getItemCheckbox(page, 'Bananas').first()).toBeVisible({ timeout: 10000 });
     });
   });
 });
