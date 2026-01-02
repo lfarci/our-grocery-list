@@ -10,7 +10,6 @@ This document describes the technical architecture of the Our Grocery List appli
 - **PWA Support**: vite-plugin-pwa with Workbox
 - **Styling**: Tailwind CSS
 - **State Management**: React hooks (useState, useEffect)
-- **Local Storage**: IndexedDB for offline caching
 
 ### Backend
 - **Runtime**: Azure Functions v4 (.NET 10 isolated worker)
@@ -44,8 +43,7 @@ our-grocery-list/
 │   │   │   ├── index.ts
 │   │   │   └── register.ts
 │   │   ├── storage/            # IndexedDB cache layer
-│   │   │   ├── index.ts
-│   │   │   └── indexeddb.ts
+│   │   │   └── index.ts
 │   │   ├── types/              # TypeScript type definitions
 │   │   │   ├── index.ts
 │   │   │   └── item.ts         # GroceryItem interface
@@ -162,9 +160,9 @@ All endpoints are prefixed with `/api`:
 - Real-time updates via Azure SignalR Service
 
 ### Offline Support
-- **IndexedDB**: Local cache for items
-- **Service Worker**: Automatic caching via Workbox
-- **Network-first strategy**: Try API, fallback to cache
+- `- **Item data caching**: Not implemented yet (no IndexedDB cache).`
+- `- **Service Worker**: Workbox caches static assets for installability.`
+- `- **Network strategy**: Network-first for item data (no cache fallback yet).`
 
 ### PWA Features
 - Installable app with manifest.json
