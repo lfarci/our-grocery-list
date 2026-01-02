@@ -138,9 +138,20 @@ test.describe('Grocery List Application', () => {
       ).catch(() => null);
       
       if (buttonVisible) {
+        // Wait for the API call to complete when adding item
+        const responsePromise = page.waitForResponse(response => 
+          response.url().includes('/api/items') && response.request().method() === 'POST'
+        ).catch(() => null);
+        
         await addNewButton.click();
+        
+        // Wait for response or timeout
+        await responsePromise;
       } else {
         await page.getByRole('button', { name: 'Add Item' }).click();
+        
+        // Wait for response or timeout
+        await responsePromise;
       }
       
       await responsePromise;
