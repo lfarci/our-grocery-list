@@ -7,10 +7,19 @@ on:
         description: 'URL to test'
         required: true
         type: string
+      branch_name:
+        description: 'Branch name to checkout and test'
+        required: false
+        type: string
+        default: ''
   workflow_dispatch:
     inputs:
       deployment_url:
         description: 'URL to test'
+        required: true
+        type: string
+      branch_name:
+        description: 'Branch name to checkout and test'
         required: true
         type: string
 
@@ -22,8 +31,33 @@ jobs:
     runs-on: ubuntu-latest
     name: Run Playwright Tests
     steps:
-      - name: Checkout code
+      - name: Checkout code (default)
+        if: inputs.branch_name == ''
         uses: actions/checkout@v4
+
+      - name: Check if branch exists
+        if: inputs.branch_name != ''
+        id: check_branch
+        run: |
+          echo "Checking if branch '${{ inputs.branch_name }}' exists..."
+          
+          # Fetch all branches from remote
+          git ls-remote --heads origin "${{ inputs.branch_name }}" > /dev/null 2>&1
+          
+          if [ $? -eq 0 ]; then
+            echo "Branch '${{ inputs.branch_name }}' exists"
+            echo "branch_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "::error::Branch '${{ inputs.branch_name }}' does not exist in the repository"
+            echo "branch_exists=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Checkout specified branch
+        if: inputs.branch_name != '' && steps.check_branch.outputs.branch_exists == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch_name }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
