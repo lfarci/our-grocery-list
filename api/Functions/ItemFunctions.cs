@@ -88,6 +88,14 @@ public class ItemFunctions
             return new CreateItemOutput { HttpResponse = errorResponse };
         }
 
+        // Enforce max length of 50 characters
+        if (request.Name.Length > 50)
+        {
+            var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+            await errorResponse.WriteStringAsync("Item name must be 50 characters or less");
+            return new CreateItemOutput { HttpResponse = errorResponse };
+        }
+
         var now = DateTime.UtcNow;
         var item = new GroceryItem
         {

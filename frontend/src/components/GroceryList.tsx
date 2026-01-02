@@ -17,10 +17,11 @@ export function GroceryList() {
   const formRef = useRef<HTMLDivElement>(null);
   const [shouldRefocus, setShouldRefocus] = useState(false);
 
-  // Compute whether to show suggestions based on name length and suggestions
+  // Compute whether to show suggestions based on name length
   const trimmedName = name.trim();
   const shouldShowSuggestions = trimmedName.length >= 2;
-  const showSuggestions = shouldShowSuggestions && suggestions.length > 0;
+  // Show suggestions popover when user types 2+ characters, even if API returns 0 suggestions
+  const showSuggestions = shouldShowSuggestions;
 
   // Refocus input after operations complete
   useEffect(() => {
@@ -106,8 +107,9 @@ export function GroceryList() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
-    // Empty input does nothing - no error message
+    // Validate empty input - show validation message
     if (!name.trim()) {
+      setFormError('Please enter an item name');
       return;
     }
 

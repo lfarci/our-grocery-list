@@ -13,7 +13,8 @@ export function ItemSuggestions({
   onAddNew, 
   searchQuery 
 }: ItemSuggestionsProps) {
-  if (suggestions.length === 0 && !searchQuery) {
+  // Don't render if there's no search query (less than 2 characters typed)
+  if (!searchQuery) {
     return null;
   }
 
