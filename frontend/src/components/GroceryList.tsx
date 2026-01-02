@@ -9,13 +9,14 @@ import * as api from '../api';
 const MAX_NAME_LENGTH = 50;
 
 export function GroceryList() {
-  const { items, loading, error, loadItems, addItem, toggleChecked, removeItem, archiveItem } = useGroceryList();
+  const { items, loading, error, itemErrors, isOffline, loadItems, addItem, toggleChecked, removeItem, archiveItem, retryToggleChecked, retryArchive, retryDelete } = useGroceryList();
   const [name, setName] = useState('');
   const [formError, setFormError] = useState('');
   const [suggestions, setSuggestions] = useState<GroceryItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
   const [shouldRefocus, setShouldRefocus] = useState(false);
+  const retryTimeoutRef = useRef<number | null>(null);
 
   // Compute whether to show suggestions based on name length and suggestions
   const trimmedName = name.trim();
@@ -29,6 +30,15 @@ export function GroceryList() {
       setShouldRefocus(false);
     }
   }, [shouldRefocus]);
+
+  // Cleanup retry timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (retryTimeoutRef.current !== null) {
+        window.clearTimeout(retryTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Handle click outside to close suggestions and clear input
   useEffect(() => {
@@ -73,6 +83,11 @@ export function GroceryList() {
   const handleNameChange = useCallback((value: string) => {
     setName(value);
     setFormError('');
+    // Cancel any pending retry when user changes input (TASK-002: idempotent retry)
+    if (retryTimeoutRef.current !== null) {
+      window.clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
     // Clear suggestions when user clears the input or types less than 2 characters
     if (value.trim().length < 2) {
       setSuggestions([]);
@@ -116,13 +131,37 @@ export function GroceryList() {
       return;
     }
 
+    // Cancel any pending retry before attempting a new submission
+    if (retryTimeoutRef.current !== null) {
+      window.clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+
+    const itemName = name.trim();
+
     try {
-      await addItem({ name: name.trim() });
+      await addItem({ name: itemName });
       setName('');
       setFormError('');
       setShouldRefocus(true);
     } catch {
-      setFormError('Failed to add item. Please try again.');
+      // TASK-001: Keep input filled and show error, then auto-retry once after 2 seconds
+      setFormError('Failed to add item. Retrying...');
+      
+      // Schedule exactly one retry after 2000ms
+      retryTimeoutRef.current = window.setTimeout(async () => {
+        retryTimeoutRef.current = null;
+        try {
+          await addItem({ name: itemName });
+          // Retry succeeded - clear input and error
+          setName('');
+          setFormError('');
+          setShouldRefocus(true);
+        } catch {
+          // Retry failed - keep error visible, do not loop
+          setFormError('Failed to add item. Please try again.');
+        }
+      }, 2000);
     }
   };
 
@@ -140,6 +179,15 @@ export function GroceryList() {
         <h1 className="text-3xl font-bold text-warmcharcoal mb-6 text-center font-display">
           Our Grocery List
         </h1>
+
+        {/* TASK-006: Offline indicator banner */}
+        {isOffline && (
+          <div className="mb-4 p-3 bg-warmsand border border-mutedcoral rounded-lg text-center">
+            <p className="text-warmcharcoal font-semibold text-sm">
+              Offline - changes will sync when reconnected
+            </p>
+          </div>
+        )}
 
         {error && <ErrorMessage message={error} onRetry={loadItems} />}
 
@@ -160,6 +208,10 @@ export function GroceryList() {
           onToggleChecked={toggleChecked}
           onDelete={removeItem}
           onArchive={archiveItem}
+          itemErrors={itemErrors}
+          onRetryToggle={retryToggleChecked}
+          onRetryArchive={retryArchive}
+          onRetryDelete={retryDelete}
         />
       </div>
     </div>

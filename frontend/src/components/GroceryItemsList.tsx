@@ -6,9 +6,22 @@ interface GroceryItemsListProps {
   onToggleChecked: (id: string, state: ItemState) => void;
   onDelete: (id: string) => void;
   onArchive: (id: string) => void;
+  itemErrors?: Map<string, { type: 'toggle' | 'archive' | 'delete' }>;
+  onRetryToggle?: (id: string) => void;
+  onRetryArchive?: (id: string) => void;
+  onRetryDelete?: (id: string) => void;
 }
 
-export function GroceryItemsList({ items, onToggleChecked, onDelete, onArchive }: GroceryItemsListProps) {
+export function GroceryItemsList({ 
+  items, 
+  onToggleChecked, 
+  onDelete, 
+  onArchive,
+  itemErrors,
+  onRetryToggle,
+  onRetryArchive,
+  onRetryDelete
+}: GroceryItemsListProps) {
   if (items.length === 0) {
     return (
       <div className="text-center py-12 text-softbrowngray font-display text-lg">
@@ -26,6 +39,10 @@ export function GroceryItemsList({ items, onToggleChecked, onDelete, onArchive }
           onToggleChecked={onToggleChecked}
           onDelete={onDelete}
           onArchive={onArchive}
+          error={itemErrors?.get(item.id)}
+          onRetryToggle={onRetryToggle}
+          onRetryArchive={onRetryArchive}
+          onRetryDelete={onRetryDelete}
         />
       ))}
     </div>
