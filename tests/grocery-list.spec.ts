@@ -163,10 +163,11 @@ test.describe('Grocery List Application', () => {
   });
 
   test('Autocomplete - Add new item CTA appears even with 0 suggestions', async ({ page }) => {
+    // Use a unique string that won't match any existing items
+    const uniqueItemName = `UniqueItem${Date.now()}`;
+    
     await test.step('Type a unique item name that has no suggestions', async () => {
       const nameInput = page.getByPlaceholder('Add an item...');
-      // Use a unique string that won't match any existing items
-      const uniqueItemName = `UniqueItem${Date.now()}`;
       await nameInput.fill(uniqueItemName);
       
       // Wait for debounced search to complete
@@ -174,7 +175,6 @@ test.describe('Grocery List Application', () => {
     });
 
     await test.step('Verify "Add new item" button appears', async () => {
-      const uniqueItemName = await page.getByPlaceholder('Add an item...').inputValue();
       const addNewButton = page.getByText(`Add "${uniqueItemName}" as new item`, { exact: false });
       
       // The button should be visible even if there are no suggestions from the API
