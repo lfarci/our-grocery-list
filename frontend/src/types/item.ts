@@ -24,5 +24,7 @@ export interface CreateItemRequest {
  * Request payload for updating a grocery item
  */
 export interface UpdateItemRequest {
+  name?: string;
+  notes?: string | null;
   state?: ItemState;
 }

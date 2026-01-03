@@ -88,5 +88,7 @@ public class CreateItemRequest
 /// </summary>
 public class UpdateItemRequest
 {
+    public string? Name { get; set; }
+    public string? Notes { get; set; }
     public string? State { get; set; }
 }

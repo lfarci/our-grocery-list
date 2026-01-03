@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { GroceryItem, CreateItemRequest, ItemState } from '../types';
+import { GroceryItem, CreateItemRequest, UpdateItemRequest, ItemState } from '../types';
 import * as api from '../api';
 import { useSignalR } from './useSignalR';
 
@@ -77,6 +77,18 @@ export function useGroceryList() {
     }
   }, []);
 
+  const updateItem = useCallback(async (id: string, update: UpdateItemRequest) => {
+    try {
+      const updated = await api.updateItem(id, update);
+      // Optimistically update the item (will be confirmed by SignalR broadcast)
+      setItems(prev => prev.map(item => item.id === id ? updated : item));
+      return updated;
+    } catch (err) {
+      console.error('Error updating item:', err);
+      throw err;
+    }
+  }, []);
+
   // Set up SignalR handlers for real-time updates from other clients
   useSignalR({
     onItemCreated: useCallback((item: GroceryItem) => {
@@ -125,5 +137,6 @@ export function useGroceryList() {
     toggleChecked,
     removeItem,
     archiveItem,
+    updateItem,
   };
 }

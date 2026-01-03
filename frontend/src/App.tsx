@@ -4,7 +4,7 @@ import { useGroceryList } from './hooks';
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
-  const { items, loading } = useGroceryList();
+  const { items, loading, updateItem } = useGroceryList();
 
   // Listen for browser back/forward navigation
   useEffect(() => {
@@ -35,6 +35,7 @@ function App() {
       <ItemDetailsPage 
         item={item} 
         onBack={() => navigateTo('/')} 
+        onUpdate={updateItem}
         loading={loading}
       />
     );

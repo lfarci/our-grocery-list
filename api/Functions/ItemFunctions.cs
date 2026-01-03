@@ -145,6 +145,27 @@ public class ItemFunctions
 
         var request = await req.ReadFromJsonAsync<UpdateItemRequest>();
         
+        var hasChanges = false;
+
+        if (!string.IsNullOrEmpty(request?.Name))
+        {
+            if (request.Name.Length > GroceryItem.MaxNameLength)
+            {
+                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await errorResponse.WriteStringAsync($"Item name must be {GroceryItem.MaxNameLength} characters or less");
+                return new UpdateItemOutput { HttpResponse = errorResponse };
+            }
+
+            existingItem.Name = request.Name;
+            hasChanges = true;
+        }
+
+        if (request?.Notes is not null)
+        {
+            existingItem.Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes;
+            hasChanges = true;
+        }
+
         if (request?.State is not null)
         {
             if (!ItemState.IsValid(request.State))
@@ -155,6 +176,11 @@ public class ItemFunctions
             }
 
             existingItem.State = ItemState.Normalize(request.State);
+            hasChanges = true;
+        }
+
+        if (hasChanges)
+        {
             existingItem.UpdatedAt = DateTime.UtcNow;
         }
 
