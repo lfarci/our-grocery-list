@@ -7,7 +7,11 @@ import { GroceryItem } from '../types';
 import * as api from '../api';
 import { MAX_ITEM_NAME_LENGTH } from '../constants';
 
-export function GroceryList() {
+interface GroceryListProps {
+  onOpenDetails?: (id: string) => void;
+}
+
+export function GroceryList({ onOpenDetails }: GroceryListProps) {
   const { items, loading, error, loadItems, addItem, toggleChecked, removeItem, archiveItem } = useGroceryList();
   const [name, setName] = useState('');
   const [formError, setFormError] = useState('');
@@ -161,6 +165,7 @@ export function GroceryList() {
           onToggleChecked={toggleChecked}
           onDelete={removeItem}
           onArchive={archiveItem}
+          onOpenDetails={onOpenDetails}
         />
       </div>
     </div>

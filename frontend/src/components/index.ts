@@ -4,3 +4,4 @@ export * from './AddItemForm';
 export * from './GroceryItem';
 export * from './GroceryItemsList';
 export * from './ItemSuggestions';
+export * from './ItemDetailsPage';
