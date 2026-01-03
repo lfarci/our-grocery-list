@@ -6,9 +6,13 @@ interface GroceryItemProps {
   onToggleChecked: (id: string, state: ItemState) => void;
   onDelete: (id: string) => void;
   onArchive: (id: string) => void;
+  error?: { type: 'toggle' | 'archive' | 'delete' };
+  onRetryToggle?: (id: string) => void;
+  onRetryArchive?: (id: string) => void;
+  onRetryDelete?: (id: string) => void;
 }
 
-export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: GroceryItemProps) {
+export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, error, onRetryToggle, onRetryArchive, onRetryDelete }: GroceryItemProps) {
   const isChecked = item.state === 'checked';
   const [translateX, setTranslateX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
@@ -159,6 +163,29 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
           {item.notes && (
             <div className={`text-sm mt-1 break-words text-softbrowngray`}>
               {item.notes}
+            </div>
+          )}
+          {error && (
+            <div className="mt-2 flex flex-col gap-1">
+              <span className="text-sm text-mutedcoral font-semibold">
+                {error.type === 'toggle' && 'Failed to update. '}
+                {error.type === 'archive' && 'Failed to archive. '}
+                {error.type === 'delete' && 'Failed to delete. '}
+              </span>
+              <button
+                onClick={() => {
+                  if (error.type === 'toggle' && onRetryToggle) {
+                    onRetryToggle(item.id);
+                  } else if (error.type === 'archive' && onRetryArchive) {
+                    onRetryArchive(item.id);
+                  } else if (error.type === 'delete' && onRetryDelete) {
+                    onRetryDelete(item.id);
+                  }
+                }}
+                className="text-sm text-softblue hover:text-opacity-80 underline cursor-pointer font-semibold text-left"
+              >
+                Tap to retry
+              </button>
             </div>
           )}
         </div>
