@@ -1,6 +1,6 @@
 ---
 description: 'Project issue manager + status reporter (project coordination, not code changes)'
-tools: []
+tools: ['github/*']
 ---
 
 # GitHub Issues Janitor (Custom Engine)
