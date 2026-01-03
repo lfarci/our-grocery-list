@@ -88,6 +88,13 @@ public class ItemFunctions
             return new CreateItemOutput { HttpResponse = errorResponse };
         }
 
+        if (request.Name.Length > GroceryItem.MaxNameLength)
+        {
+            var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+            await errorResponse.WriteStringAsync($"Item name must be {GroceryItem.MaxNameLength} characters or less");
+            return new CreateItemOutput { HttpResponse = errorResponse };
+        }
+
         var now = DateTime.UtcNow;
         var item = new GroceryItem
         {
