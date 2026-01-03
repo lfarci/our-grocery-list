@@ -9,7 +9,7 @@ export function ItemDetailsPage({ item, onBack }: ItemDetailsPageProps) {
   // Format the creation date for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
