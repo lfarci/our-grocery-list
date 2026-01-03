@@ -43,16 +43,19 @@ test.describe('Item Details Page', () => {
       await expect(heading).toHaveText(itemName);
     });
 
-    await test.step('Verify details page shows created date', async () => {
-      // Check for the "Created" label
-      await expect(page.getByText('Created')).toBeVisible();
-      
-      // Verify there's a date displayed (should contain month/day/year)
-      const datePattern = /\w+\s+\d{1,2},\s+\d{4}/; // e.g., "January 3, 2026"
-      const dateText = page.locator('dd').first();
-      await expect(dateText).toBeVisible();
-      const dateValue = await dateText.textContent();
-      expect(dateValue).toMatch(datePattern);
+    await test.step('Verify details page shows status badge', async () => {
+      // Check for status badge - should show "Active" for new items
+      await expect(page.getByText('Active', { exact: true })).toBeVisible();
+    });
+
+    await test.step('Verify details page shows creation date in relative format', async () => {
+      // Check for relative time format like "Added just now" or "Added 5 minutes ago"
+      await expect(page.getByText(/Added (just now|\d+ (second|minute|hour)s? ago)/)).toBeVisible();
+    });
+
+    await test.step('Verify notes section is present', async () => {
+      // Check for the "Notes" heading
+      await expect(page.getByRole('heading', { name: 'Notes', level: 2 })).toBeVisible();
     });
   });
 
@@ -133,7 +136,8 @@ test.describe('Item Details Page', () => {
     await test.step('Verify details page loads correctly', async () => {
       const heading = page.getByRole('heading', { level: 1 });
       await expect(heading).toHaveText(itemName);
-      await expect(page.getByText('Created')).toBeVisible();
+      await expect(page.getByText(/Added (just now|\d+ (second|minute|hour)s? ago)/)).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Notes', level: 2 })).toBeVisible();
     });
   });
 
@@ -251,7 +255,104 @@ test.describe('Item Details Page', () => {
     await test.step('Verify details page still shows correct content', async () => {
       const heading = page.getByRole('heading', { level: 1 });
       await expect(heading).toHaveText(itemName);
-      await expect(page.getByText('Created')).toBeVisible();
+      await expect(page.getByText(/Added (just now|\d+ (second|minute|hour)s? ago)/)).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Notes', level: 2 })).toBeVisible();
+    });
+  });
+
+  test('Editing item name updates the item', async ({ page }) => {
+    const itemName = makeTestItemName(test.info(), 'EditName');
+    const newName = makeTestItemName(test.info(), 'EditedName');
+
+    await test.step('Add an item and navigate to details', async () => {
+      await addItem(page, itemName);
+      const container = getItemContainer(page, itemName).first();
+      const swipeableDiv = container.locator('.touch-none');
+      await swipeableDiv.click({ position: { x: 100, y: 10 } });
+      await page.waitForURL(`**/items/*`, { timeout: 5000 });
+    });
+
+    await test.step('Click on item name to edit', async () => {
+      const heading = page.getByRole('heading', { level: 1 });
+      await heading.click();
+    });
+
+    await test.step('Edit the name and save', async () => {
+      // Wait for input to appear
+      const input = page.locator('input[type="text"]');
+      await expect(input).toBeVisible();
+      
+      // Clear and type new name
+      await input.fill(newName);
+      
+      // Wait for PATCH request to complete when blurring
+      const patchPromise = page.waitForResponse(
+        response => response.url().includes('/api/items') && response.request().method() === 'PATCH',
+        { timeout: 5000 }
+      );
+      
+      // Press Enter to save
+      await input.press('Enter');
+      await patchPromise;
+    });
+
+    await test.step('Verify name was updated', async () => {
+      const heading = page.getByRole('heading', { level: 1 });
+      await expect(heading).toHaveText(newName);
+    });
+
+    await test.step('Verify edited timestamp appears', async () => {
+      // Should now show both "Added" and "edited" times
+      await expect(page.getByText(/edited (just now|\d+ (second|minute)s? ago)/)).toBeVisible();
+    });
+  });
+
+  test('Adding notes to an item', async ({ page }) => {
+    const itemName = makeTestItemName(test.info(), 'AddNotes');
+    const notes = 'These are test notes for the item';
+
+    await test.step('Add an item and navigate to details', async () => {
+      await addItem(page, itemName);
+      const container = getItemContainer(page, itemName).first();
+      const swipeableDiv = container.locator('.touch-none');
+      await swipeableDiv.click({ position: { x: 100, y: 10 } });
+      await page.waitForURL(`**/items/*`, { timeout: 5000 });
+    });
+
+    await test.step('Verify notes section shows placeholder', async () => {
+      await expect(page.getByRole('heading', { name: 'Notes', level: 2 })).toBeVisible();
+      await expect(page.getByText('Add notes...')).toBeVisible();
+    });
+
+    await test.step('Click on notes area to edit', async () => {
+      const notesArea = page.getByText('Add notes...');
+      await notesArea.click();
+    });
+
+    await test.step('Add notes and save', async () => {
+      // Wait for textarea to appear
+      const textarea = page.locator('textarea');
+      await expect(textarea).toBeVisible();
+      
+      // Type notes
+      await textarea.fill(notes);
+      
+      // Wait for PATCH request to complete when blurring
+      const patchPromise = page.waitForResponse(
+        response => response.url().includes('/api/items') && response.request().method() === 'PATCH',
+        { timeout: 5000 }
+      );
+      
+      // Press Cmd+Enter to save (or blur the textarea)
+      await textarea.press('Escape'); // Cancel to blur
+      await textarea.click(); // Click again to edit
+      await textarea.fill(notes);
+      await page.locator('header').click(); // Click outside to blur and save
+      await patchPromise;
+    });
+
+    await test.step('Verify notes were saved', async () => {
+      await expect(page.getByText(notes)).toBeVisible();
     });
   });
 });

@@ -1,4 +1,4 @@
-import { formatRelativeDate, areDatesDifferent, formatDate } from '../utils/formatDate';
+import { formatRelativeDate, areDatesDifferent, formatDate } from '@/utils';
 
 interface ItemDatesProps {
   createdAt: string;
