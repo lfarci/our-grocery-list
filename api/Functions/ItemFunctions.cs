@@ -145,6 +145,32 @@ public class ItemFunctions
 
         var request = await req.ReadFromJsonAsync<UpdateItemRequest>();
         
+        bool updated = false;
+
+        // Handle name updates
+        if (request?.Name is not null)
+        {
+            var trimmedName = request.Name.Trim();
+            
+            if (string.IsNullOrWhiteSpace(trimmedName))
+            {
+                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await errorResponse.WriteStringAsync("Item name cannot be empty");
+                return new UpdateItemOutput { HttpResponse = errorResponse };
+            }
+
+            if (trimmedName.Length > GroceryItem.MaxNameLength)
+            {
+                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await errorResponse.WriteStringAsync($"Item name must be {GroceryItem.MaxNameLength} characters or less");
+                return new UpdateItemOutput { HttpResponse = errorResponse };
+            }
+
+            existingItem.Name = trimmedName;
+            updated = true;
+        }
+
+        // Handle state updates
         if (request?.State is not null)
         {
             if (!ItemState.IsValid(request.State))
@@ -155,6 +181,12 @@ public class ItemFunctions
             }
 
             existingItem.State = ItemState.Normalize(request.State);
+            updated = true;
+        }
+
+        // Update timestamp if any field was modified
+        if (updated)
+        {
             existingItem.UpdatedAt = DateTime.UtcNow;
         }
 

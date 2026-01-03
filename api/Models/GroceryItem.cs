@@ -89,4 +89,5 @@ public class CreateItemRequest
 public class UpdateItemRequest
 {
     public string? State { get; set; }
+    public string? Name { get; set; }
 }

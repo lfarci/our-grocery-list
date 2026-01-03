@@ -25,4 +25,5 @@ export interface CreateItemRequest {
  */
 export interface UpdateItemRequest {
   state?: ItemState;
+  name?: string;
 }

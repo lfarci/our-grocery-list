@@ -254,4 +254,134 @@ test.describe('Item Details Page', () => {
       await expect(page.getByText('Created')).toBeVisible();
     });
   });
+
+  test('Edit item name from details page', async ({ page }) => {
+    const itemName = makeTestItemName(test.info(), 'EditTest');
+    const newName = makeTestItemName(test.info(), 'EditedName');
+
+    await test.step('Add an item and navigate to details', async () => {
+      await addItem(page, itemName);
+      const container = getItemContainer(page, itemName).first();
+      const swipeableDiv = container.locator('.touch-none');
+      await swipeableDiv.click({ position: { x: 100, y: 10 } });
+      await page.waitForURL(`**/items/*`, { timeout: 5000 });
+    });
+
+    await test.step('Click Edit button', async () => {
+      const editButton = page.getByRole('button', { name: /edit item name/i });
+      await expect(editButton).toBeVisible();
+      await editButton.click();
+    });
+
+    await test.step('Verify edit mode is active', async () => {
+      const nameInput = page.getByRole('textbox', { name: /item name/i });
+      await expect(nameInput).toBeVisible();
+      await expect(nameInput).toHaveValue(itemName);
+      await expect(page.getByRole('button', { name: /^save$/i })).toBeVisible();
+      await expect(page.getByRole('button', { name: /cancel/i })).toBeVisible();
+    });
+
+    await test.step('Change the name and save', async () => {
+      const nameInput = page.getByRole('textbox', { name: /item name/i });
+      await nameInput.fill(newName);
+
+      const patchPromise = page.waitForResponse(
+        response => response.url().includes('/api/items') && response.request().method() === 'PATCH',
+        { timeout: SWIPE_CONFIG.TIMEOUT }
+      );
+
+      await page.getByRole('button', { name: /^save$/i }).click();
+      await patchPromise;
+    });
+
+    await test.step('Verify view mode shows updated name', async () => {
+      const heading = page.getByRole('heading', { level: 1 });
+      await expect(heading).toHaveText(newName);
+      await expect(page.getByRole('button', { name: /edit item name/i })).toBeVisible();
+    });
+
+    await test.step('Verify updated name appears in main list', async () => {
+      await page.goto('/');
+      await expect(getItemCheckbox(page, newName).first()).toBeVisible();
+      await expect(getItemCheckbox(page, itemName)).not.toBeVisible();
+    });
+  });
+
+  test('Cancel editing item name', async ({ page }) => {
+    const itemName = makeTestItemName(test.info(), 'CancelEdit');
+
+    await test.step('Add an item and navigate to details', async () => {
+      await addItem(page, itemName);
+      const container = getItemContainer(page, itemName).first();
+      const swipeableDiv = container.locator('.touch-none');
+      await swipeableDiv.click({ position: { x: 100, y: 10 } });
+      await page.waitForURL(`**/items/*`, { timeout: 5000 });
+    });
+
+    await test.step('Start editing and change the name', async () => {
+      await page.getByRole('button', { name: /edit item name/i }).click();
+      const nameInput = page.getByRole('textbox', { name: /item name/i });
+      await nameInput.fill('This should not be saved');
+    });
+
+    await test.step('Click Cancel button', async () => {
+      await page.getByRole('button', { name: /cancel/i }).click();
+    });
+
+    await test.step('Verify original name is still displayed', async () => {
+      const heading = page.getByRole('heading', { level: 1 });
+      await expect(heading).toHaveText(itemName);
+      await expect(page.getByRole('button', { name: /edit item name/i })).toBeVisible();
+    });
+  });
+
+  test('Validate empty item name', async ({ page }) => {
+    const itemName = makeTestItemName(test.info(), 'EmptyValidation');
+
+    await test.step('Add an item and navigate to details', async () => {
+      await addItem(page, itemName);
+      const container = getItemContainer(page, itemName).first();
+      const swipeableDiv = container.locator('.touch-none');
+      await swipeableDiv.click({ position: { x: 100, y: 10 } });
+      await page.waitForURL(`**/items/*`, { timeout: 5000 });
+    });
+
+    await test.step('Try to save empty name', async () => {
+      await page.getByRole('button', { name: /edit item name/i }).click();
+      const nameInput = page.getByRole('textbox', { name: /item name/i });
+      await nameInput.fill('   ');
+      await page.getByRole('button', { name: /^save$/i }).click();
+    });
+
+    await test.step('Verify error message is shown', async () => {
+      await expect(page.getByRole('alert')).toContainText(/cannot be empty/i);
+      // Should still be in edit mode
+      await expect(page.getByRole('textbox', { name: /item name/i })).toBeVisible();
+    });
+  });
+
+  test('Validate item name length', async ({ page }) => {
+    const itemName = makeTestItemName(test.info(), 'LengthValidation');
+
+    await test.step('Add an item and navigate to details', async () => {
+      await addItem(page, itemName);
+      const container = getItemContainer(page, itemName).first();
+      const swipeableDiv = container.locator('.touch-none');
+      await swipeableDiv.click({ position: { x: 100, y: 10 } });
+      await page.waitForURL(`**/items/*`, { timeout: 5000 });
+    });
+
+    await test.step('Try to save name longer than 50 characters', async () => {
+      await page.getByRole('button', { name: /edit item name/i }).click();
+      const nameInput = page.getByRole('textbox', { name: /item name/i });
+      await nameInput.fill('A'.repeat(51));
+      await page.getByRole('button', { name: /^save$/i }).click();
+    });
+
+    await test.step('Verify error message is shown', async () => {
+      await expect(page.getByRole('alert')).toContainText(/50 characters or less/i);
+      // Should still be in edit mode
+      await expect(page.getByRole('textbox', { name: /item name/i })).toBeVisible();
+    });
+  });
 });
