@@ -94,20 +94,25 @@ Best case:
 
 Produce Markdown I can paste directly into a GitHub Issue description.
 
-#### Summary
+Formatting requirements:
+- Every section must be separated by an explicit Markdown header (don’t rely on plain text labels, bold-only labels, or “label:” lines).
+- Use `###` for each top-level section in the issue body (e.g., `### Summary`, `### Context`, etc.).
+- Leave a blank line between sections for readability.
+
+### Summary
 1–2 sentences describing the outcome.
 
-#### Context
+### Context
 Why now; include links to specs/docs/issues.
 
-#### Scope
+### Scope
 In scope:
 - …
 
 Out of scope:
 - …
 
-#### Files / modules
+### Files / modules
 You must include the concrete files/modules impacted (based on code investigation), using repo-relative paths and key symbols when possible. Examples:
 - `frontend/src/hooks/useGroceryList.ts`
 - `frontend/src/components/AddItemForm.tsx`
@@ -117,7 +122,16 @@ You must include the concrete files/modules impacted (based on code investigatio
 
 Also include a short “why these files” note (1 sentence).
 
-#### Implementation notes
+### Storage (required)
+Always include this section when creating an issue. If it’s not applicable, write **N/A**.
+
+Include anything related to persistence and data durability, for example:
+- Cosmos DB container/document changes (schema, indexing, partition key assumptions)
+- Local storage / cached state impacts
+- Migrations/backfills, retention, or cleanup considerations
+- Any changes that could affect data consistency across devices
+
+### Implementation notes
 Concrete approach, risks, edge cases, and any data migrations.
 
 You must include:
@@ -125,17 +139,17 @@ You must include:
 - **Proposed change** (what you will edit and how)
 - **Alternatives** (only if there’s genuine ambiguity)
 
-#### Investigation notes (required)
+### Investigation notes (required)
 Briefly list what you inspected to determine impact:
 - Search terms used
 - Files opened / key symbols found
 - Any uncertainty / assumptions
 
-#### Acceptance criteria
+### Acceptance criteria
 - [ ] …
 - [ ] …
 
-#### Validation plan
+### Validation plan
 - [ ] Unit/integration tests (if applicable)
 - [ ] Playwright: `npx playwright test --project=chromium`
 - [ ] Manual checks: mobile viewport + normal desktop
