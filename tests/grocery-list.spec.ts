@@ -2,15 +2,38 @@ import { test, expect } from '@playwright/test';
 import {
   addItem,
   getItemCheckbox,
-  cleanupTestItems,
-  deleteAllItems,
-  TEST_ITEMS,
+  archiveItemBySwipe,
+  cleanupItemsByPrefix,
+  getTestPrefix,
+  makeTestItemName,
+  isItemsListRequest,
+  waitForSearch,
+  SWIPE_CONFIG,
 } from './test-utils';
 
 test.describe('Grocery List Application', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    if (testInfo.title.includes('Empty state message')) {
+      await page.route('**/api/**', async (route) => {
+        const request = route.request();
+        if (request.method() === 'GET' && isItemsListRequest(request.url())) {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify([]),
+          });
+          return;
+        }
+        await route.fallback();
+      });
+    }
+
     await page.goto('/');
-    await cleanupTestItems(page, [...TEST_ITEMS]);
+    await cleanupItemsByPrefix(page, getTestPrefix(testInfo));
+  });
+
+  test.afterEach(async ({ page }, testInfo) => {
+    await cleanupItemsByPrefix(page, getTestPrefix(testInfo));
   });
 
   test('Smoke test - Application loads successfully', async ({ page }) => {
@@ -51,8 +74,6 @@ test.describe('Grocery List Application', () => {
     });
 
     await test.step('Verify no item with empty name was created', async () => {
-      await page.waitForTimeout(200);
-      
       // Verify list structure remains valid (no empty items)
       const items = page.locator('[data-testid^="item-container-"]');
       const count = await items.count();
@@ -88,111 +109,91 @@ test.describe('Grocery List Application', () => {
   });
 
   test('Viewing the list - Empty state message', async ({ page }) => {
-    await test.step('Delete all existing items', async () => {
-      await page.waitForLoadState('networkidle');
-      await deleteAllItems(page);
-    });
-
     await test.step('Verify empty state message when no items', async () => {
       await expect(page.getByText('Your list is empty. Add something above.')).toBeVisible({ timeout: 5000 });
     });
   });
 
   test('Autocomplete - Show suggestions when typing', async ({ page }) => {
+    const itemName = makeTestItemName(test.info(), 'Apples');
+
     await test.step('Add an item to the list', async () => {
-      await addItem(page, 'Apples');
+      await addItem(page, itemName);
     });
 
     await test.step('Start typing similar name', async () => {
       const nameInput = page.getByPlaceholder('Add an item...');
-      await nameInput.fill('App');
-      // Wait for debounced search to trigger
-      await page.waitForTimeout(400);
+      const query = 'App';
+      const responsePromise = waitForSearch(page, query);
+      await nameInput.fill(query);
+      await responsePromise;
     });
 
     await test.step('Verify suggestions appear', async () => {
-      const suggestionsVisible = await page.getByText('Already in List').isVisible().catch(() => false);
-      
-      if (suggestionsVisible) {
-        await expect(page.getByText('Already in List')).toBeVisible();
-      } else {
-        // Backend may not be available - log and continue
-        console.log('Autocomplete requires backend API - skipping suggestion verification');
-      }
+      await expect(page.getByText('Already in List')).toBeVisible();
+      await expect(page.getByRole('button', { name: itemName })).toBeVisible();
     });
   });
 
   test('Autocomplete - Add new item when no exact match', async ({ page }) => {
+    const itemName = makeTestItemName(test.info(), 'Bananas');
+
     await test.step('Type a new item name', async () => {
       const nameInput = page.getByPlaceholder('Add an item...');
-      await nameInput.fill('Bananas');
-      await page.waitForTimeout(400);
+      const responsePromise = waitForSearch(page, itemName);
+      await nameInput.fill(itemName);
+      await responsePromise;
     });
 
-    await test.step('Add item from suggestions or form button', async () => {
-      const addNewButton = page.getByText('Add "Bananas" as new item');
-      const buttonVisible = await addNewButton.isVisible().catch(() => false);
-      
+    await test.step('Add item from suggestions CTA', async () => {
+      const addNewButton = page.getByRole('button', { name: `Add "${itemName}" as new item` });
+
       const responsePromise = page.waitForResponse(
-        response => response.url().includes('/api/items') && response.request().method() === 'POST'
-      ).catch(() => null);
-      
-      if (buttonVisible) {
-        // Wait for the API call to complete when adding item
-        const responsePromise = page.waitForResponse(response => 
-          response.url().includes('/api/items') && response.request().method() === 'POST'
-        ).catch(() => null);
-        
-        await addNewButton.click();
-        
-        // Wait for response or timeout
-        await responsePromise;
-      } else {
-        await page.getByRole('button', { name: 'Add Item' }).click();
-        
-        // Wait for response or timeout
-        await responsePromise;
-      }
-      
+        response => response.url().includes('/api/items') && response.request().method() === 'POST',
+        { timeout: SWIPE_CONFIG.TIMEOUT }
+      );
+
+      await addNewButton.click();
       await responsePromise;
     });
 
     await test.step('Verify item was added to list', async () => {
-      await expect(getItemCheckbox(page, 'Bananas').first()).toBeVisible({ timeout: 10000 });
+      await expect(getItemCheckbox(page, itemName).first()).toBeVisible({ timeout: 10000 });
     });
   });
 
   test('Autocomplete - Add new item CTA appears even with 0 suggestions', async ({ page }) => {
     // Use a unique string that won't match any existing items
-    const uniqueItemName = `UniqueItem${Date.now()}`;
+    const uniqueItemName = makeTestItemName(test.info(), 'NoSuggestions');
     
     await test.step('Type a unique item name that has no suggestions', async () => {
       const nameInput = page.getByPlaceholder('Add an item...');
+      const responsePromise = waitForSearch(page, uniqueItemName);
       await nameInput.fill(uniqueItemName);
-      
-      // Wait for debounced search to complete
-      await page.waitForTimeout(400);
+      await responsePromise;
     });
 
     await test.step('Verify "Add new item" button appears', async () => {
-      const addNewButton = page.getByText(`Add "${uniqueItemName}" as new item`, { exact: false });
-      
-      // The button should be visible even if there are no suggestions from the API
+      const addNewButton = page.getByRole('button', { name: `Add "${uniqueItemName}" as new item` });
       await expect(addNewButton).toBeVisible();
     });
   });
 
   test('Autocomplete - Close suggestions and clear input on outside click', async ({ page }) => {
+    const query = makeTestItemName(test.info(), 'OutsideClick');
+
     await test.step('Type in the input to show suggestions', async () => {
       const nameInput = page.getByPlaceholder('Add an item...');
-      await nameInput.fill('Apples');
-      // Wait for debounced search
-      await page.waitForTimeout(400);
+      const responsePromise = waitForSearch(page, query);
+      await nameInput.fill(query);
+      await responsePromise;
+
+      await expect(page.getByRole('button', { name: `Add "${query}" as new item` })).toBeVisible();
     });
 
     await test.step('Verify input has text', async () => {
       const nameInput = page.getByPlaceholder('Add an item...');
-      await expect(nameInput).toHaveValue('Apples');
+      await expect(nameInput).toHaveValue(query);
     });
 
     await test.step('Click outside the form area', async () => {
@@ -204,15 +205,13 @@ test.describe('Grocery List Application', () => {
     await test.step('Verify input is cleared and suggestions are closed', async () => {
       const nameInput = page.getByPlaceholder('Add an item...');
       await expect(nameInput).toHaveValue('');
-      
-      // Verify suggestions are not visible
-      const suggestionsBox = page.locator('.absolute.z-10.w-full');
-      await expect(suggestionsBox).not.toBeVisible();
+
+      await expect(page.getByRole('button', { name: `Add "${query}" as new item` })).toHaveCount(0);
     });
   });
 
   test('Autocomplete - Restore archived item via suggestion', async ({ page }) => {
-    const itemName = 'Grapes';
+    const itemName = makeTestItemName(test.info(), 'Grapes');
     
     await test.step('Add item to the list', async () => {
       await addItem(page, itemName);
@@ -220,81 +219,64 @@ test.describe('Grocery List Application', () => {
     });
 
     await test.step('Archive the item', async () => {
-      // Get the item container
-      const container = page.locator(`[data-testid="item-container-${itemName}"]`).first();
-      
-      // Find and click the archive button within this container
-      const archiveButton = container.getByRole('button', { name: 'Archive' });
-      
-      // Set up response listener before archiving
-      const archiveResponse = page.waitForResponse(
-        response => response.url().includes('/api/items') && response.request().method() === 'PATCH',
-        { timeout: 5000 }
-      ).catch(() => null);
-      
-      await archiveButton.click();
-      await archiveResponse;
-      
-      // Wait for item to be removed from visible list
+      await archiveItemBySwipe(page, itemName);
       await expect(getItemCheckbox(page, itemName)).not.toBeVisible({ timeout: 5000 });
     });
 
     await test.step('Type item name to see archived suggestion', async () => {
       const nameInput = page.getByPlaceholder('Add an item...');
+      const responsePromise = waitForSearch(page, itemName);
       await nameInput.fill(itemName);
-      
-      // Wait for debounced search to complete
-      await page.waitForTimeout(400);
+      await responsePromise;
     });
 
     await test.step('Verify "Recently Used (Archived)" section appears', async () => {
-      const archivedSection = page.getByText('Recently Used (Archived)');
-      const sectionVisible = await archivedSection.isVisible().catch(() => false);
-      
-      if (sectionVisible) {
-        await expect(archivedSection).toBeVisible();
-      } else {
-        console.log('Backend search API may not be available - skipping archived section verification');
-      }
+      await expect(page.getByText('Recently Used (Archived)')).toBeVisible();
+      await expect(page.getByRole('button', { name: itemName })).toBeVisible();
     });
 
     await test.step('Select archived suggestion to restore', async () => {
-      // Try to find the archived suggestion button
-      const archivedSuggestion = page.getByText('Recently Used (Archived)')
-        .locator('..')
-        .locator('..')
-        .getByText(itemName)
-        .first();
-      
-      const suggestionVisible = await archivedSuggestion.isVisible().catch(() => false);
-      
-      if (suggestionVisible) {
-        // Set up response listener before restoring
-        const restoreResponse = page.waitForResponse(
-          response => response.url().includes('/api/items') && response.request().method() === 'PATCH',
-          { timeout: 5000 }
-        ).catch(() => null);
-        
-        await archivedSuggestion.click();
-        await restoreResponse;
-      } else {
-        console.log('Backend search API may not be available - skipping restore action');
-      }
+      const restoreResponse = page.waitForResponse(
+        response => response.url().includes('/api/items') && response.request().method() === 'PATCH',
+        { timeout: SWIPE_CONFIG.TIMEOUT }
+      );
+
+      await page.getByRole('button', { name: itemName }).click();
+      await restoreResponse;
     });
 
     await test.step('Verify item is restored to active list', async () => {
-      // Wait a bit for the restore to complete
-      await page.waitForTimeout(500);
-      
-      // Check if item appears in the list
-      const itemCheckbox = getItemCheckbox(page, itemName).first();
-      const itemVisible = await itemCheckbox.isVisible().catch(() => false);
-      
-      if (itemVisible) {
-        await expect(itemCheckbox).toBeVisible({ timeout: 5000 });
-      } else {
-        console.log('Item restoration may require backend API - skipping final verification');
-      }
+      await expect(getItemCheckbox(page, itemName).first()).toBeVisible({ timeout: 5000 });
+    });
+  });
+
+  test('Autocomplete - Active duplicates are allowed', async ({ page }) => {
+    const itemName = makeTestItemName(test.info(), 'Milk');
+
+    await test.step('Add an active item', async () => {
+      await addItem(page, itemName);
+      await expect(getItemCheckbox(page, itemName)).toHaveCount(1);
+    });
+
+    await test.step('Type exact name and use "Add another" CTA', async () => {
+      const nameInput = page.getByPlaceholder('Add an item...');
+      const responsePromise = waitForSearch(page, itemName);
+      await nameInput.fill(itemName);
+      await responsePromise;
+
+      const addAnother = page.getByRole('button', { name: `Add another "${itemName}"` });
+      await expect(addAnother).toBeVisible();
+
+      const postResponse = page.waitForResponse(
+        response => response.url().includes('/api/items') && response.request().method() === 'POST',
+        { timeout: SWIPE_CONFIG.TIMEOUT }
+      );
+      await addAnother.click();
+      await postResponse;
+    });
+
+    await test.step('Verify duplicate item was added', async () => {
+      await expect(getItemCheckbox(page, itemName)).toHaveCount(2);
     });
   });
 });
