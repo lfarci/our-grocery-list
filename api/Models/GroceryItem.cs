@@ -9,6 +9,8 @@ namespace api.Models;
 /// </summary>
 public class GroceryItem
 {
+    public const int MaxNameLength = 50;
+
     /// <summary>
     /// Unique identifier for the item
     /// </summary>

@@ -5,8 +5,7 @@ import { AddItemForm } from './AddItemForm';
 import { GroceryItemsList } from './GroceryItemsList';
 import { GroceryItem } from '../types';
 import * as api from '../api';
-
-const MAX_NAME_LENGTH = 50;
+import { MAX_ITEM_NAME_LENGTH } from '../constants';
 
 export function GroceryList() {
   const { items, loading, error, loadItems, addItem, toggleChecked, removeItem, archiveItem } = useGroceryList();
@@ -113,8 +112,8 @@ export function GroceryList() {
       return;
     }
 
-    if (name.trim().length > MAX_NAME_LENGTH) {
-      setFormError(`Item name must be ${MAX_NAME_LENGTH} characters or less`);
+    if (name.trim().length > MAX_ITEM_NAME_LENGTH) {
+      setFormError(`Item name must be ${MAX_ITEM_NAME_LENGTH} characters or less`);
       return;
     }
 

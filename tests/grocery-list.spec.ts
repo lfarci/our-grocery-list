@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { MAX_ITEM_NAME_LENGTH } from '../frontend/src/constants';
 import {
   addItem,
   getItemCheckbox,
@@ -86,8 +87,9 @@ test.describe('Grocery List Application', () => {
     });
   });
 
-  test('Adding items - Validate item name exceeds 50 characters', async ({ page }) => {
-    const longItemName = 'A'.repeat(51);
+  test(`Adding items - Validate item name exceeds ${MAX_ITEM_NAME_LENGTH} characters`, async ({ page }) => {
+    const longItemName = 'A'.repeat(MAX_ITEM_NAME_LENGTH + 1);
+    const expectedError = `Item name must be ${MAX_ITEM_NAME_LENGTH} characters or less`;
 
     await test.step('Try to add item with name > 50 characters', async () => {
       const nameInput = page.getByPlaceholder('Add an item...');
@@ -98,11 +100,11 @@ test.describe('Grocery List Application', () => {
     });
 
     await test.step('Verify validation error message appears', async () => {
-      await expect(page.getByText('Item name must be 50 characters or less')).toBeVisible();
+      await expect(page.getByText(expectedError)).toBeVisible();
     });
 
     await test.step('Verify validation prevents form submission', async () => {
-      await expect(page.getByText('Item name must be 50 characters or less')).toBeVisible();
+      await expect(page.getByText(expectedError)).toBeVisible();
       const nameInput = page.getByPlaceholder('Add an item...');
       await expect(nameInput).toHaveValue(longItemName);
     });
