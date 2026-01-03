@@ -4,7 +4,7 @@ import { useGroceryList } from './hooks';
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
-  const { items } = useGroceryList();
+  const { items, loading } = useGroceryList();
 
   // Listen for browser back/forward navigation
   useEffect(() => {
@@ -27,12 +27,15 @@ function App() {
   
   if (itemIdMatch) {
     const itemId = itemIdMatch[1];
-    const item = items.find(i => i.id === itemId) || null;
+    // Wait for items to load before determining if item exists
+    // This prevents showing "not found" during initial load for deep links
+    const item = loading ? undefined : (items.find(i => i.id === itemId) || null);
     
     return (
       <ItemDetailsPage 
         item={item} 
         onBack={() => navigateTo('/')} 
+        loading={loading}
       />
     );
   }

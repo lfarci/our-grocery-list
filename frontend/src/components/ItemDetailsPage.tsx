@@ -1,22 +1,41 @@
 import { GroceryItem } from '../types';
 
 interface ItemDetailsPageProps {
-  item: GroceryItem | null;
+  item: GroceryItem | null | undefined;
   onBack: () => void;
+  loading?: boolean;
 }
 
-export function ItemDetailsPage({ item, onBack }: ItemDetailsPageProps) {
+export function ItemDetailsPage({ item, onBack, loading = false }: ItemDetailsPageProps) {
   // Format the creation date for display
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Date unavailable';
+      }
+      return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return 'Date unavailable';
+    }
   };
+
+  // Handle loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-honey">
+        <div className="max-w-2xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+          <div className="text-center py-12 text-warmcharcoal">Loading...</div>
+        </div>
+      </div>
+    );
+  }
 
   // Handle not-found state
   if (!item) {

@@ -60,7 +60,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
       }
     } else {
       // This was a tap, not a swipe - open details if handler provided
-      if (onOpenDetails && Math.abs(deltaX) <= TAP_MOVEMENT_THRESHOLD) {
+      if (onOpenDetails) {
         onOpenDetails(item.id);
       }
     }
