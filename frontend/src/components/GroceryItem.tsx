@@ -6,18 +6,21 @@ interface GroceryItemProps {
   onToggleChecked: (id: string, state: ItemState) => void;
   onDelete: (id: string) => void;
   onArchive: (id: string) => void;
+  onOpenDetails?: (id: string) => void;
 }
 
-export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: GroceryItemProps) {
+export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpenDetails }: GroceryItemProps) {
   const isChecked = item.state === 'checked';
   const [translateX, setTranslateX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
+  const [hasMovedForSwipe, setHasMovedForSwipe] = useState(false);
   const startXRef = useRef(0);
   const currentXRef = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const SWIPE_THRESHOLD = 100; // pixels to trigger action
   const MAX_SWIPE = 150; // maximum swipe distance
+  const TAP_MOVEMENT_THRESHOLD = 10; // pixels - movement below this is considered a tap
 
   // Helper to check if target is an interactive element
   const isInteractiveElement = (target: HTMLElement): boolean => {
@@ -28,6 +31,11 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
   const updateSwipePosition = (clientX: number) => {
     currentXRef.current = clientX;
     const deltaX = currentXRef.current - startXRef.current;
+    
+    // If movement exceeds tap threshold, mark as swipe
+    if (Math.abs(deltaX) > TAP_MOVEMENT_THRESHOLD) {
+      setHasMovedForSwipe(true);
+    }
     
     // Limit the swipe distance
     const limitedDeltaX = Math.max(-MAX_SWIPE, Math.min(MAX_SWIPE, deltaX));
@@ -40,19 +48,28 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
     
     const deltaX = currentXRef.current - startXRef.current;
     
-    // Swipe right → Archive
-    if (deltaX > SWIPE_THRESHOLD) {
-      onArchive(item.id);
-    }
-    // Swipe left → Delete
-    else if (deltaX < -SWIPE_THRESHOLD) {
-      onDelete(item.id);
+    // Only process swipe actions if the user actually moved enough
+    if (hasMovedForSwipe) {
+      // Swipe right → Archive
+      if (deltaX > SWIPE_THRESHOLD) {
+        onArchive(item.id);
+      }
+      // Swipe left → Delete
+      else if (deltaX < -SWIPE_THRESHOLD) {
+        onDelete(item.id);
+      }
+    } else {
+      // This was a tap, not a swipe - open details if handler provided
+      if (onOpenDetails && Math.abs(deltaX) <= TAP_MOVEMENT_THRESHOLD) {
+        onOpenDetails(item.id);
+      }
     }
     
-    // Reset position
+    // Reset position and state
     setTranslateX(0);
     setIsSwiping(false);
-  }, [isSwiping, item.id, onArchive, onDelete]);
+    setHasMovedForSwipe(false);
+  }, [isSwiping, hasMovedForSwipe, item.id, onArchive, onDelete, onOpenDetails]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     // Don't start swipe if touching an interactive element
@@ -64,6 +81,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
     startXRef.current = e.touches[0].clientX;
     currentXRef.current = e.touches[0].clientX;
     setIsSwiping(true);
+    setHasMovedForSwipe(false);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -86,6 +104,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
     startXRef.current = e.clientX;
     currentXRef.current = e.clientX;
     setIsSwiping(true);
+    setHasMovedForSwipe(false);
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -131,7 +150,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive }: Groc
         ref={containerRef}
         className={`p-4 rounded-lg shadow flex items-start gap-3 relative ${
           isChecked ? 'bg-softmint' : 'bg-cream'
-        } transition-transform touch-none`}
+        } transition-transform touch-none ${onOpenDetails ? 'cursor-pointer' : ''}`}
         style={{
           transform: `translateX(${translateX}px)`,
           transition: isSwiping ? 'none' : 'transform 0.3s ease-out',
