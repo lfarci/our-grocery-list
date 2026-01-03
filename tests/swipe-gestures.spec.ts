@@ -5,19 +5,24 @@ import {
   swipeItem,
   getItemCheckbox,
   getItemContainer,
-  cleanupTestItems,
-  TEST_ITEMS,
+  cleanupItemsByPrefix,
+  getTestPrefix,
+  makeTestItemName,
   SWIPE_CONFIG,
 } from './test-utils';
 
 test.describe('Swipe Gestures', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
     await page.goto('/');
-    await cleanupTestItems(page, [...TEST_ITEMS]);
+    await cleanupItemsByPrefix(page, getTestPrefix(testInfo));
+  });
+
+  test.afterEach(async ({ page }, testInfo) => {
+    await cleanupItemsByPrefix(page, getTestPrefix(testInfo));
   });
 
   test('Swipe left to delete item', async ({ page }) => {
-    const itemName = 'Bananas';
+    const itemName = makeTestItemName(test.info(), 'Bananas');
     
     await test.step('Add item to the list', async () => {
       await addItem(page, itemName);
@@ -45,7 +50,7 @@ test.describe('Swipe Gestures', () => {
   });
 
   test('Swipe right to archive item', async ({ page }) => {
-    const itemName = 'Apples';
+    const itemName = makeTestItemName(test.info(), 'Apples');
     
     await test.step('Add item to the list', async () => {
       await addItem(page, itemName);
@@ -73,7 +78,7 @@ test.describe('Swipe Gestures', () => {
   });
 
   test('Short swipe does not trigger action', async ({ page }) => {
-    const itemName = 'Oranges';
+    const itemName = makeTestItemName(test.info(), 'Oranges');
     
     await test.step('Add item to the list', async () => {
       await addItem(page, itemName);
@@ -112,8 +117,6 @@ test.describe('Swipe Gestures', () => {
       await page.evaluate(() => {
         window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
       });
-      
-      await page.waitForTimeout(500);
     });
 
     await test.step('Verify item is still in the list', async () => {

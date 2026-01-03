@@ -66,7 +66,10 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        # This repo's postinstall runs `dotnet restore` for the API.
+        # For E2E tests against a deployed URL we don't need the API restored/built,
+        # and skipping scripts avoids requiring .NET in this workflow.
+        run: npm ci --ignore-scripts
 
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps

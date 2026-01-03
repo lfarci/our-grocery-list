@@ -1,4 +1,5 @@
 import { Page, expect } from '@playwright/test';
+import type { TestInfo } from '@playwright/test';
 
 /**
  * Configuration for swipe operations
@@ -8,6 +9,58 @@ export const SWIPE_CONFIG = {
   STEPS: 10,       // animation steps for smooth movement
   TIMEOUT: 5000,   // API response timeout
 } as const;
+
+function sanitizeForItemName(value: string): string {
+  return value.replace(/[^a-zA-Z0-9-]/g, '-');
+}
+
+function fnv1a32(value: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < value.length; i++) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+}
+
+function clampItemNameToMaxLength(value: string, maxLength: number): string {
+  if (value.length <= maxLength) return value;
+
+  const suffix = fnv1a32(value).toString(16).slice(0, 6);
+  const keep = Math.max(0, maxLength - (1 + suffix.length));
+  return `${value.slice(0, keep)}-${suffix}`;
+}
+
+export function getTestPrefix(testInfo: TestInfo): string {
+  const shortId = sanitizeForItemName(testInfo.testId).slice(0, 8);
+  return `E2E-${testInfo.workerIndex}-${shortId}`;
+}
+
+export function makeTestItemName(testInfo: TestInfo, baseName: string): string {
+  const raw = `${getTestPrefix(testInfo)}-${sanitizeForItemName(baseName)}`;
+  return clampItemNameToMaxLength(raw, 50);
+}
+
+export function isItemsListRequest(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.pathname.endsWith('/api/items');
+  } catch {
+    return url.includes('/api/items');
+  }
+}
+
+export function waitForSearch(page: Page, query: string) {
+  return page.waitForResponse(response => {
+    if (response.request().method() !== 'GET') return false;
+    try {
+      const url = new URL(response.url());
+      return url.pathname.endsWith('/api/items/search') && url.searchParams.get('q') === query;
+    } catch {
+      return response.url().includes('/api/items/search') && response.url().includes(`q=${encodeURIComponent(query)}`);
+    }
+  }, { timeout: SWIPE_CONFIG.TIMEOUT });
+}
 
 /**
  * Creates a locator for a grocery item checkbox by name.
@@ -112,9 +165,6 @@ export async function deleteItemBySwipe(page: Page, itemName: string): Promise<b
     response => response.url().includes('/api/items') && response.request().method() === 'DELETE',
     { timeout: SWIPE_CONFIG.TIMEOUT }
   ).catch(() => null);
-  
-  // Brief wait for UI to update
-  await page.waitForTimeout(300);
   return true;
 }
 
@@ -130,10 +180,32 @@ export async function archiveItemBySwipe(page: Page, itemName: string): Promise<
     response => response.url().includes('/api/items') && response.request().method() === 'PATCH',
     { timeout: SWIPE_CONFIG.TIMEOUT }
   ).catch(() => null);
-  
-  // Brief wait for UI to update
-  await page.waitForTimeout(300);
   return true;
+}
+
+/**
+ * Cleans up any items created by a specific test prefix.
+ * This is safe to run against shared environments because the prefix is unique to the test.
+ */
+export async function cleanupItemsByPrefix(page: Page, prefix: string): Promise<void> {
+  if (page.isClosed()) return;
+
+  const maxDeletions = 25;
+  for (let i = 0; i < maxDeletions; i++) {
+    const containers = page.locator(`[data-testid^="item-container-${prefix}"]`);
+    const count = await containers.count().catch(() => 0);
+    if (count === 0) return;
+
+    const testId = await containers.first().getAttribute('data-testid');
+    if (!testId || !testId.startsWith('item-container-')) return;
+
+    const itemName = testId.slice('item-container-'.length);
+    const beforeCount = await getItemCheckbox(page, itemName).count().catch(() => 0);
+    if (beforeCount === 0) return;
+
+    await deleteItemBySwipe(page, itemName);
+    await expect(getItemCheckbox(page, itemName)).toHaveCount(Math.max(0, beforeCount - 1));
+  }
 }
 
 /**

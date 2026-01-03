@@ -4,7 +4,7 @@ version: 1
 date_created: 2026-01-02
 last_updated: 2026-01-02
 owner: our-grocery-list
-status: 'Planned'
+status: 'In progress'
 tags: [feature, v1, ux, autocomplete, validation]
 ---
 
@@ -33,11 +33,11 @@ This plan aligns the add-item flow and suggestion UX with V1 specs, and updates 
 
 | Task | Description | Completed | Date |
 | ---- | ----------- | --------- | ---- |
-| TASK-001 | Frontend validation: Update frontend/src/components/GroceryList.tsx `handleSubmit` to show a validation message for empty `name` (exact string: `Please enter an item name`). Ensure the input remains unchanged after validation. |  |  |
-| TASK-002 | Suggestions popover visibility: Update frontend/src/components/GroceryList.tsx so the popover can render when `trimmedName.length >= 2` even if API returns 0 suggestions. Keep API call debounce behavior unchanged. |  |  |
-| TASK-003 | Popover rendering: Update frontend/src/components/ItemSuggestions.tsx so when `searchQuery` exists (2+ chars) it can render the “Add \"X\" as new item” action even if `suggestions.length === 0`. |  |  |
-| TASK-004 | Active/archived selection semantics: Ensure selecting an archived suggestion restores it to active (PATCH state=active). Ensure selecting an active suggestion preserves “duplicates allowed” by either (A) immediately adding a duplicate, or (B) leaving input unchanged but still allowing submit to add duplicate. Choose one behavior and update both UI + tests to match. |  |  |
-| TASK-005 | Max length parity: Keep frontend max length check at 50 (already present). Add backend enforcement in api/Functions/ItemFunctions.cs CreateItem (reject >50 with 400) OR document backend max length as future work; decide and implement consistently. |  |  |
+| TASK-001 | Frontend validation: Update frontend/src/components/GroceryList.tsx `handleSubmit` to show a validation message for empty `name` (exact string: `Please enter an item name`). Ensure the input remains unchanged after validation. | Yes | 2026-01-02 |
+| TASK-002 | Suggestions popover visibility: Update frontend/src/components/GroceryList.tsx so the popover can render when `trimmedName.length >= 2` even if API returns 0 suggestions. Keep API call debounce behavior unchanged. | Yes | 2026-01-02 |
+| TASK-003 | Popover rendering: Update frontend/src/components/ItemSuggestions.tsx so when `searchQuery` exists (2+ chars) it can render the “Add \"X\" as new item” action even if `suggestions.length === 0`. | Yes | 2026-01-02 |
+| TASK-004 | Active/archived selection semantics: Ensure selecting an archived suggestion restores it to active (PATCH state=active). Ensure selecting an active suggestion preserves “duplicates allowed” by either (A) immediately adding a duplicate, or (B) leaving input unchanged but still allowing submit to add duplicate. Choose one behavior and update both UI + tests to match. | Yes | 2026-01-02 |
+| TASK-005 | Max length parity: Keep frontend max length check at 50 (already present). Add backend enforcement in api/Functions/ItemFunctions.cs CreateItem (reject >50 with 400) OR document backend max length as future work; decide and implement consistently. | Yes | 2026-01-02 |
 
 ## 3. Alternatives
 
