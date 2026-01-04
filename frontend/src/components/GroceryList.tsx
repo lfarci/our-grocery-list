@@ -1,18 +1,34 @@
 import { useState, FormEvent, useCallback, useEffect, useRef } from 'react';
-import { useGroceryList } from '../hooks';
 import { ErrorMessage } from './ErrorMessage';
 import { AddItemForm } from './AddItemForm';
 import { GroceryItemsList } from './GroceryItemsList';
-import { GroceryItem } from '../types';
+import { CreateItemRequest, GroceryItem, ItemState } from '../types';
 import * as api from '../api';
 import { MAX_ITEM_NAME_LENGTH } from '../constants';
 
 interface GroceryListProps {
+  items: GroceryItem[];
+  loading: boolean;
+  error: string | null;
+  loadItems: () => void;
+  addItem: (item: CreateItemRequest) => Promise<GroceryItem>;
+  toggleChecked: (id: string, state: ItemState) => Promise<void>;
+  removeItem: (id: string) => Promise<void>;
+  archiveItem: (id: string) => Promise<void>;
   onOpenDetails?: (id: string) => void;
 }
 
-export function GroceryList({ onOpenDetails }: GroceryListProps) {
-  const { items, loading, error, loadItems, addItem, toggleChecked, removeItem, archiveItem } = useGroceryList();
+export function GroceryList({
+  items,
+  loading,
+  error,
+  loadItems,
+  addItem,
+  toggleChecked,
+  removeItem,
+  archiveItem,
+  onOpenDetails,
+}: GroceryListProps) {
   const [name, setName] = useState('');
   const [formError, setFormError] = useState('');
   const [suggestions, setSuggestions] = useState<GroceryItem[]>([]);

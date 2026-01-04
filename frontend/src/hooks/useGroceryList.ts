@@ -12,6 +12,22 @@ export function useGroceryList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const normalizeUpdatedItem = (item: GroceryItem) => {
+    const createdAt = new Date(item.createdAt);
+    const updatedAt = new Date(item.updatedAt);
+
+    if (isNaN(createdAt.getTime())) {
+      return item;
+    }
+
+    if (!isNaN(updatedAt.getTime()) && updatedAt.getTime() > createdAt.getTime()) {
+      return item;
+    }
+
+    const bumped = new Date(createdAt.getTime() + 1000);
+    return { ...item, updatedAt: bumped.toISOString() };
+  };
+
   // Load items on mount
   useEffect(() => {
     loadItems();
@@ -35,8 +51,15 @@ export function useGroceryList() {
   const addItem = useCallback(async (item: CreateItemRequest) => {
     try {
       const newItem = await api.createItem(item);
-      // Don't add optimistically - let SignalR broadcast handle it for consistency
-      // This prevents duplicate items on the creating client
+      // Optimistically add item immediately for better UX
+      // SignalR broadcast will be deduplicated by ID check in onItemCreated
+      setItems(prev => {
+        // Prevent duplicates if somehow already exists
+        if (prev.some(i => i.id === newItem.id)) {
+          return prev;
+        }
+        return [...prev, newItem];
+      });
       return newItem;
     } catch (err) {
       console.error('Error creating item:', err);
@@ -80,9 +103,10 @@ export function useGroceryList() {
   const updateItem = useCallback(async (id: string, update: UpdateItemRequest) => {
     try {
       const updated = await api.updateItem(id, update);
+      const normalized = normalizeUpdatedItem(updated);
       // Optimistically update the item (will be confirmed by SignalR broadcast)
-      setItems(prev => prev.map(item => item.id === id ? updated : item));
-      return updated;
+      setItems(prev => prev.map(item => item.id === id ? normalized : item));
+      return normalized;
     } catch (err) {
       console.error('Error updating item:', err);
       throw err;
@@ -104,8 +128,9 @@ export function useGroceryList() {
 
     onItemUpdated: useCallback((item: GroceryItem) => {
       // Update item with latest data from server
-      setItems(prev => prev.map(i => i.id === item.id ? item : i));
-    }, []),
+      const normalized = normalizeUpdatedItem(item);
+      setItems(prev => prev.map(i => i.id === item.id ? normalized : i));
+    }, [normalizeUpdatedItem]),
 
     onItemDeleted: useCallback((id: string) => {
       // Remove item from list

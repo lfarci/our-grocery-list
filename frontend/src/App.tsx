@@ -4,7 +4,17 @@ import { useGroceryList } from './hooks';
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
-  const { items, loading, updateItem } = useGroceryList();
+  const {
+    items,
+    loading,
+    error,
+    loadItems,
+    addItem,
+    toggleChecked,
+    removeItem,
+    archiveItem,
+    updateItem,
+  } = useGroceryList();
 
   // Listen for browser back/forward navigation
   useEffect(() => {
@@ -42,7 +52,19 @@ function App() {
   }
 
   // Default: render the main list
-  return <GroceryList onOpenDetails={(id) => navigateTo(`/items/${id}`)} />;
+  return (
+    <GroceryList
+      items={items}
+      loading={loading}
+      error={error}
+      loadItems={loadItems}
+      addItem={addItem}
+      toggleChecked={toggleChecked}
+      removeItem={removeItem}
+      archiveItem={archiveItem}
+      onOpenDetails={(id) => navigateTo(`/items/${id}`)}
+    />
+  );
 }
 
 export default App;

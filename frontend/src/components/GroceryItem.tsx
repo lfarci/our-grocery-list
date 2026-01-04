@@ -128,7 +128,11 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
   const showDeleteHint = translateX < -30;
 
   return (
-    <div className="relative overflow-hidden rounded-lg" data-testid={`item-container-${item.name}`}>
+    <div
+      className="relative overflow-hidden rounded-lg"
+      data-testid={`item-container-${item.name}`}
+      role="listitem"
+    >
       {/* Background hints */}
       <div className="absolute inset-0 flex items-center justify-between px-6">
         <div className={`flex items-center gap-2 transition-opacity ${showArchiveHint ? 'opacity-100' : 'opacity-0'}`}>
@@ -148,6 +152,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
       {/* Swipeable item content */}
       <div
         ref={containerRef}
+        data-swipeable="true"
         className={`p-4 rounded-lg shadow flex items-start gap-3 relative ${
           isChecked ? 'bg-softmint' : 'bg-cream'
         } transition-transform touch-none ${onOpenDetails ? 'cursor-pointer' : ''}`}

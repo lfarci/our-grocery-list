@@ -67,15 +67,14 @@ export function formatRelativeDate(dateString: string): string {
 }
 
 /**
- * Checks if two date strings represent meaningfully different times
- * (more than 1 minute apart)
+ * Checks if two date strings represent different times
  */
 export function areDatesDifferent(date1: string, date2: string): boolean {
   try {
     const d1 = new Date(date1);
     const d2 = new Date(date2);
     const diffMs = Math.abs(d1.getTime() - d2.getTime());
-    return diffMs > 60000; // More than 1 minute apart
+    return diffMs > 0;
   } catch {
     return false;
   }

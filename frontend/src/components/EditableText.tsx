@@ -114,23 +114,20 @@ export function EditableText({
   const displayValue = value || placeholder;
   const isPlaceholder = !value;
 
-  return (
-    <Component
-      onClick={() => setIsEditing(true)}
-      className={`cursor-pointer hover:bg-warmsand/30 rounded px-1 -mx-1 transition-colors ${
-        isPlaceholder ? 'text-softbrowngray italic' : ''
-      } ${className}`}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          setIsEditing(true);
-        }
-      }}
-      aria-label={`Edit ${displayValue}`}
-    >
-      {displayValue}
-    </Component>
-  );
+  const sharedDisplayProps = {
+    onClick: () => setIsEditing(true),
+    className: `cursor-pointer hover:bg-warmsand/30 rounded px-1 -mx-1 transition-colors ${
+      isPlaceholder ? 'text-softbrowngray italic' : ''
+    } ${className}`,
+    tabIndex: 0,
+    onKeyDown: (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setIsEditing(true);
+      }
+    },
+    'aria-label': `Edit ${displayValue}`,
+  };
+
+  return <Component {...sharedDisplayProps}>{displayValue}</Component>;
 }

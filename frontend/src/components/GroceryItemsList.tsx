@@ -19,7 +19,7 @@ export function GroceryItemsList({ items, onToggleChecked, onDelete, onArchive, 
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" role="list">
       {items.map((item) => (
         <GroceryItem
           key={item.id}

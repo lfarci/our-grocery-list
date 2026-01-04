@@ -5,11 +5,15 @@ import {
   swipeItem,
   getItemCheckbox,
   getItemContainer,
+  getSwipeableElement,
   cleanupItemsByPrefix,
   getTestPrefix,
   makeTestItemName,
+  waitForDeleteResponse,
+  waitForPatchResponse,
   SWIPE_CONFIG,
-} from './test-utils';
+  TIMEOUTS,
+} from './tools';
 
 test.describe('Swipe Gestures', () => {
   test.beforeEach(async ({ page }, testInfo) => {
@@ -29,23 +33,13 @@ test.describe('Swipe Gestures', () => {
     });
 
     await test.step('Swipe left to delete item', async () => {
-      const container = getItemContainer(page, itemName).first();
-      
-      // Set up response listener before starting swipe
-      const deleteResponse = page.waitForResponse(
-        response => response.url().includes('/api/items') && response.request().method() === 'DELETE',
-        { timeout: SWIPE_CONFIG.TIMEOUT }
-      );
-      
-      // Perform the swipe
+      const deleteResponse = waitForDeleteResponse(page);
       await swipeItem(page, itemName, 'left');
-      
-      // Wait for delete to complete
       await deleteResponse;
     });
 
     await test.step('Verify item is deleted from the list', async () => {
-      await expect(getItemCheckbox(page, itemName)).not.toBeVisible({ timeout: 5000 });
+      await expect(getItemCheckbox(page, itemName)).not.toBeVisible({ timeout: TIMEOUTS.VISIBILITY });
     });
   });
 
@@ -57,23 +51,13 @@ test.describe('Swipe Gestures', () => {
     });
 
     await test.step('Swipe right to archive item', async () => {
-      const container = getItemContainer(page, itemName).first();
-      
-      // Set up response listener before starting swipe
-      const archiveResponse = page.waitForResponse(
-        response => response.url().includes('/api/items') && response.request().method() === 'PATCH',
-        { timeout: SWIPE_CONFIG.TIMEOUT }
-      );
-      
-      // Perform the swipe
+      const archiveResponse = waitForPatchResponse(page);
       await swipeItem(page, itemName, 'right');
-      
-      // Wait for archive to complete
       await archiveResponse;
     });
 
     await test.step('Verify item is archived (removed from visible list)', async () => {
-      await expect(getItemCheckbox(page, itemName)).not.toBeVisible({ timeout: 5000 });
+      await expect(getItemCheckbox(page, itemName)).not.toBeVisible({ timeout: TIMEOUTS.VISIBILITY });
     });
   });
 
@@ -86,7 +70,7 @@ test.describe('Swipe Gestures', () => {
 
     await test.step('Perform short swipe that does not exceed threshold', async () => {
       const container = getItemContainer(page, itemName).first();
-      const swipeableDiv = container.locator('.touch-none');
+      const swipeableDiv = getSwipeableElement(container);
       const box = await container.boundingBox();
       expect(box).not.toBeNull();
       
@@ -110,7 +94,7 @@ test.describe('Swipe Gestures', () => {
           clientY: centerY,
           bubbles: true
         });
-        await page.waitForTimeout(10);
+        await page.waitForTimeout(SWIPE_CONFIG.STEP_DELAY);
       }
       
       // Complete the swipe
@@ -125,7 +109,7 @@ test.describe('Swipe Gestures', () => {
     
     await test.step('Clean up test data', async () => {
       await deleteItemBySwipe(page, itemName);
-      await expect(getItemCheckbox(page, itemName)).not.toBeVisible({ timeout: 5000 });
+      await expect(getItemCheckbox(page, itemName)).not.toBeVisible({ timeout: TIMEOUTS.VISIBILITY });
     });
   });
 });

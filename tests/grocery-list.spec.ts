@@ -9,8 +9,13 @@ import {
   makeTestItemName,
   isItemsListRequest,
   waitForSearch,
-  SWIPE_CONFIG,
-} from './test-utils';
+  waitForPostResponse,
+  waitForPatchResponse,
+  getAddItemInput,
+  getAddItemButton,
+  getMainHeading,
+  TIMEOUTS,
+} from './tools';
 
 test.describe('Grocery List Application', () => {
   test.beforeEach(async ({ page }, testInfo) => {
@@ -43,35 +48,28 @@ test.describe('Grocery List Application', () => {
     });
 
     await test.step('Verify main heading is visible', async () => {
-      const heading = page.getByRole('heading', { name: /Our Grocery List/i });
-      await expect(heading).toBeVisible();
+      await expect(getMainHeading(page)).toBeVisible();
     });
   });
 
   test('Main screen - Display list title and add form', async ({ page }) => {
     await test.step('Verify list title is present', async () => {
-      const heading = page.getByRole('heading', { name: /Our Grocery List/i });
-      await expect(heading).toBeVisible();
+      await expect(getMainHeading(page)).toBeVisible();
     });
 
     await test.step('Verify add item form is present', async () => {
-      const nameInput = page.getByPlaceholder('Add an item...');
-      await expect(nameInput).toBeVisible();
-      
-      const addButton = page.getByRole('button', { name: 'Add Item' });
-      await expect(addButton).toBeVisible();
+      await expect(getAddItemInput(page)).toBeVisible();
+      await expect(getAddItemButton(page)).toBeVisible();
     });
   });
 
   test('Adding items - Empty input does nothing', async ({ page }) => {
     await test.step('Try to add item with empty name', async () => {
-      const addButton = page.getByRole('button', { name: 'Add Item' });
-      await addButton.click();
+      await getAddItemButton(page).click();
     });
 
     await test.step('Verify validation error message appears', async () => {
-      const errorMessage = page.getByText('Please enter an item name');
-      await expect(errorMessage).toBeVisible();
+      await expect(page.getByText('Please enter an item name')).toBeVisible();
     });
 
     await test.step('Verify no item with empty name was created', async () => {
@@ -92,11 +90,8 @@ test.describe('Grocery List Application', () => {
     const expectedError = `Item name must be ${MAX_ITEM_NAME_LENGTH} characters or less`;
 
     await test.step('Try to add item with name > 50 characters', async () => {
-      const nameInput = page.getByPlaceholder('Add an item...');
-      await nameInput.fill(longItemName);
-      
-      const addButton = page.getByRole('button', { name: 'Add Item' });
-      await addButton.click();
+      await getAddItemInput(page).fill(longItemName);
+      await getAddItemButton(page).click();
     });
 
     await test.step('Verify validation error message appears', async () => {
@@ -105,14 +100,13 @@ test.describe('Grocery List Application', () => {
 
     await test.step('Verify validation prevents form submission', async () => {
       await expect(page.getByText(expectedError)).toBeVisible();
-      const nameInput = page.getByPlaceholder('Add an item...');
-      await expect(nameInput).toHaveValue(longItemName);
+      await expect(getAddItemInput(page)).toHaveValue(longItemName);
     });
   });
 
   test('Viewing the list - Empty state message', async ({ page }) => {
     await test.step('Verify empty state message when no items', async () => {
-      await expect(page.getByText('Your list is empty. Add something above.')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByText('Your list is empty. Add something above.')).toBeVisible({ timeout: TIMEOUTS.VISIBILITY });
     });
   });
 
@@ -124,10 +118,9 @@ test.describe('Grocery List Application', () => {
     });
 
     await test.step('Start typing similar name', async () => {
-      const nameInput = page.getByPlaceholder('Add an item...');
       const query = 'App';
       const responsePromise = waitForSearch(page, query);
-      await nameInput.fill(query);
+      await getAddItemInput(page).fill(query);
       await responsePromise;
     });
 
@@ -141,26 +134,20 @@ test.describe('Grocery List Application', () => {
     const itemName = makeTestItemName(test.info(), 'Bananas');
 
     await test.step('Type a new item name', async () => {
-      const nameInput = page.getByPlaceholder('Add an item...');
       const responsePromise = waitForSearch(page, itemName);
-      await nameInput.fill(itemName);
+      await getAddItemInput(page).fill(itemName);
       await responsePromise;
     });
 
     await test.step('Add item from suggestions CTA', async () => {
       const addNewButton = page.getByRole('button', { name: `Add "${itemName}" as new item` });
-
-      const responsePromise = page.waitForResponse(
-        response => response.url().includes('/api/items') && response.request().method() === 'POST',
-        { timeout: SWIPE_CONFIG.TIMEOUT }
-      );
-
+      const responsePromise = waitForPostResponse(page);
       await addNewButton.click();
       await responsePromise;
     });
 
     await test.step('Verify item was added to list', async () => {
-      await expect(getItemCheckbox(page, itemName).first()).toBeVisible({ timeout: 10000 });
+      await expect(getItemCheckbox(page, itemName).first()).toBeVisible({ timeout: TIMEOUTS.ITEM_APPEAR });
     });
   });
 
@@ -169,15 +156,13 @@ test.describe('Grocery List Application', () => {
     const uniqueItemName = makeTestItemName(test.info(), 'NoSuggestions');
     
     await test.step('Type a unique item name that has no suggestions', async () => {
-      const nameInput = page.getByPlaceholder('Add an item...');
       const responsePromise = waitForSearch(page, uniqueItemName);
-      await nameInput.fill(uniqueItemName);
+      await getAddItemInput(page).fill(uniqueItemName);
       await responsePromise;
     });
 
     await test.step('Verify "Add new item" button appears', async () => {
-      const addNewButton = page.getByRole('button', { name: `Add "${uniqueItemName}" as new item` });
-      await expect(addNewButton).toBeVisible();
+      await expect(page.getByRole('button', { name: `Add "${uniqueItemName}" as new item` })).toBeVisible();
     });
   });
 
@@ -185,28 +170,23 @@ test.describe('Grocery List Application', () => {
     const query = makeTestItemName(test.info(), 'OutsideClick');
 
     await test.step('Type in the input to show suggestions', async () => {
-      const nameInput = page.getByPlaceholder('Add an item...');
       const responsePromise = waitForSearch(page, query);
-      await nameInput.fill(query);
+      await getAddItemInput(page).fill(query);
       await responsePromise;
 
       await expect(page.getByRole('button', { name: `Add "${query}" as new item` })).toBeVisible();
     });
 
     await test.step('Verify input has text', async () => {
-      const nameInput = page.getByPlaceholder('Add an item...');
-      await expect(nameInput).toHaveValue(query);
+      await expect(getAddItemInput(page)).toHaveValue(query);
     });
 
     await test.step('Click outside the form area', async () => {
-      // Click on the main heading which is outside the form
-      const heading = page.getByRole('heading', { name: /Our Grocery List/i });
-      await heading.click();
+      await getMainHeading(page).click();
     });
 
     await test.step('Verify input is cleared and suggestions are closed', async () => {
-      const nameInput = page.getByPlaceholder('Add an item...');
-      await expect(nameInput).toHaveValue('');
+      await expect(getAddItemInput(page)).toHaveValue('');
 
       await expect(page.getByRole('button', { name: `Add "${query}" as new item` })).toHaveCount(0);
     });
@@ -222,13 +202,12 @@ test.describe('Grocery List Application', () => {
 
     await test.step('Archive the item', async () => {
       await archiveItemBySwipe(page, itemName);
-      await expect(getItemCheckbox(page, itemName)).not.toBeVisible({ timeout: 5000 });
+      await expect(getItemCheckbox(page, itemName)).not.toBeVisible({ timeout: TIMEOUTS.VISIBILITY });
     });
 
     await test.step('Type item name to see archived suggestion', async () => {
-      const nameInput = page.getByPlaceholder('Add an item...');
       const responsePromise = waitForSearch(page, itemName);
-      await nameInput.fill(itemName);
+      await getAddItemInput(page).fill(itemName);
       await responsePromise;
     });
 
@@ -238,17 +217,13 @@ test.describe('Grocery List Application', () => {
     });
 
     await test.step('Select archived suggestion to restore', async () => {
-      const restoreResponse = page.waitForResponse(
-        response => response.url().includes('/api/items') && response.request().method() === 'PATCH',
-        { timeout: SWIPE_CONFIG.TIMEOUT }
-      );
-
+      const restoreResponse = waitForPatchResponse(page);
       await page.getByRole('button', { name: itemName }).click();
       await restoreResponse;
     });
 
     await test.step('Verify item is restored to active list', async () => {
-      await expect(getItemCheckbox(page, itemName).first()).toBeVisible({ timeout: 5000 });
+      await expect(getItemCheckbox(page, itemName).first()).toBeVisible({ timeout: TIMEOUTS.VISIBILITY });
     });
   });
 
@@ -261,18 +236,14 @@ test.describe('Grocery List Application', () => {
     });
 
     await test.step('Type exact name and use "Add another" CTA', async () => {
-      const nameInput = page.getByPlaceholder('Add an item...');
       const responsePromise = waitForSearch(page, itemName);
-      await nameInput.fill(itemName);
+      await getAddItemInput(page).fill(itemName);
       await responsePromise;
 
       const addAnother = page.getByRole('button', { name: `Add another "${itemName}"` });
       await expect(addAnother).toBeVisible();
 
-      const postResponse = page.waitForResponse(
-        response => response.url().includes('/api/items') && response.request().method() === 'POST',
-        { timeout: SWIPE_CONFIG.TIMEOUT }
-      );
+      const postResponse = waitForPostResponse(page);
       await addAnother.click();
       await postResponse;
     });

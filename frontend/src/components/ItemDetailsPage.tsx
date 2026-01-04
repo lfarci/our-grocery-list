@@ -8,7 +8,7 @@ import { StatusBadge } from './StatusBadge';
 interface ItemDetailsPageProps {
   item: GroceryItem | null | undefined;
   onBack: () => void;
-  onUpdate?: (id: string, update: UpdateItemRequest) => Promise<void>;
+  onUpdate?: (id: string, update: UpdateItemRequest) => Promise<GroceryItem>;
   loading?: boolean;
 }
 
@@ -40,7 +40,7 @@ function NotFoundState({ onBack }: NotFoundStateProps) {
 
 interface ItemDetailsCardProps {
   item: GroceryItem;
-  onUpdate?: (id: string, update: UpdateItemRequest) => Promise<void>;
+  onUpdate?: (id: string, update: UpdateItemRequest) => Promise<GroceryItem>;
 }
 
 function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
