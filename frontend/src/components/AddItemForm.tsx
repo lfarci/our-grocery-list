@@ -1,16 +1,11 @@
 import { FormEvent, useEffect } from 'react';
-import { GroceryItem, QuantityUnit } from '../types';
-import { QUANTITY_UNITS } from '../constants';
+import { GroceryItem } from '../types';
 import { ItemSuggestions } from './ItemSuggestions';
 
 interface AddItemFormProps {
   name: string;
-  quantity: string;
-  quantityUnit: QuantityUnit | '';
   error: string;
   onNameChange: (value: string) => void;
-  onQuantityChange: (value: string) => void;
-  onQuantityUnitChange: (value: QuantityUnit | '') => void;
   onSubmit: (e: FormEvent) => void;
   suggestions: GroceryItem[];
   onSelectSuggestion: (item: GroceryItem) => void;
@@ -21,12 +16,8 @@ interface AddItemFormProps {
 
 export function AddItemForm({ 
   name, 
-  quantity,
-  quantityUnit,
   error, 
   onNameChange, 
-  onQuantityChange,
-  onQuantityUnitChange,
   onSubmit,
   suggestions,
   onSelectSuggestion,
@@ -51,9 +42,9 @@ export function AddItemForm({
   return (
     <div ref={formRef}>
       <form onSubmit={onSubmit} className="mb-6 bg-cream p-4 rounded-lg shadow">
-        <div className="space-y-4">
-          <div className="space-y-3">
-            <div className="relative">
+        <div className="space-y-3">
+          <div className="relative flex gap-2">
+            <div className="flex-1 relative">
               <input
                 ref={inputRef}
                 id="name"
@@ -74,49 +65,24 @@ export function AddItemForm({
                 />
               )}
             </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label htmlFor="quantity" className="sr-only">Quantity</label>
-                <input
-                  id="quantity"
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => onQuantityChange(e.target.value)}
-                  placeholder="Quantity"
-                  inputMode="decimal"
-                  className="w-full px-3 py-2 border border-warmsand rounded-md focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-cream text-warmcharcoal"
-                />
-              </div>
-              <div>
-                <label htmlFor="quantityUnit" className="sr-only">Unit</label>
-                <select
-                  id="quantityUnit"
-                  value={quantityUnit}
-                  onChange={(e) => onQuantityUnitChange(e.target.value as QuantityUnit | '')}
-                  className="w-full px-3 py-2 border border-warmsand rounded-md focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-cream text-warmcharcoal"
-                >
-                  <option value="">Unit</option>
-                  {QUANTITY_UNITS.map(unit => (
-                    <option key={unit} value={unit}>{unit}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            {error && (
-              <p className="text-mutedcoral text-sm font-semibold">{error}</p>
-            )}
             <button
               type="submit"
-              className="bg-softblue text-cream px-4 py-2 rounded-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-softblue focus:ring-offset-2 transition-colors cursor-pointer ml-auto"
+              className="bg-softblue text-cream p-2 rounded-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-softblue focus:ring-offset-2 transition-colors cursor-pointer"
               aria-label="Add Item"
             >
-              Add Item
+              <svg 
+                className="w-6 h-6" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
             </button>
           </div>
+          {error && (
+            <p className="text-mutedcoral text-sm font-semibold">{error}</p>
+          )}
         </div>
       </form>
     </div>
