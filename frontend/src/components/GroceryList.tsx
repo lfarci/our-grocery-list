@@ -2,7 +2,7 @@ import { useState, FormEvent, useCallback, useEffect, useRef } from 'react';
 import { ErrorMessage } from './ErrorMessage';
 import { AddItemForm } from './AddItemForm';
 import { GroceryItemsList } from './GroceryItemsList';
-import { CreateItemRequest, GroceryItem, ItemState } from '../types';
+import { CreateItemRequest, GroceryItem, ItemState, QuantityUnit } from '../types';
 import * as api from '../api';
 import { MAX_ITEM_NAME_LENGTH } from '../constants';
 
@@ -30,25 +30,18 @@ export function GroceryList({
   onOpenDetails,
 }: GroceryListProps) {
   const [name, setName] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [quantityUnit, setQuantityUnit] = useState<QuantityUnit | ''>('');
   const [formError, setFormError] = useState('');
   const [suggestions, setSuggestions] = useState<GroceryItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
-  const [shouldRefocus, setShouldRefocus] = useState(false);
 
   // Compute whether to show suggestions based on name length
   const trimmedName = name.trim();
   const shouldShowSuggestions = trimmedName.length >= 2;
   // Show suggestions popover when user types 2+ characters, even if API returns 0 suggestions
   const showSuggestions = shouldShowSuggestions;
-
-  // Refocus input after operations complete
-  useEffect(() => {
-    if (shouldRefocus) {
-      inputRef.current?.focus();
-      setShouldRefocus(false);
-    }
-  }, [shouldRefocus]);
 
   // Handle click outside to close suggestions and clear input
   useEffect(() => {
@@ -99,29 +92,56 @@ export function GroceryList({
     }
   }, []);
 
+  const buildQuantityPayload = useCallback(() => {
+    const parsedQuantity = quantity.trim() ? Number(quantity) : null;
+    if (parsedQuantity !== null && Number.isNaN(parsedQuantity)) {
+      setFormError('Quantity must be a number');
+      return null;
+    }
+
+    if (parsedQuantity !== null && !quantityUnit) {
+      setFormError('Please select a unit for the quantity');
+      return null;
+    }
+
+    return {
+      quantity: parsedQuantity,
+      quantityUnit: parsedQuantity !== null ? quantityUnit : null,
+    };
+  }, [quantity, quantityUnit]);
+
   const handleSelectSuggestion = useCallback(async (item: GroceryItem) => {
     if (item.state === 'archived') {
       // Unarchive and restore to active list immediately
       try {
         await toggleChecked(item.id, 'active');
         setName('');
+        setQuantity('');
+        setQuantityUnit('');
         setFormError('');
-        setShouldRefocus(true);
+        inputRef.current?.focus();
       } catch {
         setFormError('Failed to restore item. Please try again.');
       }
     } else if (item.state === 'active') {
       // Allow creating a duplicate of an active item
       try {
-        await addItem({ name: item.name });
+        const quantityPayload = buildQuantityPayload();
+        if (!quantityPayload) {
+          return;
+        }
+
+        await addItem({ name: item.name, ...quantityPayload });
         setName('');
+        setQuantity('');
+        setQuantityUnit('');
         setFormError('');
-        setShouldRefocus(true);
+        inputRef.current?.focus();
       } catch {
         setFormError('Failed to add item. Please try again.');
       }
     }
-  }, [toggleChecked, addItem]);
+  }, [toggleChecked, addItem, buildQuantityPayload]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -137,11 +157,21 @@ export function GroceryList({
       return;
     }
 
+    const quantityPayload = buildQuantityPayload();
+    if (!quantityPayload) {
+      return;
+    }
+
     try {
-      await addItem({ name: name.trim() });
+      await addItem({ 
+        name: name.trim(),
+        ...quantityPayload,
+      });
       setName('');
+      setQuantity('');
+      setQuantityUnit('');
       setFormError('');
-      setShouldRefocus(true);
+      inputRef.current?.focus();
     } catch {
       setFormError('Failed to add item. Please try again.');
     }
@@ -166,8 +196,12 @@ export function GroceryList({
 
         <AddItemForm
           name={name}
+          quantity={quantity}
+          quantityUnit={quantityUnit}
           error={formError}
           onNameChange={handleNameChange}
+          onQuantityChange={setQuantity}
+          onQuantityUnitChange={setQuantityUnit}
           onSubmit={handleSubmit}
           suggestions={suggestions}
           onSelectSuggestion={handleSelectSuggestion}

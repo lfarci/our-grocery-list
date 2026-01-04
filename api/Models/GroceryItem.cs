@@ -48,6 +48,20 @@ public class GroceryItem
     public string? Notes { get; set; }
 
     /// <summary>
+    /// Optional numeric quantity for the item
+    /// </summary>
+    [JsonProperty("quantity")]
+    [JsonPropertyName("quantity")]
+    public double? Quantity { get; set; }
+
+    /// <summary>
+    /// Optional unit for the quantity
+    /// </summary>
+    [JsonProperty("quantityUnit")]
+    [JsonPropertyName("quantityUnit")]
+    public string? QuantityUnit { get; set; }
+
+    /// <summary>
     /// State of the item (active, checked, archived)
     /// </summary>
     [JsonProperty("state")]
@@ -81,6 +95,8 @@ public class CreateItemRequest
 {
     public string Name { get; set; } = string.Empty;
     public string? Notes { get; set; }
+    public double? Quantity { get; set; }
+    public string? QuantityUnit { get; set; }
 }
 
 /// <summary>
@@ -90,5 +106,7 @@ public class UpdateItemRequest
 {
     public string? Name { get; set; }
     public string? Notes { get; set; }
+    public double? Quantity { get; set; }
+    public string? QuantityUnit { get; set; }
     public string? State { get; set; }
 }

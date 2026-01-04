@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json;
 using api.Models;
 using api.Repositories;
 using Microsoft.Azure.Functions.Worker;
@@ -95,12 +96,25 @@ public class ItemFunctions
             return new CreateItemOutput { HttpResponse = errorResponse };
         }
 
+        string? normalizedQuantityUnit = null;
+        if (request.QuantityUnit is not null)
+        {
+            if (!QuantityUnits.TryNormalize(request.QuantityUnit, out normalizedQuantityUnit))
+            {
+                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await errorResponse.WriteStringAsync("Invalid quantity unit");
+                return new CreateItemOutput { HttpResponse = errorResponse };
+            }
+        }
+
         var now = DateTime.UtcNow;
         var item = new GroceryItem
         {
             Id = Guid.NewGuid().ToString(),
             Name = request.Name,
             Notes = request.Notes,
+            Quantity = request.Quantity,
+            QuantityUnit = normalizedQuantityUnit,
             State = ItemState.Active,
             CreatedAt = now,
             UpdatedAt = now
@@ -143,7 +157,15 @@ public class ItemFunctions
             return new UpdateItemOutput { HttpResponse = req.CreateResponse(HttpStatusCode.NotFound) };
         }
 
-        var request = await req.ReadFromJsonAsync<UpdateItemRequest>();
+        var rawRequest = await req.ReadFromJsonAsync<JsonElement>();
+        var request = rawRequest.Deserialize<UpdateItemRequest>();
+
+        if (request is null && rawRequest.ValueKind == JsonValueKind.Undefined)
+        {
+            var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+            await errorResponse.WriteStringAsync("Request body is required");
+            return new UpdateItemOutput { HttpResponse = errorResponse };
+        }
         
         var hasChanges = false;
 
@@ -164,6 +186,54 @@ public class ItemFunctions
         {
             existingItem.Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes;
             hasChanges = true;
+        }
+
+        if (rawRequest.TryGetProperty("quantity", out var quantityElement))
+        {
+            if (quantityElement.ValueKind == JsonValueKind.Null)
+            {
+                existingItem.Quantity = null;
+                hasChanges = true;
+            }
+            else if (quantityElement.ValueKind == JsonValueKind.Number)
+            {
+                existingItem.Quantity = quantityElement.GetDouble();
+                hasChanges = true;
+            }
+            else
+            {
+                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await errorResponse.WriteStringAsync("Quantity must be a number");
+                return new UpdateItemOutput { HttpResponse = errorResponse };
+            }
+        }
+
+        if (rawRequest.TryGetProperty("quantityUnit", out var quantityUnitElement))
+        {
+            if (quantityUnitElement.ValueKind == JsonValueKind.Null)
+            {
+                existingItem.QuantityUnit = null;
+                hasChanges = true;
+            }
+            else if (quantityUnitElement.ValueKind == JsonValueKind.String)
+            {
+                var providedUnit = quantityUnitElement.GetString();
+                if (!QuantityUnits.TryNormalize(providedUnit, out var normalizedUnit))
+                {
+                    var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                    await errorResponse.WriteStringAsync("Invalid quantity unit");
+                    return new UpdateItemOutput { HttpResponse = errorResponse };
+                }
+
+                existingItem.QuantityUnit = normalizedUnit;
+                hasChanges = true;
+            }
+            else
+            {
+                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await errorResponse.WriteStringAsync("Quantity unit must be a string");
+                return new UpdateItemOutput { HttpResponse = errorResponse };
+            }
         }
 
         if (request?.State is not null)
