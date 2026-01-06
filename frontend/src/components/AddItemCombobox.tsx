@@ -295,6 +295,10 @@ export function AddItemCombobox({
             placeholder="Add an item..."
             className="w-full px-3 py-3 pr-10 border-2 border-warmsand rounded-lg focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-cream text-warmcharcoal text-base shadow-sm"
             autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck="false"
+            enterKeyHint="enter"
           />
           {value && (
             <button
