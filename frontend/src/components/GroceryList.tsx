@@ -119,7 +119,7 @@ export function GroceryList({
         error={formError}
       />
 
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto px-4 pt-4 sm:px-6 lg:px-8">
         {error && (
           <div className="mt-4">
             <ErrorMessage message={error} onRetry={loadItems} />
