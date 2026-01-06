@@ -110,16 +110,16 @@ export function GroceryList({
 
   return (
     <div className="min-h-screen bg-honey">
-      <div className="max-w-2xl mx-auto px-4 pt-4 sm:px-6 lg:px-8">
-        <AddItemCombobox
-          suggestions={suggestions}
-          onAddItem={handleAddItem}
-          onRestoreArchivedItem={handleRestoreArchivedItem}
-          onDuplicateActiveItem={handleDuplicateActiveItem}
-          onSearchQueryChange={setSearchQuery}
-          error={formError}
-        />
+      <AddItemCombobox
+        suggestions={suggestions}
+        onAddItem={handleAddItem}
+        onRestoreArchivedItem={handleRestoreArchivedItem}
+        onDuplicateActiveItem={handleDuplicateActiveItem}
+        onSearchQueryChange={setSearchQuery}
+        error={formError}
+      />
 
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
         {error && (
           <div className="mt-4">
             <ErrorMessage message={error} onRetry={loadItems} />

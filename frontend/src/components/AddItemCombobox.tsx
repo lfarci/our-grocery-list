@@ -272,12 +272,13 @@ export function AddItemCombobox({
     : undefined;
   
   return (
-    <div ref={containerRef} className="sticky top-0 z-10 bg-honey pb-4">
-      <div className="relative">
-        <label htmlFor="grocery-input" className="sr-only">
-          Add item to grocery list
-        </label>
+    <div className="sticky top-0 z-10 bg-honey border-b-2 border-warmsand shadow-sm">
+      <div ref={containerRef} className="max-w-2xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
         <div className="relative">
+          <label htmlFor="grocery-input" className="sr-only">
+            Add item to grocery list
+          </label>
+          <div className="relative">
           <input
             ref={inputRef}
             id="grocery-input"
@@ -464,6 +465,7 @@ export function AddItemCombobox({
         className="sr-only"
       >
         {announcement}
+      </div>
       </div>
     </div>
   );
