@@ -1,0 +1,54 @@
+name: Detect changed Playwright specs
+description: Output a space-separated list of changed Playwright spec files for a pull request.
+inputs:
+  pull-number:
+    description: Pull request number; defaults to the current workflow pull request when omitted.
+    required: false
+outputs:
+  specs:
+    description: Space-separated list of changed Playwright spec file paths.
+runs:
+  using: composite
+  steps:
+    - name: Detect changed Playwright specs
+      id: detect
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { context, core, github } = require('@actions/github');
+
+          const pullNumberInput = core.getInput('pull-number');
+          const pullNumber = pullNumberInput || context.payload.pull_request?.number;
+
+          if (!pullNumber) {
+            core.info('No pull request context available; no specs to report.');
+            core.setOutput('specs', '');
+            return;
+          }
+
+          const perPage = 100;
+          const files = [];
+          let page = 1;
+
+          while (true) {
+            const { data } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: Number(pullNumber),
+              per_page: perPage,
+              page,
+            });
+
+            if (!data.length) break;
+
+            files.push(...data.map((f) => f.filename));
+            if (data.length < perPage) break;
+            page += 1;
+          }
+
+          const specs = files.filter((file) => file.startsWith('tests/') && file.endsWith('.spec.ts'));
+
+          core.info(`Changed files:\n${files.join('\n') || '(none)'}`);
+          core.info(`Playwright specs to run:\n${specs.join('\n') || '(none)'}`);
+
+          core.setOutput('specs', specs.join(' '));
