@@ -260,4 +260,47 @@ test.describe('Item Details Page', () => {
       await expect(page.getByText(notes)).toBeVisible();
     });
   });
+
+  test('Quantity and unit can be edited and shown on list', async ({ page }) => {
+    const itemName = makeTestItemName(test.info(), 'QuantityUnit');
+
+    await test.step('Add an item and navigate to details', async () => {
+      await addItem(page, itemName);
+      await navigateToItemDetails(page, itemName);
+    });
+
+    const quantityInput = page.locator('#details-quantity');
+    const unitSelect = page.locator('#details-quantity-unit');
+
+    await test.step('Quantity inputs are visible', async () => {
+      await expect(quantityInput).toBeVisible();
+      await expect(unitSelect).toBeVisible();
+    });
+
+    await test.step('Set quantity value', async () => {
+      await quantityInput.fill('2.5');
+      const patchPromise = waitForPatchResponse(page);
+      await page.locator('header').click();
+      await patchPromise;
+      await expect(quantityInput).toHaveValue('2.5');
+    });
+
+    await test.step('Select unit and save', async () => {
+      const patchPromise = waitForPatchResponse(page);
+      await unitSelect.selectOption('kg');
+      await patchPromise;
+      await expect(unitSelect).toHaveValue('kg');
+    });
+
+    await test.step('Verify quantity and unit persist on details page', async () => {
+      await expect(quantityInput).toHaveValue('2.5');
+      await expect(unitSelect).toHaveValue('kg');
+    });
+
+    await test.step('Verify quantity and unit show on the main list', async () => {
+      await navigateBackToList(page);
+      const itemRow = page.getByRole('listitem').filter({ hasText: itemName }).first();
+      await expect(itemRow).toContainText('2.5 kg');
+    });
+  });
 });
