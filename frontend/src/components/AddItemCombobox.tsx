@@ -198,25 +198,35 @@ export function AddItemCombobox({
         setAnnouncement(`Added ${trimmedValue}`);
       }
       
+      // Only clear and close on success
       setValue('');
       setIsOpen(false);
       setHighlightedIndex(0);
       inputRef.current?.focus();
     } catch (err) {
       console.error('Failed to add item:', err);
+      // Keep input value and focus so user can see error
+      inputRef.current?.focus();
     }
   }, [trimmedValue, onAddItem, onRestoreArchivedItem, onDuplicateActiveItem]);
   
   const handleKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
     if (!isOpen) {
       // If dropdown is closed and user presses Enter, try to add as new item
-      if (e.key === 'Enter' && trimmedValue.length > 0) {
+      if (e.key === 'Enter') {
         e.preventDefault();
-        handleSelectOption({
-          id: 'add-new',
-          type: 'add-new',
-          label: `Add "${trimmedValue}"`,
-        });
+        if (trimmedValue.length > 0) {
+          handleSelectOption({
+            id: 'add-new',
+            type: 'add-new',
+            label: `Add "${trimmedValue}"`,
+          });
+        } else {
+          // Trigger validation for empty input
+          onAddItem('').catch(() => {
+            // Error will be displayed by parent component
+          });
+        }
       }
       return;
     }
