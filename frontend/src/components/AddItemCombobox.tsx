@@ -343,21 +343,21 @@ export function AddItemCombobox({
                         handleSelectOption(option);
                       }}
                       className={`
-                        px-3 py-3 cursor-pointer flex items-center gap-2 min-h-[44px]
+                        px-3 py-3 cursor-pointer flex items-center gap-2 min-h-[44px] group
                         ${isHighlighted 
                           ? 'bg-softblue text-cream border-l-4 border-warmcharcoal font-semibold' 
-                          : 'hover:bg-softblue hover:bg-opacity-10'}
+                          : 'hover:bg-softblue hover:text-cream'}
                       `}
                     >
                       <svg 
-                        className={`w-5 h-5 flex-shrink-0 ${isHighlighted ? 'text-cream' : 'text-warmcharcoal'}`}
+                        className={`w-5 h-5 flex-shrink-0 ${isHighlighted ? 'text-cream' : 'text-warmcharcoal group-hover:text-cream'}`}
                         fill="none" 
                         stroke="currentColor" 
                         viewBox="0 0 24 24"
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
-                      <span className={isHighlighted ? 'text-cream' : 'text-warmcharcoal'}>{option.label}</span>
+                      <span className={isHighlighted ? 'text-cream' : 'text-warmcharcoal group-hover:text-cream'}>{option.label}</span>
                     </div>
                   );
                 })}
@@ -384,23 +384,23 @@ export function AddItemCombobox({
                         handleSelectOption(option);
                       }}
                       className={`
-                        px-3 py-3 cursor-pointer flex items-center gap-2 min-h-[44px]
+                        px-3 py-3 cursor-pointer flex items-center gap-2 min-h-[44px] group
                         ${isHighlighted 
                           ? 'bg-softblue text-cream border-l-4 border-warmcharcoal font-semibold' 
-                          : 'hover:bg-softblue hover:bg-opacity-10'}
+                          : 'hover:bg-softblue hover:text-cream'}
                       `}
                     >
                       <svg 
-                        className={`w-5 h-5 flex-shrink-0 ${isHighlighted ? 'text-cream' : 'text-warmcharcoal'}`}
+                        className={`w-5 h-5 flex-shrink-0 ${isHighlighted ? 'text-cream' : 'text-warmcharcoal group-hover:text-cream'}`}
                         fill="none" 
                         stroke="currentColor" 
                         viewBox="0 0 24 24"
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
-                      <span className={isHighlighted ? 'text-cream' : 'text-warmcharcoal'}>{option.label}</span>
+                      <span className={isHighlighted ? 'text-cream' : 'text-warmcharcoal group-hover:text-cream'}>{option.label}</span>
                       {option.sublabel && (
-                        <span className={`text-xs ml-auto opacity-60 ${isHighlighted ? 'text-cream' : 'text-warmcharcoal'}`}>{option.sublabel}</span>
+                        <span className={`text-xs ml-auto opacity-60 ${isHighlighted ? 'text-cream' : 'text-warmcharcoal group-hover:text-cream'}`}>{option.sublabel}</span>
                       )}
                     </div>
                   );
@@ -428,21 +428,21 @@ export function AddItemCombobox({
                         handleSelectOption(option);
                       }}
                       className={`
-                        px-3 py-3 cursor-pointer flex items-center gap-2 font-semibold min-h-[44px]
+                        px-3 py-3 cursor-pointer flex items-center gap-2 font-semibold min-h-[44px] group
                         ${isHighlighted 
                           ? 'bg-softblue text-cream border-l-4 border-warmcharcoal' 
-                          : 'text-softblue hover:bg-softblue hover:bg-opacity-10'}
+                          : 'text-softblue hover:bg-softblue hover:text-cream'}
                       `}
                     >
                       <svg 
-                        className={`w-5 h-5 flex-shrink-0 ${isHighlighted ? 'text-cream' : ''}`}
+                        className={`w-5 h-5 flex-shrink-0 ${isHighlighted ? 'text-cream' : 'text-softblue group-hover:text-cream'}`}
                         fill="none" 
                         stroke="currentColor" 
                         viewBox="0 0 24 24"
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
-                      <span>{option.label}</span>
+                      <span className="group-hover:text-cream">{option.label}</span>
                     </div>
                   );
                 })}
