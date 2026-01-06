@@ -1,6 +1,6 @@
-import { useState, FormEvent, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ErrorMessage } from './ErrorMessage';
-import { AddItemForm } from './AddItemForm';
+import { AddItemCombobox } from './AddItemCombobox';
 import { GroceryItemsList } from './GroceryItemsList';
 import { CreateItemRequest, GroceryItem, ItemState } from '../types';
 import * as api from '../api';
@@ -29,116 +29,76 @@ export function GroceryList({
   archiveItem,
   onOpenDetails,
 }: GroceryListProps) {
-  const [name, setName] = useState('');
-  const [formError, setFormError] = useState('');
   const [suggestions, setSuggestions] = useState<GroceryItem[]>([]);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const formRef = useRef<HTMLDivElement>(null);
-
-  // Compute whether to show suggestions based on name length
-  const trimmedName = name.trim();
-  const shouldShowSuggestions = trimmedName.length >= 2;
-  // Show suggestions popover when user types 2+ characters, even if API returns 0 suggestions
-  const showSuggestions = shouldShowSuggestions;
-
-  // Handle click outside to close suggestions and clear input
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (formRef.current && !formRef.current.contains(event.target as Node)) {
-        // Only clear if there's text in the input
-        if (name.trim()) {
-          setName('');
-          setSuggestions([]);
-          setFormError('');
-        }
-      }
-    };
-
-    // Add event listener
-    document.addEventListener('mousedown', handleClickOutside);
-    
-    return () => {
-      // Cleanup event listener
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [name]);
+  const [formError, setFormError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Debounced search for suggestions
   useEffect(() => {
-    if (!shouldShowSuggestions) {
+    const trimmedQuery = searchQuery.trim();
+    if (trimmedQuery.length < 2) {
+      setSuggestions([]);
       return;
     }
 
     const timeoutId = setTimeout(async () => {
       try {
-        const results = await api.searchItems(trimmedName);
+        const results = await api.searchItems(trimmedQuery);
         setSuggestions(results);
       } catch (err) {
         console.error('Error searching items:', err);
+        setSuggestions([]);
       }
     }, 300); // 300ms debounce
 
     return () => clearTimeout(timeoutId);
-  }, [trimmedName, shouldShowSuggestions]);
+  }, [searchQuery]);
 
-  const handleNameChange = useCallback((value: string) => {
-    setName(value);
+  const handleAddItem = useCallback(async (name: string) => {
     setFormError('');
-    // Clear suggestions when user clears the input or types less than 2 characters
-    if (value.trim().length < 2) {
-      setSuggestions([]);
-    }
-  }, []);
-
-  const handleSelectSuggestion = useCallback(async (item: GroceryItem) => {
-    if (item.state === 'archived') {
-      // Unarchive and restore to active list immediately
-      try {
-        await toggleChecked(item.id, 'active');
-        setName('');
-        setFormError('');
-        inputRef.current?.focus();
-      } catch {
-        setFormError('Failed to restore item. Please try again.');
-      }
-    } else if (item.state === 'active') {
-      // Allow creating a duplicate of an active item
-      try {
-        await addItem({ name: item.name });
-        setName('');
-        setFormError('');
-        inputRef.current?.focus();
-      } catch {
-        setFormError('Failed to add item. Please try again.');
-      }
-    }
-  }, [toggleChecked, addItem]);
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
     
-    // Validate empty input - show validation message
+    // Validate empty input
     if (!name.trim()) {
       setFormError('Please enter an item name');
-      return;
+      throw new Error('Empty item name');
     }
 
     if (name.trim().length > MAX_ITEM_NAME_LENGTH) {
       setFormError(`Item name must be ${MAX_ITEM_NAME_LENGTH} characters or less`);
-      return;
+      throw new Error('Item name too long');
     }
 
     try {
-      await addItem({ 
-        name: name.trim(),
-      });
-      setName('');
+      await addItem({ name: name.trim() });
       setFormError('');
-      inputRef.current?.focus();
-    } catch {
+      setSearchQuery('');
+    } catch (err) {
       setFormError('Failed to add item. Please try again.');
+      throw err;
     }
-  };
+  }, [addItem]);
+
+  const handleRestoreArchivedItem = useCallback(async (item: GroceryItem) => {
+    setFormError('');
+    try {
+      await toggleChecked(item.id, 'active');
+      setSearchQuery('');
+    } catch (err) {
+      setFormError('Failed to restore item. Please try again.');
+      throw err;
+    }
+  }, [toggleChecked]);
+
+  const handleDuplicateActiveItem = useCallback(async (item: GroceryItem) => {
+    setFormError('');
+    try {
+      await addItem({ name: item.name });
+      setSearchQuery('');
+    } catch (err) {
+      setFormError('Failed to add item. Please try again.');
+      throw err;
+    }
+  }, [addItem]);
 
   if (loading) {
     return (
@@ -150,24 +110,21 @@ export function GroceryList({
 
   return (
     <div className="min-h-screen bg-honey">
-      <div className="max-w-2xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-warmcharcoal mb-6 text-center font-display">
-          Our Grocery List
-        </h1>
-
-        {error && <ErrorMessage message={error} onRetry={loadItems} />}
-
-        <AddItemForm
-          name={name}
-          error={formError}
-          onNameChange={handleNameChange}
-          onSubmit={handleSubmit}
+      <div className="max-w-2xl mx-auto px-4 pt-4 sm:px-6 lg:px-8">
+        <AddItemCombobox
           suggestions={suggestions}
-          onSelectSuggestion={handleSelectSuggestion}
-          showSuggestions={showSuggestions}
-          inputRef={inputRef}
-          formRef={formRef}
+          onAddItem={handleAddItem}
+          onRestoreArchivedItem={handleRestoreArchivedItem}
+          onDuplicateActiveItem={handleDuplicateActiveItem}
+          onSearchQueryChange={setSearchQuery}
+          error={formError}
         />
+
+        {error && (
+          <div className="mt-4">
+            <ErrorMessage message={error} onRetry={loadItems} />
+          </div>
+        )}
 
         <GroceryItemsList
           items={items}

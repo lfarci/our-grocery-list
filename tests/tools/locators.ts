@@ -28,21 +28,25 @@ export function getSwipeableElement(itemContainer: ReturnType<typeof getItemCont
  * Get the add item input field
  */
 export function getAddItemInput(page: Page) {
-  return page.getByRole('textbox', { name: 'Item Name' });
+  return page.getByRole('combobox', { name: 'Add item to grocery list' });
 }
 
 /**
- * Get the add item button
+ * Get the add item button - No longer exists in the new UI
+ * @deprecated The add button has been removed. Items are added via Enter key or dropdown selection.
  */
 export function getAddItemButton(page: Page) {
-  return page.getByRole('button', { name: 'Add Item' });
+  // Return a locator that will never match for backward compatibility
+  return page.locator('[data-testid="deprecated-add-button"]');
 }
 
 /**
  * Get the main heading of the page
+ * @deprecated The main heading "Our Grocery List" has been removed from the page
  */
 export function getMainHeading(page: Page) {
-  return page.getByRole('heading', { level: 1 });
+  // Return a locator that will never match since heading was removed
+  return page.locator('[data-testid="deprecated-main-heading"]');
 }
 
 /**
