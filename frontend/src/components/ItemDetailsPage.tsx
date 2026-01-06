@@ -1,4 +1,6 @@
-import type { GroceryItem, UpdateItemRequest } from '../types';
+import { useEffect, useState } from 'react';
+import type { GroceryItem, QuantityUnit, UpdateItemRequest } from '../types';
+import { QUANTITY_UNITS } from '../constants';
 import { BackButton } from './BackButton';
 import { EditableText } from './EditableText';
 import { ItemDates } from './ItemDates';
@@ -44,6 +46,15 @@ interface ItemDetailsCardProps {
 }
 
 function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
+  const [quantityValue, setQuantityValue] = useState(item.quantity?.toString() ?? '');
+  const [quantityUnit, setQuantityUnit] = useState<QuantityUnit | ''>(item.quantityUnit ?? '');
+  const [isSavingQuantity, setIsSavingQuantity] = useState(false);
+
+  useEffect(() => {
+    setQuantityValue(item.quantity?.toString() ?? '');
+    setQuantityUnit(item.quantityUnit ?? '');
+  }, [item.quantity, item.quantityUnit]);
+
   const handleNameSave = async (newName: string) => {
     if (onUpdate && newName !== item.name) {
       await onUpdate(item.id, { name: newName });
@@ -54,6 +65,43 @@ function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
     if (onUpdate) {
       await onUpdate(item.id, { notes: newNotes || null });
     }
+  };
+
+  const saveQuantity = async (newQuantityValue: string, newQuantityUnit: QuantityUnit | '') => {
+    if (!onUpdate) {
+      return;
+    }
+
+    const trimmed = newQuantityValue.trim();
+    const parsedQuantity = trimmed ? Number(trimmed) : null;
+
+    if (parsedQuantity !== null && Number.isNaN(parsedQuantity)) {
+      setQuantityValue(item.quantity?.toString() ?? '');
+      setQuantityUnit(item.quantityUnit ?? '');
+      return;
+    }
+
+    const normalizedUnit = parsedQuantity !== null ? (newQuantityUnit || null) : null;
+
+    if (parsedQuantity === item.quantity && normalizedUnit === (item.quantityUnit ?? null)) {
+      return;
+    }
+
+    setIsSavingQuantity(true);
+    try {
+      await onUpdate(item.id, { quantity: parsedQuantity, quantityUnit: normalizedUnit });
+    } finally {
+      setIsSavingQuantity(false);
+    }
+  };
+
+  const handleQuantityBlur = async () => {
+    await saveQuantity(quantityValue, quantityUnit);
+  };
+
+  const handleUnitChange = async (newUnit: QuantityUnit | '') => {
+    setQuantityUnit(newUnit);
+    await saveQuantity(quantityValue, newUnit);
   };
 
   return (
@@ -95,6 +143,41 @@ function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
             {item.notes || <span className="text-softbrowngray italic">No notes</span>}
           </p>
         )}
+      </div>
+
+      <div className="border-t border-warmsand pt-4 mt-6">
+        <h2 className="text-sm font-semibold text-softbrowngray mb-2">Quantity</h2>
+        <div className="grid grid-cols-2 gap-3 max-w-md">
+          <div>
+            <label htmlFor="details-quantity" className="sr-only">Quantity</label>
+            <input
+              id="details-quantity"
+              type="number"
+              inputMode="decimal"
+              value={quantityValue}
+              onChange={(e) => setQuantityValue(e.target.value)}
+              onBlur={handleQuantityBlur}
+              disabled={isSavingQuantity}
+              className="w-full px-3 py-2 border border-warmsand rounded-md focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-cream text-warmcharcoal"
+              placeholder="Enter quantity"
+            />
+          </div>
+          <div>
+            <label htmlFor="details-quantity-unit" className="sr-only">Unit</label>
+            <select
+              id="details-quantity-unit"
+              value={quantityUnit}
+              onChange={(e) => handleUnitChange(e.target.value as QuantityUnit | '')}
+              disabled={isSavingQuantity}
+              className="w-full px-3 py-2 border border-warmsand rounded-md focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-cream text-warmcharcoal"
+            >
+              <option value="">Unit</option>
+              {QUANTITY_UNITS.map(unit => (
+                <option key={unit} value={unit}>{unit}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
     </div>
   );

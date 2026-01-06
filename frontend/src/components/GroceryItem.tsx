@@ -11,6 +11,10 @@ interface GroceryItemProps {
 
 export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpenDetails }: GroceryItemProps) {
   const isChecked = item.state === 'checked';
+  const hasQuantity = item.quantity !== undefined && item.quantity !== null;
+  const quantityText = hasQuantity
+    ? `${item.quantity}${item.quantityUnit ? ` ${item.quantityUnit}` : ''}`
+    : null;
   const [translateX, setTranslateX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const [hasMovedForSwipe, setHasMovedForSwipe] = useState(false);
@@ -180,6 +184,11 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
           <div className={`font-semibold break-words ${isChecked ? 'line-through text-softbrowngray' : 'text-warmcharcoal'}`}>
             {item.name}
           </div>
+          {quantityText && (
+            <div className="text-sm mt-1 break-words text-warmcharcoal">
+              {quantityText}
+            </div>
+          )}
           {item.notes && (
             <div className={`text-sm mt-1 break-words text-softbrowngray`}>
               {item.notes}

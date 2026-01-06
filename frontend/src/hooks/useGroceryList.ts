@@ -12,7 +12,7 @@ export function useGroceryList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const normalizeUpdatedItem = (item: GroceryItem) => {
+  const normalizeUpdatedItem = useCallback((item: GroceryItem) => {
     const createdAt = new Date(item.createdAt);
     const updatedAt = new Date(item.updatedAt);
 
@@ -26,7 +26,7 @@ export function useGroceryList() {
 
     const bumped = new Date(createdAt.getTime() + 1000);
     return { ...item, updatedAt: bumped.toISOString() };
-  };
+  }, []);
 
   // Load items on mount
   useEffect(() => {
@@ -111,7 +111,7 @@ export function useGroceryList() {
       console.error('Error updating item:', err);
       throw err;
     }
-  }, []);
+  }, [normalizeUpdatedItem]);
 
   // Set up SignalR handlers for real-time updates from other clients
   useSignalR({
