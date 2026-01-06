@@ -40,19 +40,19 @@ export function AddItemForm({
   };
 
   return (
-    <div ref={formRef}>
-      <form onSubmit={onSubmit} className="mb-6 bg-cream p-4 rounded-lg shadow">
-        <div className="space-y-3">
-          <div className="relative flex gap-2">
-            <div className="flex-1 relative">
+    <div ref={formRef} className="w-full">
+      <form onSubmit={onSubmit} className="w-full">
+        <div className="flex flex-col items-center gap-2">
+          <div className="relative flex w-full max-w-3xl items-center gap-3">
+            <div className="relative flex-1">
               <input
                 ref={inputRef}
                 id="name"
                 type="text"
                 value={name}
                 onChange={(e) => onNameChange(e.target.value)}
-                placeholder="Add an item..."
-                className="w-full px-3 py-2 border border-warmsand rounded-md focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-cream text-warmcharcoal"
+                placeholder="Search or add an item"
+                className="w-full rounded-full border border-warmsand bg-cream px-4 py-3 text-warmcharcoal placeholder:text-softbrowngray shadow-sm focus:border-softblue focus:outline-none focus:ring-2 focus:ring-softblue"
                 autoComplete="off"
                 aria-label="Item Name"
               />
@@ -67,11 +67,11 @@ export function AddItemForm({
             </div>
             <button
               type="submit"
-              className="bg-softblue text-cream p-2 rounded-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-softblue focus:ring-offset-2 transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center rounded-full bg-softblue px-4 py-3 text-cream shadow-sm transition-colors hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-softblue focus:ring-offset-2"
               aria-label="Add Item"
             >
               <svg 
-                className="w-6 h-6" 
+                className="h-6 w-6" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -81,7 +81,7 @@ export function AddItemForm({
             </button>
           </div>
           {error && (
-            <p className="text-mutedcoral text-sm font-semibold">{error}</p>
+            <p className="text-center text-sm font-semibold text-mutedcoral">{error}</p>
           )}
         </div>
       </form>
