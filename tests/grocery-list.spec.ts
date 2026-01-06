@@ -129,7 +129,7 @@ test.describe('Grocery List Application', () => {
 
     await test.step('Verify suggestions appear', async () => {
       await expect(page.getByText('Already in List')).toBeVisible();
-      await expect(page.getByRole('button', { name: itemName })).toBeVisible();
+      await expect(page.getByRole('option', { name: itemName })).toBeVisible();
     });
   });
 
@@ -143,7 +143,7 @@ test.describe('Grocery List Application', () => {
     });
 
     await test.step('Add item from suggestions CTA', async () => {
-      const addNewButton = page.getByRole('button', { name: `Add "${itemName}" as new item` });
+      const addNewButton = page.getByRole('option', { name: `Add "${itemName}" as new item` });
       const responsePromise = waitForPostResponse(page);
       await addNewButton.click();
       await responsePromise;
@@ -165,7 +165,7 @@ test.describe('Grocery List Application', () => {
     });
 
     await test.step('Verify "Add new item" button appears', async () => {
-      await expect(page.getByRole('button', { name: `Add "${uniqueItemName}" as new item` })).toBeVisible();
+      await expect(page.getByRole('option', { name: `Add "${uniqueItemName}" as new item` })).toBeVisible();
     });
   });
 
@@ -177,7 +177,7 @@ test.describe('Grocery List Application', () => {
       await getAddItemInput(page).fill(query);
       await responsePromise;
 
-      await expect(page.getByRole('button', { name: `Add "${query}" as new item` })).toBeVisible();
+      await expect(page.getByRole('option', { name: `Add "${query}" as new item` })).toBeVisible();
     });
 
     await test.step('Verify input has text', async () => {
@@ -192,7 +192,7 @@ test.describe('Grocery List Application', () => {
     await test.step('Verify input is cleared and suggestions are closed', async () => {
       await expect(getAddItemInput(page)).toHaveValue('');
 
-      await expect(page.getByRole('button', { name: `Add "${query}" as new item` })).toHaveCount(0);
+      await expect(page.getByRole('option', { name: `Add "${query}" as new item` })).toHaveCount(0);
     });
   });
 
@@ -217,12 +217,12 @@ test.describe('Grocery List Application', () => {
 
     await test.step('Verify "Recently Used (Archived)" section appears', async () => {
       await expect(page.getByText('Recently Used (Archived)')).toBeVisible();
-      await expect(page.getByRole('button', { name: itemName })).toBeVisible();
+      await expect(page.getByRole('option', { name: itemName })).toBeVisible();
     });
 
     await test.step('Select archived suggestion to restore', async () => {
       const restoreResponse = waitForPatchResponse(page);
-      await page.getByRole('button', { name: itemName }).click();
+      await page.getByRole('option', { name: itemName }).click();
       await restoreResponse;
     });
 
@@ -244,7 +244,7 @@ test.describe('Grocery List Application', () => {
       await getAddItemInput(page).fill(itemName);
       await responsePromise;
 
-      const addAnother = page.getByRole('button', { name: `Add another "${itemName}"` });
+      const addAnother = page.getByRole('option', { name: `Add another "${itemName}"` });
       await expect(addAnother).toBeVisible();
 
       const postResponse = waitForPostResponse(page);
