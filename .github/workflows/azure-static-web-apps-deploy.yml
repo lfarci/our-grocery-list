@@ -7,14 +7,24 @@ run-name: >-
     format('Deploy PR #{0} Preview Environment', github.event.pull_request.number)
   }}
 
+concurrency:
+  group: azure-static-web-apps-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches:
       - main
+    paths:
+      - 'frontend/**'
+      - 'api/**'
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - main
+    paths:
+      - 'frontend/**'
+      - 'api/**'
   workflow_dispatch:
 
 permissions:
@@ -102,13 +112,26 @@ jobs:
           
           echo "::notice title=Preview Environment Configuration::Set CosmosDbDatabaseId=Preview for environment ${PR_NUMBER}"
 
+  detect_playwright_tests:
+    name: Detect changed Playwright specs
+    needs: build_and_deploy
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    outputs:
+      changed_specs: ${{ steps.detect.outputs.specs }}
+    steps:
+      - name: Detect Playwright specs
+        id: detect
+        uses: ./.github/actions/detect-playwright-specs
+
   test:
     name: Run E2E Tests on Preview
-    needs: [build_and_deploy, configure_preview_environment]
-    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    needs: [build_and_deploy, configure_preview_environment, detect_playwright_tests]
+    if: github.event_name == 'pull_request' && github.event.action != 'closed' && needs.detect_playwright_tests.outputs.changed_specs != ''
     uses: ./.github/workflows/playwright-tests.yml
     with:
       deployment_url: ${{ needs.build_and_deploy.outputs.deployment_url }}
+      test_files: ${{ needs.detect_playwright_tests.outputs.changed_specs }}
 
   close_pull_request:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'

@@ -12,6 +12,11 @@ on:
         required: false
         type: string
         default: ''
+      test_files:
+        description: 'Space-separated list of Playwright spec files to run; runs all when empty'
+        required: false
+        type: string
+        default: ''
   workflow_dispatch:
     inputs:
       deployment_url:
@@ -22,6 +27,11 @@ on:
         description: 'Branch name to checkout and test'
         required: true
         type: string
+      test_files:
+        description: 'Space-separated list of Playwright spec files to run; runs all when empty'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -80,7 +90,13 @@ jobs:
           CI: true
         run: |
           echo "Running Playwright tests against: ${{ inputs.deployment_url }}"
-          npx playwright test --project=chromium
+          if [ -n "${{ inputs.test_files }}" ]; then
+            echo "Running specified test files: ${{ inputs.test_files }}"
+            npx playwright test --project=chromium ${{ inputs.test_files }}
+          else
+            echo "No test files specified; running full suite."
+            npx playwright test --project=chromium
+          fi
 
       - name: Upload test results
         if: always()
