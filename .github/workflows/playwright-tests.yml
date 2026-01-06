@@ -12,6 +12,11 @@ on:
         required: false
         type: string
         default: ''
+      test_files:
+        description: 'Space-separated list of Playwright spec files to run; runs all when empty'
+        required: false
+        type: string
+        default: ''
   workflow_dispatch:
     inputs:
       deployment_url:
@@ -22,6 +27,11 @@ on:
         description: 'Branch name to checkout and test'
         required: true
         type: string
+      test_files:
+        description: 'Space-separated list of Playwright spec files to run; runs all when empty'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -34,8 +44,6 @@ jobs:
       - name: Checkout code (default)
         if: inputs.branch_name == ''
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Check if branch exists
         if: inputs.branch_name != ''
@@ -60,72 +68,38 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch_name }}
-          fetch-depth: 0
-
-      - name: Determine base ref
-        id: base_ref
-        run: |
-          if [ -n "${{ github.event.pull_request.base.sha }}" ]; then
-            echo "base=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "base=origin/main" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Detect changed Playwright tests
-        id: changed_tests
-        run: |
-          BASE="${{ steps.base_ref.outputs.base }}"
-
-          if [[ "${BASE}" == origin/* ]]; then
-            git fetch origin "${BASE#origin/}" --depth=1
-            BASE_SHA="$(git rev-parse FETCH_HEAD)"
-          else
-            BASE_SHA="${BASE}"
-          fi
-
-          git diff --name-only "${BASE_SHA}"...HEAD -- 'tests/**/*.spec.ts' > /tmp/changed_tests.txt || true
-          COUNT=$(grep -c '' /tmp/changed_tests.txt || true)
-
-          echo "Changed tests (${COUNT}):"
-          cat /tmp/changed_tests.txt || true
-
-          echo "count=${COUNT}" >> "$GITHUB_OUTPUT"
-          FILE_LIST="$(tr '\n' ' ' < /tmp/changed_tests.txt | sed 's/[[:space:]]*$//')"
-          echo "file_list=${FILE_LIST}" >> "$GITHUB_OUTPUT"
-
-      - name: Skip tests (no changes)
-        if: steps.changed_tests.outputs.count == '0'
-        run: echo "No Playwright test files changed; skipping Playwright run."
 
       - name: Setup Node.js
-        if: steps.changed_tests.outputs.count != '0'
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
           cache: 'npm'
 
       - name: Install dependencies
-        if: steps.changed_tests.outputs.count != '0'
         # This repo's postinstall runs `dotnet restore` for the API.
         # For E2E tests against a deployed URL we don't need the API restored/built,
         # and skipping scripts avoids requiring .NET in this workflow.
         run: npm ci --ignore-scripts
 
       - name: Install Playwright browsers
-        if: steps.changed_tests.outputs.count != '0'
         run: npx playwright install chromium --with-deps
 
       - name: Run Playwright tests
-        if: steps.changed_tests.outputs.count != '0'
         env:
           BASE_URL: ${{ inputs.deployment_url }}
           CI: true
         run: |
           echo "Running Playwright tests against: ${{ inputs.deployment_url }}"
-          npx playwright test --project=chromium ${{ steps.changed_tests.outputs.file_list }}
+          if [ -n "${{ inputs.test_files }}" ]; then
+            echo "Running specified test files: ${{ inputs.test_files }}"
+            npx playwright test --project=chromium ${{ inputs.test_files }}
+          else
+            echo "No test files specified; running full suite."
+            npx playwright test --project=chromium
+          fi
 
       - name: Upload test results
-        if: steps.changed_tests.outputs.count != '0' && always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
@@ -134,7 +108,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload test traces
-        if: steps.changed_tests.outputs.count != '0' && always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-traces

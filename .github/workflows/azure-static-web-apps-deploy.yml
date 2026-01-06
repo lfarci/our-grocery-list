@@ -112,13 +112,67 @@ jobs:
           
           echo "::notice title=Preview Environment Configuration::Set CosmosDbDatabaseId=Preview for environment ${PR_NUMBER}"
 
+  detect_playwright_tests:
+    name: Detect changed Playwright specs
+    needs: build_and_deploy
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    outputs:
+      changed_specs: ${{ steps.changed_files.outputs.specs }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: List changed files
+        id: changed_files
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { context, core, github } = require('@actions/github');
+
+            if (context.eventName !== 'pull_request') {
+              core.setOutput('specs', '');
+              core.info('Not a pull request; no test files detected.');
+              return;
+            }
+
+            const perPage = 100;
+            const files = [];
+            let page = 1;
+
+            while (true) {
+              const { data } = await github.rest.pulls.listFiles({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                per_page: perPage,
+                page
+              });
+
+              if (!data.length) break;
+
+              files.push(...data.map((f) => f.filename));
+              if (data.length < perPage) break;
+              page += 1;
+            }
+
+            const specs = files.filter((file) => file.startsWith('tests/') && file.endsWith('.spec.ts'));
+
+            core.info(`Changed files:\n${files.join('\n')}`);
+            core.info(`Playwright specs to run:\n${specs.join('\n') || '(none)'}`);
+
+            core.setOutput('specs', specs.join(' '));
+
   test:
     name: Run E2E Tests on Preview
-    needs: [build_and_deploy, configure_preview_environment]
-    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    needs: [build_and_deploy, configure_preview_environment, detect_playwright_tests]
+    if: github.event_name == 'pull_request' && github.event.action != 'closed' && needs.detect_playwright_tests.outputs.changed_specs != ''
     uses: ./.github/workflows/playwright-tests.yml
     with:
       deployment_url: ${{ needs.build_and_deploy.outputs.deployment_url }}
+      test_files: ${{ needs.detect_playwright_tests.outputs.changed_specs }}
 
   close_pull_request:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
