@@ -15,8 +15,6 @@ runs:
       uses: actions/github-script@v7
       with:
         script: |
-          const { context, core, github } = require('@actions/github');
-
           const pullNumberInput = core.getInput('pull-number');
           const pullNumber = pullNumberInput || context.payload.pull_request?.number;
 
