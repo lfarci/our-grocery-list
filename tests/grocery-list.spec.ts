@@ -47,25 +47,28 @@ test.describe('Grocery List Application', () => {
       await expect(page).toHaveTitle('Our Grocery List');
     });
 
-    await test.step('Verify main heading is visible', async () => {
-      await expect(getMainHeading(page)).toBeVisible();
-    });
-  });
-
-  test('Main screen - Display list title and add form', async ({ page }) => {
-    await test.step('Verify list title is present', async () => {
-      await expect(getMainHeading(page)).toBeVisible();
-    });
-
-    await test.step('Verify add item form is present', async () => {
+    await test.step('Verify add item input is visible', async () => {
       await expect(getAddItemInput(page)).toBeVisible();
-      await expect(getAddItemButton(page)).toBeVisible();
     });
   });
 
-  test('Adding items - Empty input does nothing', async ({ page }) => {
-    await test.step('Try to add item with empty name', async () => {
-      await getAddItemButton(page).click();
+  test('Main screen - Display add form', async ({ page }) => {
+    await test.step('Verify add item input is present', async () => {
+      await expect(getAddItemInput(page)).toBeVisible();
+    });
+
+    await test.step('Verify input has proper ARIA attributes', async () => {
+      const input = getAddItemInput(page);
+      await expect(input).toHaveAttribute('role', 'combobox');
+      await expect(input).toHaveAttribute('aria-autocomplete', 'list');
+    });
+  });
+
+  test('Adding items - Empty input shows validation', async ({ page }) => {
+    await test.step('Try to add item with empty name by pressing Enter', async () => {
+      const input = getAddItemInput(page);
+      await input.focus();
+      await input.press('Enter');
     });
 
     await test.step('Verify validation error message appears', async () => {
@@ -91,7 +94,7 @@ test.describe('Grocery List Application', () => {
 
     await test.step('Try to add item with name > 50 characters', async () => {
       await getAddItemInput(page).fill(longItemName);
-      await getAddItemButton(page).click();
+      await getAddItemInput(page).press('Enter');
     });
 
     await test.step('Verify validation error message appears', async () => {
@@ -182,7 +185,8 @@ test.describe('Grocery List Application', () => {
     });
 
     await test.step('Click outside the form area', async () => {
-      await getMainHeading(page).click();
+      // Click on the empty list message which is outside the combobox
+      await page.getByText('Your list is empty. Add something above.').click();
     });
 
     await test.step('Verify input is cleared and suggestions are closed', async () => {
