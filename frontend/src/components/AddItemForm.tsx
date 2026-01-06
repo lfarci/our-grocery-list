@@ -42,8 +42,8 @@ export function AddItemForm({
   return (
     <div ref={formRef} className="w-full">
       <form onSubmit={onSubmit} className="w-full">
-        <div className="flex flex-col items-center gap-2">
-          <div className="relative flex w-full max-w-3xl items-center gap-3">
+        <div className="flex w-full justify-center">
+          <div className="relative flex w-full max-w-4xl items-stretch gap-3">
             <div className="relative flex-1">
               <input
                 ref={inputRef}
@@ -52,7 +52,7 @@ export function AddItemForm({
                 value={name}
                 onChange={(e) => onNameChange(e.target.value)}
                 placeholder="Search or add an item"
-                className="w-full rounded-full border border-warmsand bg-cream px-4 py-3 text-warmcharcoal placeholder:text-softbrowngray shadow-sm focus:border-softblue focus:outline-none focus:ring-2 focus:ring-softblue"
+                className="w-full border border-warmsand bg-cream px-4 py-3 text-warmcharcoal placeholder:text-softbrowngray shadow-sm focus:border-softblue focus:outline-none focus:ring-2 focus:ring-softblue"
                 autoComplete="off"
                 aria-label="Item Name"
               />
@@ -67,7 +67,7 @@ export function AddItemForm({
             </div>
             <button
               type="submit"
-              className="inline-flex items-center justify-center rounded-full bg-softblue px-4 py-3 text-cream shadow-sm transition-colors hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-softblue focus:ring-offset-2"
+              className="inline-flex items-center justify-center bg-softblue px-4 py-3 text-cream shadow-sm transition-colors hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-softblue focus:ring-offset-2"
               aria-label="Add Item"
             >
               <svg 
@@ -80,10 +80,10 @@ export function AddItemForm({
               </svg>
             </button>
           </div>
-          {error && (
-            <p className="text-center text-sm font-semibold text-mutedcoral">{error}</p>
-          )}
         </div>
+        {error && (
+          <p className="pt-2 text-center text-sm font-semibold text-mutedcoral">{error}</p>
+        )}
       </form>
     </div>
   );

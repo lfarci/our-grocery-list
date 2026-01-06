@@ -150,21 +150,19 @@ export function GroceryList({
 
   return (
     <div className="min-h-screen bg-honey">
-      <nav className="border-b border-warmsand bg-honey/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-5xl items-center justify-center px-4 py-4 sm:px-6 lg:px-8">
-          <div className="w-full rounded-full bg-cream/80 p-2 shadow-sm">
-            <AddItemForm
-              name={name}
-              error={formError}
-              onNameChange={handleNameChange}
-              onSubmit={handleSubmit}
-              suggestions={suggestions}
-              onSelectSuggestion={handleSelectSuggestion}
-              showSuggestions={showSuggestions}
-              inputRef={inputRef}
-              formRef={formRef}
-            />
-          </div>
+      <nav className="w-full border-b border-warmsand bg-honey/90 backdrop-blur-sm">
+        <div className="flex w-full justify-center px-4 py-4 sm:px-6 lg:px-8">
+          <AddItemForm
+            name={name}
+            error={formError}
+            onNameChange={handleNameChange}
+            onSubmit={handleSubmit}
+            suggestions={suggestions}
+            onSelectSuggestion={handleSelectSuggestion}
+            showSuggestions={showSuggestions}
+            inputRef={inputRef}
+            formRef={formRef}
+          />
         </div>
       </nav>
 
