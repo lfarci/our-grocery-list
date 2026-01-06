@@ -122,13 +122,13 @@ jobs:
     steps:
       - name: Detect Playwright specs
         id: detect
-        uses: ./.github/actions/detect-playwright-specs
+        uses: lfarci/our-grocery-list/.github/actions/detect-playwright-specs@main
 
   test:
     name: Run E2E Tests on Preview
     needs: [build_and_deploy, configure_preview_environment, detect_playwright_tests]
     if: github.event_name == 'pull_request' && github.event.action != 'closed' && needs.detect_playwright_tests.outputs.changed_specs != ''
-    uses: ./.github/workflows/playwright-tests.yml
+    uses: lfarci/our-grocery-list/.github/workflows/playwright-tests.yml@main
     with:
       deployment_url: ${{ needs.build_and_deploy.outputs.deployment_url }}
       test_files: ${{ needs.detect_playwright_tests.outputs.changed_specs }}
