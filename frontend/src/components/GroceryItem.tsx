@@ -32,7 +32,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
   };
 
   // Shared function to update swipe position
-  const updateSwipePosition = (clientX: number) => {
+  const updateSwipePosition = useCallback((clientX: number) => {
     currentXRef.current = clientX;
     const deltaX = currentXRef.current - startXRef.current;
     
@@ -44,7 +44,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
     // Limit the swipe distance
     const limitedDeltaX = Math.max(-MAX_SWIPE, Math.min(MAX_SWIPE, deltaX));
     setTranslateX(limitedDeltaX);
-  };
+  }, []);
 
   // Shared function to complete swipe action
   const completeSwipe = useCallback(() => {
@@ -119,7 +119,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
   // Global mouse move handler for when cursor leaves element during swipe
   const handleGlobalMouseMove = useCallback((e: MouseEvent) => {
     updateSwipePosition(e.clientX);
-  }, []);
+  }, [updateSwipePosition]);
 
   // Add global mouse up listener when swiping
   const handleGlobalMouseUp = useCallback(() => {
