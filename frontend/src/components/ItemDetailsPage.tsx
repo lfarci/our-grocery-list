@@ -55,6 +55,11 @@ function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
     setQuantityUnit(item.quantityUnit ?? '');
   }, [item.quantity, item.quantityUnit]);
 
+  const revertQuantityToOriginal = () => {
+    setQuantityValue(item.quantity?.toString() ?? '');
+    setQuantityUnit(item.quantityUnit ?? '');
+  };
+
   const handleNameSave = async (newName: string) => {
     if (onUpdate && newName !== item.name) {
       await onUpdate(item.id, { name: newName });
@@ -76,15 +81,13 @@ function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
     const parsedQuantity = trimmed ? Number(trimmed) : null;
 
     if (parsedQuantity !== null && Number.isNaN(parsedQuantity)) {
-      setQuantityValue(item.quantity?.toString() ?? '');
-      setQuantityUnit(item.quantityUnit ?? '');
+      revertQuantityToOriginal();
       return;
     }
 
     // Reject negative quantities
     if (parsedQuantity !== null && parsedQuantity < 0) {
-      setQuantityValue(item.quantity?.toString() ?? '');
-      setQuantityUnit(item.quantityUnit ?? '');
+      revertQuantityToOriginal();
       return;
     }
 
