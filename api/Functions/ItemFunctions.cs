@@ -96,6 +96,13 @@ public class ItemFunctions
             return new CreateItemOutput { HttpResponse = errorResponse };
         }
 
+        if (request.Quantity.HasValue && request.Quantity.Value < 0)
+        {
+            var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+            await errorResponse.WriteStringAsync("Quantity cannot be negative");
+            return new CreateItemOutput { HttpResponse = errorResponse };
+        }
+
         string? normalizedQuantityUnit = null;
         if (request.QuantityUnit is not null)
         {
@@ -197,7 +204,14 @@ public class ItemFunctions
             }
             else if (quantityElement.ValueKind == JsonValueKind.Number)
             {
-                existingItem.Quantity = quantityElement.GetDouble();
+                var quantity = quantityElement.GetDouble();
+                if (quantity < 0)
+                {
+                    var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                    await errorResponse.WriteStringAsync("Quantity cannot be negative");
+                    return new UpdateItemOutput { HttpResponse = errorResponse };
+                }
+                existingItem.Quantity = quantity;
                 hasChanges = true;
             }
             else

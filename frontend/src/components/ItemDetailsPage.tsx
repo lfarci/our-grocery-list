@@ -81,6 +81,13 @@ function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
       return;
     }
 
+    // Reject negative quantities
+    if (parsedQuantity !== null && parsedQuantity < 0) {
+      setQuantityValue(item.quantity?.toString() ?? '');
+      setQuantityUnit(item.quantityUnit ?? '');
+      return;
+    }
+
     const normalizedUnit = parsedQuantity !== null ? (newQuantityUnit || null) : null;
 
     if (parsedQuantity === item.quantity && normalizedUnit === (item.quantityUnit ?? null)) {
@@ -154,6 +161,7 @@ function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
               id="details-quantity"
               type="number"
               inputMode="decimal"
+              min="0"
               value={quantityValue}
               onChange={(e) => setQuantityValue(e.target.value)}
               onBlur={handleQuantityBlur}
