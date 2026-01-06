@@ -442,7 +442,7 @@ export function AddItemCombobox({
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
-                      <span className="group-hover:text-cream">{option.label}</span>
+                      <span className={`${isHighlighted ? 'text-cream' : 'text-softblue'} group-hover:text-cream`}>{option.label}</span>
                     </div>
                   );
                 })}
