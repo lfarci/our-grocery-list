@@ -116,6 +116,11 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
     updateSwipePosition(e.clientX);
   };
 
+  // Global mouse move handler for when cursor leaves element during swipe
+  const handleGlobalMouseMove = useCallback((e: MouseEvent) => {
+    updateSwipePosition(e.clientX);
+  }, []);
+
   // Add global mouse up listener when swiping
   const handleGlobalMouseUp = useCallback(() => {
     completeSwipe();
@@ -124,9 +129,13 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
   useEffect(() => {
     if (!isSwiping) return;
     
+    window.addEventListener('mousemove', handleGlobalMouseMove);
     window.addEventListener('mouseup', handleGlobalMouseUp);
-    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
-  }, [isSwiping, handleGlobalMouseUp]);
+    return () => {
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isSwiping, handleGlobalMouseMove, handleGlobalMouseUp]);
 
   const showArchiveHint = translateX > 30;
   const showDeleteHint = translateX < -30;
