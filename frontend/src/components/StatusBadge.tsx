@@ -10,12 +10,18 @@ const stateStyles: Record<ItemState, string> = {
   active: 'bg-honey/50 text-warmcharcoal border border-basketbrown/30',
 };
 
+const stateLabels: Record<ItemState, string> = {
+  active: 'To buy',
+  checked: 'Available',
+  archived: 'Archived',
+};
+
 export function StatusBadge({ state }: StatusBadgeProps) {
   return (
     <span
-      className={`shrink-0 px-3 py-1 rounded-full text-sm font-semibold capitalize ${stateStyles[state]}`}
+      className={`shrink-0 px-3 py-1 rounded-full text-sm font-semibold ${stateStyles[state]}`}
     >
-      {state}
+      {stateLabels[state]}
     </span>
   );
 }
