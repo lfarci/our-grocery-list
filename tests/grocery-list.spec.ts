@@ -12,7 +12,6 @@ import {
   waitForPostResponse,
   waitForPatchResponse,
   getAddItemInput,
-  getAddItemButton,
   getMainHeading,
   TIMEOUTS,
 } from './tools';
@@ -59,13 +58,12 @@ test.describe('Grocery List Application', () => {
 
     await test.step('Verify add item form is present', async () => {
       await expect(getAddItemInput(page)).toBeVisible();
-      await expect(getAddItemButton(page)).toBeVisible();
     });
   });
 
   test('Adding items - Empty input does nothing', async ({ page }) => {
     await test.step('Try to add item with empty name', async () => {
-      await getAddItemButton(page).click();
+      await getAddItemInput(page).press('Enter');
     });
 
     await test.step('Verify validation error message appears', async () => {
@@ -91,7 +89,7 @@ test.describe('Grocery List Application', () => {
 
     await test.step('Try to add item with name > 50 characters', async () => {
       await getAddItemInput(page).fill(longItemName);
-      await getAddItemButton(page).click();
+      await getAddItemInput(page).press('Enter');
     });
 
     await test.step('Verify validation error message appears', async () => {
