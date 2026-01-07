@@ -158,7 +158,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
         ref={containerRef}
         data-swipeable="true"
         className={`px-4 py-3 rounded-xl border shadow-sm flex items-start gap-3 relative transition-all ${
-          isChecked ? 'bg-softmint border-warmsand' : 'bg-softwhitecream border-warmsand hover:shadow-md hover:-translate-y-[1px]'
+          isChecked ? 'bg-softmint border-warmsand/40' : 'bg-softwhitecream border-warmsand/40 hover:shadow-md hover:-translate-y-[1px]'
         } touch-none ${onOpenDetails ? 'cursor-pointer' : ''}`}
         style={{
           transform: `translateX(${translateX}px)${!isSwiping && !isChecked ? ' translateY(0)' : ''}`,
@@ -185,7 +185,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
             {item.name}
           </div>
           {quantityText && (
-            <div className="text-sm mt-1 break-words text-warmcharcoal">
+            <div className="text-sm mt-1 break-words text-softbrowngray">
               {quantityText}
             </div>
           )}

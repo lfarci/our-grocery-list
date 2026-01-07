@@ -151,7 +151,7 @@ export function GroceryList({
   return (
     <div className="min-h-screen bg-cream flex flex-col">
       <div className="flex-1 overflow-y-auto pb-24">
-        <div className="max-w-2xl mx-auto px-4 py-6">
+        <div className="max-w-2xl mx-auto px-4 pt-6 pb-6">
           {error && <ErrorMessage message={error} onRetry={loadItems} />}
 
           <GroceryItemsList
@@ -165,7 +165,7 @@ export function GroceryList({
       </div>
 
       {/* Fixed bottom composer bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-cream border-t border-warmsand shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.75rem)' }}>
+      <div className="fixed bottom-0 left-0 right-0 bg-cream border-t border-warmsand/60" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.75rem)' }}>
         <div className="max-w-2xl mx-auto px-4 py-3">
           <AddItemForm
             name={name}
