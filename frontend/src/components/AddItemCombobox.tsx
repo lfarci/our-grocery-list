@@ -293,7 +293,7 @@ export function AddItemCombobox({
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Add an item..."
-            className="w-full px-3 py-3 pr-10 border border-warmsand rounded-lg focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-softwhitecream text-warmcharcoal text-base shadow-sm"
+            className="w-full px-3 py-3 pr-10 border border-warmsand rounded-lg focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-softwhite text-warmcharcoal text-base shadow-sm"
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
@@ -325,7 +325,7 @@ export function AddItemCombobox({
             id={listboxId}
             role="listbox"
             aria-label="Grocery item suggestions"
-            className="absolute w-full mt-1 bg-softwhitecream border border-warmsand rounded-lg shadow-lg overflow-auto"
+            className="absolute w-full mt-1 bg-softwhite border border-warmsand rounded-lg shadow-lg overflow-auto"
             style={{ maxHeight: `${dropdownMaxHeightRef.current}px` }}
           >
             {/* Archived items section */}
@@ -403,9 +403,9 @@ export function AddItemCombobox({
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
-                      <span className={isHighlighted ? 'text-softwhitecream' : 'text-warmcharcoal group-hover:text-softwhitecream'}>{option.label}</span>
+                      <span className={isHighlighted ? 'text-softwhite' : 'text-warmcharcoal group-hover:text-softwhite'}>{option.label}</span>
                       {option.sublabel && (
-                        <span className={`text-xs ml-auto opacity-60 ${isHighlighted ? 'text-softwhitecream' : 'text-warmcharcoal group-hover:text-softwhitecream'}`}>{option.sublabel}</span>
+                        <span className={`text-xs ml-auto opacity-60 ${isHighlighted ? 'text-softwhite' : 'text-warmcharcoal group-hover:text-softwhite'}`}>{option.sublabel}</span>
                       )}
                     </div>
                   );
@@ -435,19 +435,19 @@ export function AddItemCombobox({
                       className={`
                         px-3 py-3 cursor-pointer flex items-center gap-2 font-semibold min-h-[44px] group
                         ${isHighlighted 
-                          ? 'bg-softblue text-softwhitecream border-l-4 border-warmcharcoal' 
-                          : 'text-softblue hover:bg-softblue hover:text-softwhitecream'}
+                          ? 'bg-softblue text-softwhite border-l-4 border-warmcharcoal' 
+                          : 'text-softblue hover:bg-softblue hover:text-softwhite'}
                       `}
                     >
                       <svg 
-                        className={`w-5 h-5 flex-shrink-0 ${isHighlighted ? 'text-softwhitecream' : 'text-softblue group-hover:text-softwhitecream'}`}
+                        className={`w-5 h-5 flex-shrink-0 ${isHighlighted ? 'text-softwhite' : 'text-softblue group-hover:text-softwhite'}`}
                         fill="none" 
                         stroke="currentColor" 
                         viewBox="0 0 24 24"
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
-                      <span className={`${isHighlighted ? 'text-softwhitecream' : 'text-softblue'} group-hover:text-softwhitecream`}>{option.label}</span>
+                      <span className={`${isHighlighted ? 'text-softwhite' : 'text-softblue'} group-hover:text-softwhite`}>{option.label}</span>
                     </div>
                   );
                 })}

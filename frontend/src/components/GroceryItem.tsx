@@ -158,7 +158,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
         ref={containerRef}
         data-swipeable="true"
         className={`p-4 rounded-lg shadow flex items-start gap-3 relative ${
-          isChecked ? 'bg-softmint' : 'bg-softwhitecream'
+          isChecked ? 'bg-softmint' : 'bg-softwhite'
         } transition-transform touch-none ${onOpenDetails ? 'cursor-pointer' : ''}`}
         style={{
           transform: `translateX(${translateX}px)`,

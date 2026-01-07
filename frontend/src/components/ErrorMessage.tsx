@@ -5,7 +5,7 @@ interface ErrorMessageProps {
 
 export function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
   return (
-    <div className="mb-4 p-4 bg-softwhitecream border border-mutedcoral rounded-lg shadow-sm">
+    <div className="mb-4 p-4 bg-softwhite border border-mutedcoral rounded-lg shadow-sm">
       <p className="text-warmcharcoal font-semibold">{message}</p>
       <button
         onClick={onRetry}
