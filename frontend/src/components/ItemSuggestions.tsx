@@ -36,7 +36,7 @@ export function ItemSuggestions({
     : `Add "${searchQuery}" as new item`;
 
   return (
-    <div className="absolute z-10 w-full bottom-full mb-1 bg-cream border border-warmsand rounded-md shadow-lg max-h-60 overflow-auto">
+    <div className="absolute z-10 w-full bottom-full mb-1 bg-softwhitecream border border-warmsand rounded-md shadow-lg max-h-60 overflow-auto">
       {archivedSuggestions.length > 0 && (
         <div className="py-1">
           <div className="px-3 py-1 text-xs font-semibold text-warmcharcoal bg-warmsand">

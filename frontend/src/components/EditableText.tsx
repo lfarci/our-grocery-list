@@ -87,7 +87,7 @@ export function EditableText({
       onKeyDown: handleKeyDown,
       disabled: isSaving,
       maxLength,
-      className: `w-full bg-cream border border-warmsand rounded px-2 py-1 text-warmcharcoal focus:outline-none focus:ring-2 focus:ring-softblue ${inputClassName}`,
+      className: `w-full bg-softwhitecream border border-warmsand rounded px-2 py-1 text-warmcharcoal placeholder:text-softbrowngray focus:outline-none focus:ring-2 focus:ring-softblue ${inputClassName}`,
     };
 
     if (multiline) {

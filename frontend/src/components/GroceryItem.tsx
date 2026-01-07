@@ -133,7 +133,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
 
   return (
     <div
-      className="relative overflow-hidden rounded-lg"
+      className="relative overflow-hidden rounded-xl"
       data-testid={`item-container-${item.name}`}
       role="listitem"
     >
@@ -157,12 +157,12 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
       <div
         ref={containerRef}
         data-swipeable="true"
-        className={`p-4 rounded-lg shadow flex items-start gap-3 relative ${
-          isChecked ? 'bg-softmint' : 'bg-cream'
-        } transition-transform touch-none ${onOpenDetails ? 'cursor-pointer' : ''}`}
+        className={`px-4 py-3 rounded-xl border shadow-sm flex items-start gap-3 relative transition-all ${
+          isChecked ? 'bg-softmint border-warmsand' : 'bg-softwhitecream border-warmsand hover:shadow-md hover:-translate-y-[1px]'
+        } touch-none ${onOpenDetails ? 'cursor-pointer' : ''}`}
         style={{
-          transform: `translateX(${translateX}px)`,
-          transition: isSwiping ? 'none' : 'transform 0.3s ease-out',
+          transform: `translateX(${translateX}px)${!isSwiping && !isChecked ? ' translateY(0)' : ''}`,
+          transition: isSwiping ? 'none' : 'transform 0.3s ease-out, box-shadow 0.2s ease-out',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}

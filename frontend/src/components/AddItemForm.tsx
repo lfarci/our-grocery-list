@@ -51,7 +51,7 @@ export function AddItemForm({
               value={name}
               onChange={(e) => onNameChange(e.target.value)}
               placeholder="Type to add or search..."
-              className="w-full px-4 py-3 border border-warmsand rounded-lg focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-cream text-warmcharcoal"
+              className="w-full px-4 py-3 border border-warmsand rounded-lg focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-softwhitecream text-warmcharcoal placeholder:text-softbrowngray"
               autoComplete="off"
               aria-label="Item Name"
             />

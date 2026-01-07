@@ -9,6 +9,7 @@ export default {
       colors: {
         honey: '#F6D85E',
         cream: '#FFF6DF',
+        softwhitecream: '#FFFCF3',
         softblue: '#3A78D8',
         freshgreen: '#4CAF50',
         softmint: '#DFF2E1',

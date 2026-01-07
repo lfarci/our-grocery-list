@@ -30,7 +30,7 @@ function NotFoundState({ onBack }: NotFoundStateProps) {
   return (
     <PageLayout>
       <BackButton onClick={onBack} />
-      <div className="bg-cream p-8 rounded-lg shadow text-center">
+      <div className="bg-softwhitecream p-8 rounded-xl shadow-sm border border-warmsand text-center">
         <h2 className="text-2xl font-bold text-warmcharcoal mb-4">Item Not Found</h2>
         <p className="text-softbrowngray">
           This item doesn't exist or may have been deleted.
@@ -105,7 +105,7 @@ function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
   };
 
   return (
-    <div className="bg-cream p-6 rounded-lg shadow">
+    <div className="bg-softwhitecream p-6 rounded-xl shadow-sm border border-warmsand">
       <header className="mb-6">
         <div className="flex items-start justify-between gap-4">
           {onUpdate ? (
@@ -158,7 +158,7 @@ function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
               onChange={(e) => setQuantityValue(e.target.value)}
               onBlur={handleQuantityBlur}
               disabled={isSavingQuantity}
-              className="w-full px-3 py-2 border border-warmsand rounded-md focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-cream text-warmcharcoal"
+              className="w-full px-3 py-2 border border-warmsand rounded-md focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-softwhitecream text-warmcharcoal placeholder:text-softbrowngray"
               placeholder="Enter quantity"
             />
           </div>
@@ -169,7 +169,7 @@ function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
               value={quantityUnit}
               onChange={(e) => handleUnitChange(e.target.value as QuantityUnit | '')}
               disabled={isSavingQuantity}
-              className="w-full px-3 py-2 border border-warmsand rounded-md focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-cream text-warmcharcoal"
+              className="w-full px-3 py-2 border border-warmsand rounded-md focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-softwhitecream text-warmcharcoal"
             >
               <option value="">Unit</option>
               {QUANTITY_UNITS.map(unit => (
