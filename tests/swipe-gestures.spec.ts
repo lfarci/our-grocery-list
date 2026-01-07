@@ -25,38 +25,38 @@ test.describe('Swipe Gestures', () => {
     await cleanupItemsByPrefix(page, getTestPrefix(testInfo));
   });
 
-  test('Swipe left to delete item', async ({ page }) => {
-    const itemName = makeTestItemName(test.info(), 'Bananas');
-    
-    await test.step('Add item to the list', async () => {
-      await addItem(page, itemName);
-    });
-
-    await test.step('Swipe left to delete item', async () => {
-      const deleteResponse = waitForDeleteResponse(page);
-      await swipeItem(page, itemName, 'left');
-      await deleteResponse;
-    });
-
-    await test.step('Verify item is deleted from the list', async () => {
-      await expect(getItemCheckbox(page, itemName)).not.toBeVisible({ timeout: TIMEOUTS.VISIBILITY });
-    });
-  });
-
-  test('Swipe right to archive item', async ({ page }) => {
+  test('Swipe left to archive item', async ({ page }) => {
     const itemName = makeTestItemName(test.info(), 'Apples');
     
     await test.step('Add item to the list', async () => {
       await addItem(page, itemName);
     });
 
-    await test.step('Swipe right to archive item', async () => {
+    await test.step('Swipe left to archive item', async () => {
       const archiveResponse = waitForPatchResponse(page);
-      await swipeItem(page, itemName, 'right');
+      await swipeItem(page, itemName, 'left');
       await archiveResponse;
     });
 
     await test.step('Verify item is archived (removed from visible list)', async () => {
+      await expect(getItemCheckbox(page, itemName)).not.toBeVisible({ timeout: TIMEOUTS.VISIBILITY });
+    });
+  });
+
+  test('Swipe right to delete item', async ({ page }) => {
+    const itemName = makeTestItemName(test.info(), 'Bananas');
+    
+    await test.step('Add item to the list', async () => {
+      await addItem(page, itemName);
+    });
+
+    await test.step('Swipe right to delete item', async () => {
+      const deleteResponse = waitForDeleteResponse(page);
+      await swipeItem(page, itemName, 'right');
+      await deleteResponse;
+    });
+
+    await test.step('Verify item is deleted from the list', async () => {
       await expect(getItemCheckbox(page, itemName)).not.toBeVisible({ timeout: TIMEOUTS.VISIBILITY });
     });
   });
