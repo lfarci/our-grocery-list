@@ -303,4 +303,29 @@ test.describe('Item Details Page', () => {
       await expect(itemRow).toContainText('2.5 kg');
     });
   });
+
+  test('Negative quantity is rejected', async ({ page }) => {
+    const itemName = makeTestItemName(test.info(), 'NegativeQuantity');
+
+    await test.step('Add an item and navigate to details', async () => {
+      await addItem(page, itemName);
+      await navigateToItemDetails(page, itemName);
+    });
+
+    const quantityInput = page.locator('#details-quantity');
+
+    await test.step('Quantity input has min="0" attribute', async () => {
+      await expect(quantityInput).toHaveAttribute('min', '0');
+    });
+
+    await test.step('Attempt to enter negative quantity', async () => {
+      await quantityInput.fill('-5');
+      await page.locator('header').click(); // blur the input
+      await page.waitForTimeout(500); // wait for validation
+    });
+
+    await test.step('Verify negative quantity was rejected and input reverted', async () => {
+      await expect(quantityInput).toHaveValue('');
+    });
+  });
 });
