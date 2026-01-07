@@ -102,14 +102,14 @@ export function GroceryList({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-honey flex items-center justify-center">
+      <div className="min-h-screen bg-warmcream flex items-center justify-center">
         <div className="text-warmcharcoal">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-honey">
+    <div className="min-h-screen bg-warmcream">
       <AddItemCombobox
         suggestions={suggestions}
         onAddItem={handleAddItem}
