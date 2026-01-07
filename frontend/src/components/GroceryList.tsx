@@ -168,9 +168,9 @@ export function GroceryList({
         </div>
       </div>
 
-      {/* Fixed bottom input bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-honey border-t border-warmsand">
-        <div className="max-w-2xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+      {/* Fixed bottom composer bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-honey border-t border-warmsand shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.75rem)' }}>
+        <div className="max-w-2xl mx-auto px-4 py-3 sm:px-6 lg:px-8">
           <AddItemForm
             name={name}
             error={formError}

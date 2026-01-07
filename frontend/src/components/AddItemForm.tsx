@@ -41,8 +41,8 @@ export function AddItemForm({
 
   return (
     <div ref={formRef}>
-      <form onSubmit={onSubmit} className="bg-cream p-4 rounded-lg shadow">
-        <div className="space-y-3">
+      <form onSubmit={onSubmit}>
+        <div className="space-y-2">
           <div className="relative">
             <input
               ref={inputRef}
@@ -51,7 +51,7 @@ export function AddItemForm({
               value={name}
               onChange={(e) => onNameChange(e.target.value)}
               placeholder="Type to add or search..."
-              className="w-full px-3 py-2 border border-warmsand rounded-md focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-cream text-warmcharcoal"
+              className="w-full px-4 py-3 border border-warmsand rounded-lg focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-cream text-warmcharcoal"
               autoComplete="off"
               aria-label="Item Name"
             />
