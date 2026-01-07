@@ -22,6 +22,7 @@ export const TIMEOUTS = {
   NAVIGATION: 5000,
   VISIBILITY: 5000,
   ITEM_APPEAR: 10000,
+  ELEMENT: 5000,
 } as const;
 
 // ============================================================================
