@@ -149,33 +149,40 @@ export function GroceryList({
   }
 
   return (
-    <div className="min-h-screen bg-honey">
-      <div className="max-w-2xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-warmcharcoal mb-6 text-center font-display">
-          Our Grocery List
-        </h1>
+    <div className="min-h-screen bg-honey flex flex-col">
+      <div className="flex-1 overflow-y-auto pb-24">
+        <div className="max-w-2xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+          <h1 className="text-3xl font-bold text-warmcharcoal mb-6 text-center font-display">
+            Our Grocery List
+          </h1>
 
-        {error && <ErrorMessage message={error} onRetry={loadItems} />}
+          {error && <ErrorMessage message={error} onRetry={loadItems} />}
 
-        <AddItemForm
-          name={name}
-          error={formError}
-          onNameChange={handleNameChange}
-          onSubmit={handleSubmit}
-          suggestions={suggestions}
-          onSelectSuggestion={handleSelectSuggestion}
-          showSuggestions={showSuggestions}
-          inputRef={inputRef}
-          formRef={formRef}
-        />
+          <GroceryItemsList
+            items={items}
+            onToggleChecked={toggleChecked}
+            onDelete={removeItem}
+            onArchive={archiveItem}
+            onOpenDetails={onOpenDetails}
+          />
+        </div>
+      </div>
 
-        <GroceryItemsList
-          items={items}
-          onToggleChecked={toggleChecked}
-          onDelete={removeItem}
-          onArchive={archiveItem}
-          onOpenDetails={onOpenDetails}
-        />
+      {/* Fixed bottom input bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-honey border-t border-warmsand">
+        <div className="max-w-2xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+          <AddItemForm
+            name={name}
+            error={formError}
+            onNameChange={handleNameChange}
+            onSubmit={handleSubmit}
+            suggestions={suggestions}
+            onSelectSuggestion={handleSelectSuggestion}
+            showSuggestions={showSuggestions}
+            inputRef={inputRef}
+            formRef={formRef}
+          />
+        </div>
       </div>
     </div>
   );

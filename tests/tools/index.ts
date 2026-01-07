@@ -46,7 +46,6 @@ export {
   getItemContainer,
   getSwipeableElement,
   getAddItemInput,
-  getAddItemButton,
   getMainHeading,
   getBackButton,
   getItemDetailsTitle,
