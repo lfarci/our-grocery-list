@@ -5,7 +5,7 @@ import type { TestInfo } from '@playwright/test';
 
 // Stable for the duration of a single Playwright run to avoid accumulating
 // duplicates across reruns while still keeping per-run uniqueness.
-const RUN_ID = Date.now().toString(36);
+export const RUN_ID = Date.now().toString(36);
 
 /**
  * Generate a unique prefix for test items based on test title or TestInfo

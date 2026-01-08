@@ -84,25 +84,25 @@ export async function swipeItem(
 }
 
 /**
- * Archive an item by swiping left (non-destructive)
+ * Archive an item by swiping right (non-destructive)
  */
 export async function archiveItemBySwipe(page: Page, itemName: string): Promise<void> {
   console.log(`[archiveItemBySwipe] Starting swipe for item: ${itemName}`);
   const [response] = await Promise.all([
     waitForPatchResponse(page),
-    swipeItem(page, itemName, 'left')
+    swipeItem(page, itemName, 'right')
   ]);
   console.log(`[archiveItemBySwipe] Response received: ${response.status()}`);
   expect(response.ok()).toBe(true);
 }
 
 /**
- * Delete an item by swiping right (destructive)
+ * Delete an item by swiping left (destructive)
  */
 export async function deleteItemBySwipe(page: Page, itemName: string): Promise<void> {
   const [response] = await Promise.all([
     waitForDeleteResponse(page),
-    swipeItem(page, itemName, 'right')
+    swipeItem(page, itemName, 'left')
   ]);
   expect(response.ok()).toBe(true);
 }

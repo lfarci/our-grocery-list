@@ -3,7 +3,7 @@
  */
 import { Page, expect } from '@playwright/test';
 import { TIMEOUTS, ADDED_TIME_PATTERN } from './config';
-import { getSwipeableElement, getBackButton, getMainHeading, getItemCheckbox, getItemContainer, getItemDetailsTitle } from './locators';
+import { getSwipeableElement, getBackButton, getAddItemInput, getItemCheckbox, getItemContainer, getItemDetailsTitle } from './locators';
 
 /**
  * Navigate to item details page by clicking on the item.
@@ -41,7 +41,7 @@ export async function navigateBackToList(page: Page): Promise<void> {
  */
 export async function verifyOnMainList(page: Page, itemName?: string): Promise<void> {
   await expect(page).toHaveURL('/');
-  await expect(getMainHeading(page)).toBeVisible();
+  await expect(getAddItemInput(page)).toBeVisible();
   if (itemName) {
     await expect(getItemCheckbox(page, itemName).first()).toBeVisible();
   }

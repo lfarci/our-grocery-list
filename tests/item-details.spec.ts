@@ -45,7 +45,7 @@ test.describe('Item Details Page', () => {
     });
 
     await test.step('Verify details page shows status badge', async () => {
-      await expect(page.getByText(/^active$/i)).toBeVisible();
+      await expect(page.getByText('To buy')).toBeVisible();
     });
 
     await test.step('Verify details page shows creation date in relative format', async () => {

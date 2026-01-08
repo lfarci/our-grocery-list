@@ -39,13 +39,6 @@ export function getAddItemButton(page: Page) {
 }
 
 /**
- * Get the main heading of the page
- */
-export function getMainHeading(page: Page) {
-  return page.getByRole('heading', { level: 1 });
-}
-
-/**
  * Get the back button on details page
  */
 export function getBackButton(page: Page) {

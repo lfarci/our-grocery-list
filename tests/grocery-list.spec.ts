@@ -12,7 +12,6 @@ import {
   waitForPostResponse,
   waitForPatchResponse,
   getAddItemInput,
-  getMainHeading,
   TIMEOUTS,
 } from './tools';
 
@@ -46,16 +45,12 @@ test.describe('Grocery List Application', () => {
       await expect(page).toHaveTitle('Our Grocery List');
     });
 
-    await test.step('Verify main heading is visible', async () => {
-      await expect(getMainHeading(page)).toBeVisible();
+    await test.step('Verify add item input is visible', async () => {
+      await expect(getAddItemInput(page)).toBeVisible();
     });
   });
 
-  test('Main screen - Display list title and add form', async ({ page }) => {
-    await test.step('Verify list title is present', async () => {
-      await expect(getMainHeading(page)).toBeVisible();
-    });
-
+  test('Main screen - Display add form', async ({ page }) => {
     await test.step('Verify add item form is present', async () => {
       await expect(getAddItemInput(page)).toBeVisible();
     });
@@ -180,7 +175,7 @@ test.describe('Grocery List Application', () => {
     });
 
     await test.step('Click outside the form area', async () => {
-      await getMainHeading(page).click();
+      await page.locator('body').click({ position: { x: 10, y: 10 } });
     });
 
     await test.step('Verify input is cleared and suggestions are closed', async () => {

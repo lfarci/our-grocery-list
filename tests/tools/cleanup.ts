@@ -5,6 +5,7 @@ import { Page, expect } from '@playwright/test';
 import { TIMEOUTS } from './config';
 import { getItemCheckbox } from './locators';
 import { deleteItemBySwipe } from './actions';
+import { RUN_ID } from './test-naming';
 
 /**
  * Clean up test items that match a specific prefix
@@ -19,10 +20,23 @@ export async function cleanupItemsByPrefix(page: Page, prefix: string): Promise<
     const contentType = response.headers()['content-type'] || '';
     if (!contentType.includes('application/json')) return;
     
-    const items = await response.json();
-    const testItems = items.filter((item: { name: string }) => item.name.startsWith(prefix));
+    type ApiItem = { id?: string; name: string };
+    const items = await response.json() as ApiItem[];
+    const currentRunToken = `-${RUN_ID}-`;
+    const staleTestItems = items.filter((item) =>
+      item.name.startsWith('t-') && !item.name.includes(currentRunToken)
+    );
+    const testItems = items.filter((item) => item.name.startsWith(prefix));
+
+    for (const item of staleTestItems) {
+      if (!item?.id) continue;
+      await page.request.delete(`/api/items/${item.id}`).catch(() => undefined);
+    }
     
     for (const item of testItems) {
+      if (item?.id) {
+        await page.request.delete(`/api/items/${item.id}`).catch(() => undefined);
+      }
       const checkbox = getItemCheckbox(page, item.name);
       if (await checkbox.isVisible({ timeout: 1000 }).catch(() => false)) {
         await deleteItemBySwipe(page, item.name);

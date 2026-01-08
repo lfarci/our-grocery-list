@@ -46,7 +46,6 @@ export {
   getItemContainer,
   getSwipeableElement,
   getAddItemInput,
-  getMainHeading,
   getBackButton,
   getItemDetailsTitle,
 } from './locators';
