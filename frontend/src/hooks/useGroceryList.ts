@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { GroceryItem, CreateItemRequest, UpdateItemRequest, ItemState } from '../types';
+import { GroceryItem, CreateItemRequest, UpdateItemRequest, ItemState, CATEGORIES } from '../types';
 import * as api from '../api';
 import { useSignalR } from './useSignalR';
 
@@ -116,20 +116,24 @@ export function useGroceryList() {
   // Set up SignalR handlers for real-time updates from other clients
   useSignalR({
     onItemCreated: useCallback((item: GroceryItem) => {
+      // Normalize category for backward compatibility
+      const normalizedItem = { ...item, category: item.category || 'Other' };
       // Add item from SignalR broadcast (includes items created by this client)
       setItems(prev => {
         // Check if item already exists to prevent duplicates
-        if (prev.some(i => i.id === item.id)) {
+        if (prev.some(i => i.id === normalizedItem.id)) {
           return prev;
         }
-        return [...prev, item];
+        return [...prev, normalizedItem];
       });
     }, []),
 
     onItemUpdated: useCallback((item: GroceryItem) => {
+      // Normalize category for backward compatibility
+      const normalizedItem = { ...item, category: item.category || 'Other' };
       // Update item with latest data from server
-      const normalized = normalizeUpdatedItem(item);
-      setItems(prev => prev.map(i => i.id === item.id ? normalized : i));
+      const normalized = normalizeUpdatedItem(normalizedItem);
+      setItems(prev => prev.map(i => i.id === normalizedItem.id ? normalized : i));
     }, [normalizeUpdatedItem]),
 
     onItemDeleted: useCallback((id: string) => {
@@ -145,11 +149,28 @@ export function useGroceryList() {
     archived: 2
   };
 
-  // Sort items: active first, then checked, oldest first within each group
+  // Create category order mapping dynamically from CATEGORIES constant
+  const categoryOrder: Record<string, number> = Object.fromEntries(
+    CATEGORIES.map((cat, idx) => [cat, idx])
+  );
+
+  // Group items by category, maintaining order within each category
+  // Sort: active first, then checked; oldest first within each state group
   const sortedItems = [...visibleItems].sort((a, b) => {
+    // First sort by category according to fixed order
+    const catA = categoryOrder[a.category] ?? CATEGORIES.length; // Default to end if unknown
+    const catB = categoryOrder[b.category] ?? CATEGORIES.length;
+    
+    if (catA !== catB) {
+      return catA - catB;
+    }
+    
+    // Within same category, sort by state (active before checked)
     if (a.state !== b.state) {
       return stateOrder[a.state] - stateOrder[b.state];
     }
+    
+    // Within same category and state, sort by creation date (oldest first)
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
   });
 

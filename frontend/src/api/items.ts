@@ -27,10 +27,22 @@ async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> 
 }
 
 /**
+ * Normalize item to ensure it has a category field
+ * For backward compatibility with items that don't have a category
+ */
+function normalizeItem(item: any): GroceryItem {
+  return {
+    ...item,
+    category: item.category || 'Other',
+  };
+}
+
+/**
  * Fetch all grocery items from the API
  */
 export async function getItems(): Promise<GroceryItem[]> {
-  return apiFetch<GroceryItem[]>('/items');
+  const items = await apiFetch<any[]>('/items');
+  return items.map(normalizeItem);
 }
 
 /**
@@ -38,33 +50,36 @@ export async function getItems(): Promise<GroceryItem[]> {
  */
 export async function searchItems(query: string): Promise<GroceryItem[]> {
   const encodedQuery = encodeURIComponent(query);
-  return apiFetch<GroceryItem[]>(`/items/search?q=${encodedQuery}`);
+  const items = await apiFetch<any[]>(`/items/search?q=${encodedQuery}`);
+  return items.map(normalizeItem);
 }
 
 /**
  * Create a new grocery item
  */
 export async function createItem(item: CreateItemRequest): Promise<GroceryItem> {
-  return apiFetch<GroceryItem>('/items', {
+  const created = await apiFetch<any>('/items', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(item),
   });
+  return normalizeItem(created);
 }
 
 /**
  * Update an existing grocery item
  */
 export async function updateItem(id: string, update: UpdateItemRequest): Promise<GroceryItem> {
-  return apiFetch<GroceryItem>(`/items/${id}`, {
+  const updated = await apiFetch<any>(`/items/${id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(update),
   });
+  return normalizeItem(updated);
 }
 
 /**

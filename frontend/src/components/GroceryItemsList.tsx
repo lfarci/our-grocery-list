@@ -1,4 +1,4 @@
-import { GroceryItem as GroceryItemType, ItemState } from '../types';
+import { GroceryItem as GroceryItemType, ItemState, CATEGORIES } from '../types';
 import { GroceryItem } from './GroceryItem';
 
 interface GroceryItemsListProps {
@@ -18,18 +18,46 @@ export function GroceryItemsList({ items, onToggleChecked, onDelete, onArchive, 
     );
   }
 
+  // Group items by category
+  const itemsByCategory = items.reduce((acc, item) => {
+    const category = item.category || 'Other';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(item);
+    return acc;
+  }, {} as Record<string, GroceryItemType[]>);
+
   return (
-    <div className="space-y-3" role="list">
-      {items.map((item) => (
-        <GroceryItem
-          key={item.id}
-          item={item}
-          onToggleChecked={onToggleChecked}
-          onDelete={onDelete}
-          onArchive={onArchive}
-          onOpenDetails={onOpenDetails}
-        />
-      ))}
+    <div className="space-y-6" role="list">
+      {CATEGORIES.map((category) => {
+        const categoryItems = itemsByCategory[category];
+        
+        // Only render section if it has items
+        if (!categoryItems || categoryItems.length === 0) {
+          return null;
+        }
+
+        return (
+          <div key={category} className="space-y-3">
+            <h2 className="text-lg font-semibold text-warmcharcoal font-display">
+              {category}
+            </h2>
+            <div className="space-y-3">
+              {categoryItems.map((item) => (
+                <GroceryItem
+                  key={item.id}
+                  item={item}
+                  onToggleChecked={onToggleChecked}
+                  onDelete={onDelete}
+                  onArchive={onArchive}
+                  onOpenDetails={onOpenDetails}
+                />
+              ))}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

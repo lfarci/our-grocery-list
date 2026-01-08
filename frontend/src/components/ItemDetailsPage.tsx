@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import type { GroceryItem, QuantityUnit, UpdateItemRequest } from '../types';
+import type { GroceryItem, QuantityUnit, UpdateItemRequest, Category } from '../types';
 import { QUANTITY_UNITS } from '../constants';
+import { CATEGORIES } from '../types';
 import { BackButton } from './BackButton';
 import { EditableText } from './EditableText';
 import { ItemDates } from './ItemDates';
@@ -49,11 +50,14 @@ function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
   const [quantityValue, setQuantityValue] = useState(item.quantity?.toString() ?? '');
   const [quantityUnit, setQuantityUnit] = useState<QuantityUnit | ''>(item.quantityUnit ?? '');
   const [isSavingQuantity, setIsSavingQuantity] = useState(false);
+  const [category, setCategory] = useState<Category>(item.category || 'Other');
+  const [isSavingCategory, setIsSavingCategory] = useState(false);
 
   useEffect(() => {
     setQuantityValue(item.quantity?.toString() ?? '');
     setQuantityUnit(item.quantityUnit ?? '');
-  }, [item.quantity, item.quantityUnit]);
+    setCategory(item.category || 'Other');
+  }, [item.quantity, item.quantityUnit, item.category]);
 
   const revertQuantityToOriginal = () => {
     setQuantityValue(item.quantity?.toString() ?? '');
@@ -112,6 +116,23 @@ function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
   const handleUnitChange = async (newUnit: QuantityUnit | '') => {
     setQuantityUnit(newUnit);
     await saveQuantity(quantityValue, newUnit);
+  };
+
+  const handleCategoryChange = async (newCategory: Category) => {
+    if (!onUpdate || newCategory === item.category) {
+      return;
+    }
+
+    setCategory(newCategory);
+    setIsSavingCategory(true);
+    try {
+      await onUpdate(item.id, { category: newCategory });
+    } catch (error) {
+      // Revert on error
+      setCategory(item.category || 'Other');
+    } finally {
+      setIsSavingCategory(false);
+    }
   };
 
   return (
@@ -188,6 +209,24 @@ function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
               ))}
             </select>
           </div>
+        </div>
+      </div>
+
+      <div className="border-t border-warmsand pt-4 mt-6">
+        <h2 className="text-sm font-semibold text-softbrowngray mb-2">Category</h2>
+        <div className="max-w-md">
+          <label htmlFor="details-category" className="sr-only">Category</label>
+          <select
+            id="details-category"
+            value={category}
+            onChange={(e) => handleCategoryChange(e.target.value as Category)}
+            disabled={isSavingCategory || !onUpdate}
+            className="w-full px-3 py-2 border border-warmsand rounded-md focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-softwhitecream text-warmcharcoal"
+          >
+            {CATEGORIES.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
         </div>
       </div>
     </div>
