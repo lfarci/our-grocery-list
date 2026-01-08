@@ -15,6 +15,7 @@ interface GroceryListProps {
   toggleChecked: (id: string, state: ItemState) => Promise<void>;
   removeItem: (id: string) => Promise<void>;
   archiveItem: (id: string) => Promise<void>;
+  updateItem: (id: string, update: import('../types').UpdateItemRequest) => Promise<GroceryItem>;
   onOpenDetails?: (id: string) => void;
 }
 
@@ -27,6 +28,7 @@ export function GroceryList({
   toggleChecked,
   removeItem,
   archiveItem,
+  updateItem,
   onOpenDetails,
 }: GroceryListProps) {
   const [name, setName] = useState('');
@@ -94,7 +96,7 @@ export function GroceryList({
     if (item.state === 'archived') {
       // Unarchive and restore to active list immediately
       try {
-        await toggleChecked(item.id, 'active');
+        await updateItem(item.id, { state: 'active' });
         setName('');
         setFormError('');
         inputRef.current?.focus();
@@ -112,7 +114,7 @@ export function GroceryList({
         setFormError('Failed to add item. Please try again.');
       }
     }
-  }, [toggleChecked, addItem]);
+  }, [updateItem, addItem]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

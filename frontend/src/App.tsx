@@ -62,6 +62,7 @@ function App() {
       toggleChecked={toggleChecked}
       removeItem={removeItem}
       archiveItem={archiveItem}
+      updateItem={updateItem}
       onOpenDetails={(id) => navigateTo(`/items/${id}`)}
     />
   );
