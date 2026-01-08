@@ -120,19 +120,20 @@ public class CosmosDbItemRepository : IItemRepository
     {
         try
         {
-            _logger.LogInformation("Updating item {ItemId} in Cosmos DB", item.Id);
+            _logger.LogInformation("Updating item {ItemId} in Cosmos DB with category {Category}", item.Id, item.Category);
 
             // Ensure listId and partitionKey are set
             item.ListId = DefaultListId;
             item.PartitionKey = DefaultListId;
-            item.EnsureState();
+            // DO NOT call EnsureState() here - the item has already been validated and normalized
+            // in the ItemFunctions before calling UpdateAsync
             
             var response = await _container.ReplaceItemAsync(
                 item,
                 item.Id,
                 new PartitionKey(DefaultListId));
 
-            _logger.LogInformation("Updated item {ItemId} in Cosmos DB", item.Id);
+            _logger.LogInformation("Updated item {ItemId} in Cosmos DB, returned category {Category}", item.Id, response.Resource.Category);
             return response.Resource;
         }
         catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)

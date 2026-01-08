@@ -266,14 +266,22 @@ public class ItemFunctions
 
         if (request?.Category is not null)
         {
+            _logger.LogInformation("Updating category for item {ItemId} from '{OldCategory}' to '{NewCategory}'", 
+                id, existingItem.Category, request.Category);
+            
             if (!Category.IsValid(request.Category))
             {
+                _logger.LogWarning("Invalid category '{Category}' provided for item {ItemId}", request.Category, id);
                 var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
                 await errorResponse.WriteStringAsync("Invalid category");
                 return new UpdateItemOutput { HttpResponse = errorResponse };
             }
 
-            existingItem.Category = Category.Normalize(request.Category);
+            var normalizedCategory = Category.Normalize(request.Category);
+            _logger.LogInformation("Normalized category '{RequestCategory}' to '{NormalizedCategory}' for item {ItemId}", 
+                request.Category, normalizedCategory, id);
+            
+            existingItem.Category = normalizedCategory;
             hasChanges = true;
         }
 
