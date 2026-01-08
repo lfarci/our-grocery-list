@@ -95,27 +95,3 @@ public class GroceryItem
         Category = Models.Category.Normalize(Category);
     }
 }
-
-/// <summary>
-/// Request payload for creating a new grocery item
-/// </summary>
-public class CreateItemRequest
-{
-    public string Name { get; set; } = string.Empty;
-    public string? Notes { get; set; }
-    public double? Quantity { get; set; }
-    public string? QuantityUnit { get; set; }
-}
-
-/// <summary>
-/// Request payload for updating a grocery item
-/// </summary>
-public class UpdateItemRequest
-{
-    public string? Name { get; set; }
-    public string? Notes { get; set; }
-    public double? Quantity { get; set; }
-    public string? QuantityUnit { get; set; }
-    public string? State { get; set; }
-    public string? Category { get; set; }
-}

@@ -165,142 +165,41 @@ public class ItemFunctions
             return new UpdateItemOutput { HttpResponse = req.CreateResponse(HttpStatusCode.NotFound) };
         }
 
-        JsonElement rawRequest = default;
-        UpdateItemRequest? request = null;
-        
-        try
+        var (rawRequest, readError) = await ReadUpdateRequestAsync(req, id);
+        if (readError is not null)
         {
-            rawRequest = await req.ReadFromJsonAsync<JsonElement>();
-            request = rawRequest.Deserialize<UpdateItemRequest>();
-            
-            if (request is null && rawRequest.ValueKind == JsonValueKind.Undefined)
-            {
-                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                await errorResponse.WriteStringAsync("Request body is required");
-                return new UpdateItemOutput { HttpResponse = errorResponse };
-            }
-        }
-        catch (JsonException ex)
-        {
-            _logger.LogError(ex, "Invalid JSON in update request for item {ItemId}", id);
-            var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-            await errorResponse.WriteStringAsync("Invalid JSON format in request body");
-            return new UpdateItemOutput { HttpResponse = errorResponse };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error reading update request for item {ItemId}: {ErrorMessage}", id, ex.Message);
-            throw; // Let Azure Functions handle transient errors with retries
+            return await CreateBadRequestOutputAsync(req, readError);
         }
         
         var hasChanges = false;
-
-        if (!string.IsNullOrEmpty(request?.Name))
+        if (!TryApplyNameUpdate(rawRequest, existingItem, ref hasChanges, out var nameError))
         {
-            if (request.Name.Length > GroceryItem.MaxNameLength)
-            {
-                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                await errorResponse.WriteStringAsync($"Item name must be {GroceryItem.MaxNameLength} characters or less");
-                return new UpdateItemOutput { HttpResponse = errorResponse };
-            }
-
-            existingItem.Name = request.Name;
-            hasChanges = true;
+            return await CreateBadRequestOutputAsync(req, nameError ?? "Invalid item name");
         }
 
-        if (request?.Notes is not null)
+        if (!TryApplyNotesUpdate(rawRequest, existingItem, ref hasChanges, out var notesError))
         {
-            existingItem.Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes;
-            hasChanges = true;
+            return await CreateBadRequestOutputAsync(req, notesError ?? "Invalid notes");
         }
 
-        if (rawRequest.TryGetProperty("quantity", out var quantityElement))
+        if (!TryApplyQuantityUpdate(rawRequest, existingItem, ref hasChanges, out var quantityError))
         {
-            if (quantityElement.ValueKind == JsonValueKind.Null)
-            {
-                existingItem.Quantity = null;
-                hasChanges = true;
-            }
-            else if (quantityElement.ValueKind == JsonValueKind.Number)
-            {
-                var quantity = quantityElement.GetDouble();
-                if (quantity < 0)
-                {
-                    var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                    await errorResponse.WriteStringAsync("Quantity cannot be negative");
-                    return new UpdateItemOutput { HttpResponse = errorResponse };
-                }
-                existingItem.Quantity = quantity;
-                hasChanges = true;
-            }
-            else
-            {
-                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                await errorResponse.WriteStringAsync("Quantity must be a number");
-                return new UpdateItemOutput { HttpResponse = errorResponse };
-            }
+            return await CreateBadRequestOutputAsync(req, quantityError ?? "Invalid quantity");
         }
 
-        if (rawRequest.TryGetProperty("quantityUnit", out var quantityUnitElement))
+        if (!TryApplyQuantityUnitUpdate(rawRequest, existingItem, ref hasChanges, out var quantityUnitError))
         {
-            if (quantityUnitElement.ValueKind == JsonValueKind.Null)
-            {
-                existingItem.QuantityUnit = null;
-                hasChanges = true;
-            }
-            else if (quantityUnitElement.ValueKind == JsonValueKind.String)
-            {
-                var providedUnit = quantityUnitElement.GetString();
-                if (!QuantityUnits.TryNormalize(providedUnit, out var normalizedUnit))
-                {
-                    var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                    await errorResponse.WriteStringAsync("Invalid quantity unit");
-                    return new UpdateItemOutput { HttpResponse = errorResponse };
-                }
-
-                existingItem.QuantityUnit = normalizedUnit;
-                hasChanges = true;
-            }
-            else
-            {
-                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                await errorResponse.WriteStringAsync("Quantity unit must be a string");
-                return new UpdateItemOutput { HttpResponse = errorResponse };
-            }
+            return await CreateBadRequestOutputAsync(req, quantityUnitError ?? "Invalid quantity unit");
         }
 
-        if (request?.State is not null)
+        if (!TryApplyStateUpdate(rawRequest, existingItem, ref hasChanges, out var stateError))
         {
-            if (!ItemState.IsValid(request.State))
-            {
-                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                await errorResponse.WriteStringAsync("Invalid item state");
-                return new UpdateItemOutput { HttpResponse = errorResponse };
-            }
-
-            existingItem.State = ItemState.Normalize(request.State);
-            hasChanges = true;
+            return await CreateBadRequestOutputAsync(req, stateError ?? "Invalid item state");
         }
 
-        if (request?.Category is not null)
+        if (!TryApplyCategoryUpdate(rawRequest, existingItem, ref hasChanges, out var categoryError))
         {
-            _logger.LogInformation("Updating category for item {ItemId} from '{OldCategory}' to '{NewCategory}'", 
-                id, existingItem.Category, request.Category);
-            
-            if (!Category.IsValid(request.Category))
-            {
-                _logger.LogWarning("Invalid category '{Category}' provided for item {ItemId}", request.Category, id);
-                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                await errorResponse.WriteStringAsync("Invalid category");
-                return new UpdateItemOutput { HttpResponse = errorResponse };
-            }
-
-            var normalizedCategory = Category.Normalize(request.Category);
-            _logger.LogInformation("Normalized category '{RequestCategory}' to '{NormalizedCategory}' for item {ItemId}", 
-                request.Category, normalizedCategory, id);
-            
-            existingItem.Category = normalizedCategory;
-            hasChanges = true;
+            return await CreateBadRequestOutputAsync(req, categoryError ?? "Invalid category");
         }
 
         if (hasChanges)
@@ -331,6 +230,252 @@ public class ItemFunctions
                 }
             }
         };
+    }
+
+    /// <summary>
+    /// Reads and validates the update request body.
+    /// </summary>
+    private async Task<(JsonElement RawRequest, string? ErrorMessage)> ReadUpdateRequestAsync(HttpRequestData req, string id)
+    {
+        JsonElement rawRequest = default;
+
+        try
+        {
+            rawRequest = await req.ReadFromJsonAsync<JsonElement>();
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, "Invalid JSON in update request for item {ItemId}", id);
+            return (default, "Invalid JSON format in request body");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error reading update request for item {ItemId}: {ErrorMessage}", id, ex.Message);
+            throw; // Let Azure Functions handle transient errors with retries
+        }
+
+        if (rawRequest.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+        {
+            return (default, "Request body is required");
+        }
+
+        if (rawRequest.ValueKind != JsonValueKind.Object)
+        {
+            return (default, "Request body must be a JSON object");
+        }
+
+        return (rawRequest, null);
+    }
+
+    /// <summary>
+    /// Builds a bad-request response with a message payload.
+    /// </summary>
+    private static async Task<UpdateItemOutput> CreateBadRequestOutputAsync(HttpRequestData req, string message)
+    {
+        var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+        await errorResponse.WriteStringAsync(message);
+        return new UpdateItemOutput { HttpResponse = errorResponse };
+    }
+
+    /// <summary>
+    /// Validates and applies the name update, if provided.
+    /// </summary>
+    private static bool TryApplyNameUpdate(JsonElement rawRequest, GroceryItem existingItem, ref bool hasChanges, out string? errorMessage)
+    {
+        errorMessage = null;
+
+        if (!rawRequest.TryGetProperty("name", out var nameElement))
+        {
+            return true;
+        }
+
+        if (nameElement.ValueKind != JsonValueKind.String)
+        {
+            errorMessage = "Item name must be a string";
+            return false;
+        }
+
+        var name = nameElement.GetString() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            errorMessage = "Item name is required";
+            return false;
+        }
+
+        if (name.Length > GroceryItem.MaxNameLength)
+        {
+            errorMessage = $"Item name must be {GroceryItem.MaxNameLength} characters or less";
+            return false;
+        }
+
+        existingItem.Name = name;
+        hasChanges = true;
+        return true;
+    }
+
+    /// <summary>
+    /// Validates and applies the notes update, if provided.
+    /// </summary>
+    private static bool TryApplyNotesUpdate(JsonElement rawRequest, GroceryItem existingItem, ref bool hasChanges, out string? errorMessage)
+    {
+        errorMessage = null;
+
+        if (!rawRequest.TryGetProperty("notes", out var notesElement))
+        {
+            return true;
+        }
+
+        switch (notesElement.ValueKind)
+        {
+            case JsonValueKind.Null:
+                existingItem.Notes = null;
+                hasChanges = true;
+                return true;
+            case JsonValueKind.String:
+                var notes = notesElement.GetString();
+                existingItem.Notes = string.IsNullOrWhiteSpace(notes) ? null : notes;
+                hasChanges = true;
+                return true;
+            default:
+                errorMessage = "Notes must be a string";
+                return false;
+        }
+    }
+
+    /// <summary>
+    /// Validates and applies the quantity update, if provided.
+    /// </summary>
+    private static bool TryApplyQuantityUpdate(JsonElement rawRequest, GroceryItem existingItem, ref bool hasChanges, out string? errorMessage)
+    {
+        errorMessage = null;
+
+        if (!rawRequest.TryGetProperty("quantity", out var quantityElement))
+        {
+            return true;
+        }
+
+        switch (quantityElement.ValueKind)
+        {
+            case JsonValueKind.Null:
+                existingItem.Quantity = null;
+                hasChanges = true;
+                return true;
+            case JsonValueKind.Number:
+                var quantity = quantityElement.GetDouble();
+                if (quantity < 0)
+                {
+                    errorMessage = "Quantity cannot be negative";
+                    return false;
+                }
+                existingItem.Quantity = quantity;
+                hasChanges = true;
+                return true;
+            default:
+                errorMessage = "Quantity must be a number";
+                return false;
+        }
+    }
+
+    /// <summary>
+    /// Validates and applies the quantity unit update, if provided.
+    /// </summary>
+    private static bool TryApplyQuantityUnitUpdate(JsonElement rawRequest, GroceryItem existingItem, ref bool hasChanges, out string? errorMessage)
+    {
+        errorMessage = null;
+
+        if (!rawRequest.TryGetProperty("quantityUnit", out var quantityUnitElement))
+        {
+            return true;
+        }
+
+        switch (quantityUnitElement.ValueKind)
+        {
+            case JsonValueKind.Null:
+                existingItem.QuantityUnit = null;
+                hasChanges = true;
+                return true;
+            case JsonValueKind.String:
+                var providedUnit = quantityUnitElement.GetString();
+                if (!QuantityUnits.TryNormalize(providedUnit, out var normalizedUnit))
+                {
+                    errorMessage = "Invalid quantity unit";
+                    return false;
+                }
+                existingItem.QuantityUnit = normalizedUnit;
+                hasChanges = true;
+                return true;
+            default:
+                errorMessage = "Quantity unit must be a string";
+                return false;
+        }
+    }
+
+    /// <summary>
+    /// Validates and applies the state update, if provided.
+    /// </summary>
+    private static bool TryApplyStateUpdate(JsonElement rawRequest, GroceryItem existingItem, ref bool hasChanges, out string? errorMessage)
+    {
+        errorMessage = null;
+
+        if (!rawRequest.TryGetProperty("state", out var stateElement))
+        {
+            return true;
+        }
+
+        if (stateElement.ValueKind != JsonValueKind.String)
+        {
+            errorMessage = "State must be a string";
+            return false;
+        }
+
+        var state = stateElement.GetString();
+        if (!ItemState.IsValid(state))
+        {
+            errorMessage = "Invalid item state";
+            return false;
+        }
+
+        existingItem.State = ItemState.Normalize(state);
+        hasChanges = true;
+        return true;
+    }
+
+    /// <summary>
+    /// Validates and applies the category update, if provided.
+    /// </summary>
+    private bool TryApplyCategoryUpdate(JsonElement rawRequest, GroceryItem existingItem, ref bool hasChanges, out string? errorMessage)
+    {
+        errorMessage = null;
+
+        if (!rawRequest.TryGetProperty("category", out var categoryElement))
+        {
+            return true;
+        }
+
+        if (categoryElement.ValueKind != JsonValueKind.String)
+        {
+            errorMessage = "Category must be a string";
+            return false;
+        }
+
+        var category = categoryElement.GetString();
+        _logger.LogInformation("Updating category for item {ItemId} from '{OldCategory}' to '{NewCategory}'",
+            existingItem.Id, existingItem.Category, category);
+
+        if (!Category.IsValid(category))
+        {
+            _logger.LogWarning("Invalid category '{Category}' provided for item {ItemId}", category, existingItem.Id);
+            errorMessage = "Invalid category";
+            return false;
+        }
+
+        var normalizedCategory = Category.Normalize(category);
+        _logger.LogInformation("Normalized category '{RequestCategory}' to '{NormalizedCategory}' for item {ItemId}",
+            category, normalizedCategory, existingItem.Id);
+
+        existingItem.Category = normalizedCategory;
+        hasChanges = true;
+        return true;
     }
 
     /// <summary>
@@ -365,40 +510,4 @@ public class ItemFunctions
             }
         };
     }
-}
-
-/// <summary>
-/// Output binding for CreateItem function with Azure SignalR Service support
-/// </summary>
-public class CreateItemOutput
-{
-    [HttpResult]
-    public HttpResponseData? HttpResponse { get; set; }
-
-    [SignalROutput(HubName = SignalRConstants.HubName)]
-    public SignalRMessageAction[]? SignalRMessages { get; set; }
-}
-
-/// <summary>
-/// Output binding for UpdateItem function with Azure SignalR Service support
-/// </summary>
-public class UpdateItemOutput
-{
-    [HttpResult]
-    public HttpResponseData? HttpResponse { get; set; }
-
-    [SignalROutput(HubName = SignalRConstants.HubName)]
-    public SignalRMessageAction[]? SignalRMessages { get; set; }
-}
-
-/// <summary>
-/// Output binding for DeleteItem function with Azure SignalR Service support
-/// </summary>
-public class DeleteItemOutput
-{
-    [HttpResult]
-    public HttpResponseData? HttpResponse { get; set; }
-
-    [SignalROutput(HubName = SignalRConstants.HubName)]
-    public SignalRMessageAction[]? SignalRMessages { get; set; }
 }
