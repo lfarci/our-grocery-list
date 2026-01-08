@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { GroceryItem, CreateItemRequest, UpdateItemRequest, ItemState } from '../types';
+import { GroceryItem, CreateItemRequest, UpdateItemRequest, ItemState, CATEGORIES } from '../types';
 import * as api from '../api';
 import { useSignalR } from './useSignalR';
 
@@ -133,7 +133,7 @@ export function useGroceryList() {
       const normalizedItem = { ...item, category: item.category || 'Other' };
       // Update item with latest data from server
       const normalized = normalizeUpdatedItem(normalizedItem);
-      setItems(prev => prev.map(i => i.id === item.id ? normalized : i));
+      setItems(prev => prev.map(i => i.id === normalizedItem.id ? normalized : i));
     }, [normalizeUpdatedItem]),
 
     onItemDeleted: useCallback((id: string) => {
@@ -149,20 +149,17 @@ export function useGroceryList() {
     archived: 2
   };
 
+  // Create category order mapping dynamically from CATEGORIES constant
+  const categoryOrder: Record<string, number> = Object.fromEntries(
+    CATEGORIES.map((cat, idx) => [cat, idx])
+  );
+
   // Group items by category, maintaining order within each category
   // Sort: active first, then checked; oldest first within each state group
   const sortedItems = [...visibleItems].sort((a, b) => {
     // First sort by category according to fixed order
-    const categoryOrder: Record<string, number> = {
-      'Vegetables': 0,
-      'Meat': 1,
-      'Cereals': 2,
-      'Dairy products': 3,
-      'Other': 4
-    };
-    
-    const catA = categoryOrder[a.category] ?? 4; // Default to 'Other' if unknown
-    const catB = categoryOrder[b.category] ?? 4;
+    const catA = categoryOrder[a.category] ?? CATEGORIES.length; // Default to end if unknown
+    const catB = categoryOrder[b.category] ?? CATEGORIES.length;
     
     if (catA !== catB) {
       return catA - catB;

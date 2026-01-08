@@ -34,13 +34,12 @@ public static class Category
 
         var trimmed = category.Trim();
         
-        // Find matching category (case-insensitive)
-        foreach (var validCategory in ValidCategories)
+        // Use Contains for efficient case-insensitive lookup
+        // then find the exact match with correct casing
+        if (ValidCategories.Contains(trimmed))
         {
-            if (string.Equals(validCategory, trimmed, StringComparison.OrdinalIgnoreCase))
-            {
-                return validCategory;
-            }
+            // Find and return the category with correct casing
+            return ValidCategories.First(c => string.Equals(c, trimmed, StringComparison.OrdinalIgnoreCase));
         }
 
         return Other;
