@@ -50,13 +50,13 @@ function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
   const [quantityValue, setQuantityValue] = useState(item.quantity?.toString() ?? '');
   const [quantityUnit, setQuantityUnit] = useState<QuantityUnit | ''>(item.quantityUnit ?? '');
   const [isSavingQuantity, setIsSavingQuantity] = useState(false);
-  const [category, setCategory] = useState<Category>(item.category);
+  const [category, setCategory] = useState<Category>(item.category || 'Other');
   const [isSavingCategory, setIsSavingCategory] = useState(false);
 
   useEffect(() => {
     setQuantityValue(item.quantity?.toString() ?? '');
     setQuantityUnit(item.quantityUnit ?? '');
-    setCategory(item.category);
+    setCategory(item.category || 'Other');
   }, [item.quantity, item.quantityUnit, item.category]);
 
   const revertQuantityToOriginal = () => {
@@ -129,7 +129,7 @@ function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
       await onUpdate(item.id, { category: newCategory });
     } catch (error) {
       // Revert on error
-      setCategory(item.category);
+      setCategory(item.category || 'Other');
     } finally {
       setIsSavingCategory(false);
     }
