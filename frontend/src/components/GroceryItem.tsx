@@ -55,13 +55,13 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
     
     // Only process swipe actions if the user actually moved enough
     if (hasMovedForSwipe) {
-      // Swipe left → Archive (non-destructive)
+      // Swipe left → Delete (destructive)
       if (deltaX < -SWIPE_THRESHOLD) {
-        onArchive(item.id);
-      }
-      // Swipe right → Delete (destructive)
-      else if (deltaX > SWIPE_THRESHOLD) {
         onDelete(item.id);
+      }
+      // Swipe right → Archive (non-destructive)
+      else if (deltaX > SWIPE_THRESHOLD) {
+        onArchive(item.id);
       }
     } else {
       // This was a tap, not a swipe - open details if handler provided
@@ -129,8 +129,8 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
     return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
   }, [isSwiping, handleGlobalMouseUp]);
 
-  const showDeleteHint = translateX > 30;
-  const showArchiveHint = translateX < -30;
+  const showDeleteHint = translateX < -30;
+  const showArchiveHint = translateX > 30;
 
   return (
     <div
@@ -140,16 +140,16 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
     >
       {/* Background hints */}
       <div className="absolute inset-0 flex items-center justify-between px-6">
-        <div className={`flex items-center gap-2 transition-opacity ${showDeleteHint ? 'opacity-100' : 'opacity-0'}`}>
-          <svg className="w-6 h-6 text-mutedcoral" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-          <span className="text-mutedcoral font-semibold">Delete</span>
-        </div>
         <div className={`flex items-center gap-2 transition-opacity ${showArchiveHint ? 'opacity-100' : 'opacity-0'}`}>
-          <span className="text-freshgreen font-semibold">Archive</span>
           <svg className="w-6 h-6 text-freshgreen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+          </svg>
+          <span className="text-freshgreen font-semibold">Archive</span>
+        </div>
+        <div className={`flex items-center gap-2 transition-opacity ${showDeleteHint ? 'opacity-100' : 'opacity-0'}`}>
+          <span className="text-mutedcoral font-semibold">Delete</span>
+          <svg className="w-6 h-6 text-mutedcoral" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
         </div>
       </div>
