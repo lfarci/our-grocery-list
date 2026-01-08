@@ -138,7 +138,7 @@ export function useGroceryList() {
     }, []),
   });
 
-  const visibleItems = items.filter(item => item.state !== 'archived');
+  const visibleItems = items.filter(item => item.state?.toLowerCase() !== 'archived');
   const stateOrder: Record<ItemState, number> = {
     active: 0,
     checked: 1,
