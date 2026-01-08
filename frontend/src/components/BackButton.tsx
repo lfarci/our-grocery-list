@@ -7,7 +7,7 @@ export function BackButton({ onClick, label = 'Back to List' }: BackButtonProps)
   return (
     <button
       onClick={onClick}
-      className="mb-6 flex items-center gap-2 text-warmcharcoal hover:text-softbrowngray transition-colors"
+      className="mb-6 flex items-center gap-2 rounded-lg px-2 py-1 text-warmcharcoal transition-colors hover:bg-warmsand/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-softblue cursor-pointer"
       aria-label="Back to list"
     >
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
