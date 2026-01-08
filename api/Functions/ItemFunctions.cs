@@ -165,8 +165,21 @@ public class ItemFunctions
             return new UpdateItemOutput { HttpResponse = req.CreateResponse(HttpStatusCode.NotFound) };
         }
 
-        var rawRequest = await req.ReadFromJsonAsync<JsonElement>();
-        var request = rawRequest.Deserialize<UpdateItemRequest>();
+        JsonElement rawRequest;
+        UpdateItemRequest? request;
+        
+        try
+        {
+            rawRequest = await req.ReadFromJsonAsync<JsonElement>();
+            request = rawRequest.Deserialize<UpdateItemRequest>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error reading or deserializing update request for item {ItemId}", id);
+            var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+            await errorResponse.WriteStringAsync("Invalid request body");
+            return new UpdateItemOutput { HttpResponse = errorResponse };
+        }
 
         if (request is null && rawRequest.ValueKind == JsonValueKind.Undefined)
         {
