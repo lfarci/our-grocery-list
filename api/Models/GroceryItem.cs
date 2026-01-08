@@ -117,4 +117,5 @@ public class UpdateItemRequest
     public double? Quantity { get; set; }
     public string? QuantityUnit { get; set; }
     public string? State { get; set; }
+    public string? Category { get; set; }
 }

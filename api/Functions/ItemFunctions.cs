@@ -264,6 +264,19 @@ public class ItemFunctions
             hasChanges = true;
         }
 
+        if (request?.Category is not null)
+        {
+            if (!Category.IsValid(request.Category))
+            {
+                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await errorResponse.WriteStringAsync("Invalid category");
+                return new UpdateItemOutput { HttpResponse = errorResponse };
+            }
+
+            existingItem.Category = Category.Normalize(request.Category);
+            hasChanges = true;
+        }
+
         if (hasChanges)
         {
             existingItem.UpdatedAt = DateTime.UtcNow;

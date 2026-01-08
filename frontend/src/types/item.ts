@@ -49,4 +49,5 @@ export interface UpdateItemRequest {
   quantity?: number | null;
   quantityUnit?: string | null;
   state?: ItemState;
+  category?: Category;
 }
