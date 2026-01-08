@@ -116,19 +116,23 @@ export function useGroceryList() {
   // Set up SignalR handlers for real-time updates from other clients
   useSignalR({
     onItemCreated: useCallback((item: GroceryItem) => {
+      // Normalize category for backward compatibility
+      const normalizedItem = { ...item, category: item.category || 'Other' };
       // Add item from SignalR broadcast (includes items created by this client)
       setItems(prev => {
         // Check if item already exists to prevent duplicates
-        if (prev.some(i => i.id === item.id)) {
+        if (prev.some(i => i.id === normalizedItem.id)) {
           return prev;
         }
-        return [...prev, item];
+        return [...prev, normalizedItem];
       });
     }, []),
 
     onItemUpdated: useCallback((item: GroceryItem) => {
+      // Normalize category for backward compatibility
+      const normalizedItem = { ...item, category: item.category || 'Other' };
       // Update item with latest data from server
-      const normalized = normalizeUpdatedItem(item);
+      const normalized = normalizeUpdatedItem(normalizedItem);
       setItems(prev => prev.map(i => i.id === item.id ? normalized : i));
     }, [normalizeUpdatedItem]),
 
