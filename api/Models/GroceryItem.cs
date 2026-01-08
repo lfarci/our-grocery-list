@@ -69,6 +69,13 @@ public class GroceryItem
     public string State { get; set; } = ItemState.Active;
 
     /// <summary>
+    /// Category of the item (Vegetables, Meat, Cereals, Dairy products, Other)
+    /// </summary>
+    [JsonProperty("category")]
+    [JsonPropertyName("category")]
+    public string Category { get; set; } = Models.Category.Other;
+
+    /// <summary>
     /// Timestamp when the item was created (UTC)
     /// </summary>
     [JsonProperty("createdAt")]
@@ -85,6 +92,7 @@ public class GroceryItem
     public void EnsureState()
     {
         State = string.IsNullOrWhiteSpace(State) ? ItemState.Active : ItemState.Normalize(State);
+        Category = Models.Category.Normalize(Category);
     }
 }
 

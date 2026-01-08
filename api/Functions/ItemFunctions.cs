@@ -123,6 +123,7 @@ public class ItemFunctions
             Quantity = request.Quantity,
             QuantityUnit = normalizedQuantityUnit,
             State = ItemState.Active,
+            Category = Category.Other,
             CreatedAt = now,
             UpdatedAt = now
         };

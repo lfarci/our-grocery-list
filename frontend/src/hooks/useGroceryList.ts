@@ -145,11 +145,31 @@ export function useGroceryList() {
     archived: 2
   };
 
-  // Sort items: active first, then checked, oldest first within each group
+  // Group items by category, maintaining order within each category
+  // Sort: active first, then checked; oldest first within each state group
   const sortedItems = [...visibleItems].sort((a, b) => {
+    // First sort by category according to fixed order
+    const categoryOrder: Record<string, number> = {
+      'Vegetables': 0,
+      'Meat': 1,
+      'Cereals': 2,
+      'Dairy products': 3,
+      'Other': 4
+    };
+    
+    const catA = categoryOrder[a.category] ?? 4; // Default to 'Other' if unknown
+    const catB = categoryOrder[b.category] ?? 4;
+    
+    if (catA !== catB) {
+      return catA - catB;
+    }
+    
+    // Within same category, sort by state (active before checked)
     if (a.state !== b.state) {
       return stateOrder[a.state] - stateOrder[b.state];
     }
+    
+    // Within same category and state, sort by creation date (oldest first)
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
   });
 
