@@ -178,8 +178,8 @@ function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
 
       <div className="border-t border-warmsand pt-4 mt-6">
         <h2 className="text-sm font-semibold text-softbrowngray mb-2">Quantity</h2>
-        <div className="grid grid-cols-2 gap-3 max-w-md">
-          <div>
+        <div className="flex flex-wrap gap-3 w-full">
+          <div className="flex-1 min-w-32">
             <label htmlFor="details-quantity" className="sr-only">Quantity</label>
             <input
               id="details-quantity"
@@ -194,14 +194,14 @@ function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
               placeholder="Enter quantity"
             />
           </div>
-          <div>
+          <div className="flex-none">
             <label htmlFor="details-quantity-unit" className="sr-only">Unit</label>
             <select
               id="details-quantity-unit"
               value={quantityUnit}
               onChange={(e) => handleUnitChange(e.target.value as QuantityUnit | '')}
               disabled={isSavingQuantity}
-              className="w-full px-3 py-2 border border-warmsand rounded-md focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-softwhitecream text-warmcharcoal"
+              className="w-auto px-3 py-2 border border-warmsand rounded-md focus:outline-none focus:ring-2 focus:ring-softblue focus:border-transparent bg-softwhitecream text-warmcharcoal"
             >
               <option value="">Unit</option>
               {QUANTITY_UNITS.map(unit => (
@@ -214,7 +214,7 @@ function ItemDetailsCard({ item, onUpdate }: ItemDetailsCardProps) {
 
       <div className="border-t border-warmsand pt-4 mt-6">
         <h2 className="text-sm font-semibold text-softbrowngray mb-2">Category</h2>
-        <div className="max-w-md">
+        <div className="w-full">
           <label htmlFor="details-category" className="sr-only">Category</label>
           <select
             id="details-category"
