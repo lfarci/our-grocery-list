@@ -165,27 +165,32 @@ public class ItemFunctions
             return new UpdateItemOutput { HttpResponse = req.CreateResponse(HttpStatusCode.NotFound) };
         }
 
-        JsonElement rawRequest;
-        UpdateItemRequest? request;
+        JsonElement rawRequest = default;
+        UpdateItemRequest? request = null;
         
         try
         {
             rawRequest = await req.ReadFromJsonAsync<JsonElement>();
             request = rawRequest.Deserialize<UpdateItemRequest>();
+            
+            if (request is null && rawRequest.ValueKind == JsonValueKind.Undefined)
+            {
+                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                await errorResponse.WriteStringAsync("Request body is required");
+                return new UpdateItemOutput { HttpResponse = errorResponse };
+            }
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, "Invalid JSON in update request for item {ItemId}", id);
+            var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+            await errorResponse.WriteStringAsync("Invalid JSON format in request body");
+            return new UpdateItemOutput { HttpResponse = errorResponse };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error reading or deserializing update request for item {ItemId}", id);
-            var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-            await errorResponse.WriteStringAsync("Invalid request body");
-            return new UpdateItemOutput { HttpResponse = errorResponse };
-        }
-
-        if (request is null && rawRequest.ValueKind == JsonValueKind.Undefined)
-        {
-            var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-            await errorResponse.WriteStringAsync("Request body is required");
-            return new UpdateItemOutput { HttpResponse = errorResponse };
+            _logger.LogError(ex, "Error reading update request for item {ItemId}: {ErrorMessage}", id, ex.Message);
+            throw; // Let Azure Functions handle transient errors with retries
         }
         
         var hasChanges = false;
