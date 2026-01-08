@@ -143,11 +143,6 @@ export function useGroceryList() {
   });
 
   const visibleItems = items.filter(item => item.state !== 'archived');
-  const stateOrder: Record<ItemState, number> = {
-    active: 0,
-    checked: 1,
-    archived: 2
-  };
 
   // Create category order mapping dynamically from CATEGORIES constant
   const categoryOrder: Record<string, number> = Object.fromEntries(
@@ -155,7 +150,7 @@ export function useGroceryList() {
   );
 
   // Group items by category, maintaining order within each category
-  // Sort: active first, then checked; oldest first within each state group
+  // Sort: oldest first within each category to keep checked items in place
   const sortedItems = [...visibleItems].sort((a, b) => {
     // First sort by category according to fixed order
     const catA = categoryOrder[a.category] ?? CATEGORIES.length; // Default to end if unknown
@@ -165,12 +160,7 @@ export function useGroceryList() {
       return catA - catB;
     }
     
-    // Within same category, sort by state (active before checked)
-    if (a.state !== b.state) {
-      return stateOrder[a.state] - stateOrder[b.state];
-    }
-    
-    // Within same category and state, sort by creation date (oldest first)
+    // Within same category, sort by creation date (oldest first)
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
   });
 

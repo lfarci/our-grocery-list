@@ -34,8 +34,8 @@
 
 ## List Order
 
-- All not-done items first, followed by done items.
-- Within each group, items stay in time-added order (oldest first).
+- Items stay in time-added order (oldest first) within their category section.
+- Checking an item does not change its position in the list.
 
 ## Categories
 

@@ -131,28 +131,27 @@ test.describe('Category Grouping', () => {
       await expect(lastItem).toHaveAttribute('data-testid', `item-container-${item3}`);
     });
 
-    await test.step('Check middle item and verify active items stay before checked', async () => {
+    await test.step('Check middle item and verify items stay in place', async () => {
       // Check the second item
       const item2Checkbox = page.locator(`input[type="checkbox"][aria-label*="${item2}"]`).first();
       await item2Checkbox.check();
-      
-      // Wait for state update
-      await page.waitForTimeout(500);
-      
-      // Verify checked item moves after active items
+
+      await expect(item2Checkbox).toBeChecked();
+
+      // Verify checked item stays in its original position
       const items = page.locator('[data-testid^="item-container-"]');
       
       // First item should still be item1 (active, oldest)
       const firstItem = items.first();
       await expect(firstItem).toHaveAttribute('data-testid', `item-container-${item1}`);
       
-      // Second item should be item3 (active, second oldest)
+      // Second item should still be item2 (now checked)
       const secondItem = items.nth(1);
-      await expect(secondItem).toHaveAttribute('data-testid', `item-container-${item3}`);
+      await expect(secondItem).toHaveAttribute('data-testid', `item-container-${item2}`);
       
-      // Last item should be item2 (checked)
+      // Last item should still be item3 (active, newest)
       const lastItem = items.last();
-      await expect(lastItem).toHaveAttribute('data-testid', `item-container-${item2}`);
+      await expect(lastItem).toHaveAttribute('data-testid', `item-container-${item3}`);
     });
   });
 
