@@ -69,7 +69,7 @@ public class GroceryItem
     public string State { get; set; } = ItemState.Active;
 
     /// <summary>
-    /// Category of the item (Vegetables, Meat, Cereals, Dairy products, Other)
+    /// Category of the item (Produce, Meat & Fish, Dairy, Bakery & Cereals, Household, Other)
     /// </summary>
     [JsonProperty("category")]
     [JsonPropertyName("category")]

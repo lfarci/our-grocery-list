@@ -26,6 +26,7 @@ public static class Category
     /// <summary>
     /// Normalizes a category string to a valid category value
     /// Returns "Other" if the category is null, empty, or invalid
+    /// Includes migration logic to map old category names to new ones
     /// </summary>
     public static string Normalize(string? category)
     {
@@ -35,6 +36,20 @@ public static class Category
         }
 
         var trimmed = category.Trim();
+        
+        // Migration: Map old category names to new ones
+        var migrationMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Vegetables", Produce },
+            { "Meat", MeatAndFish },
+            { "Cereals", BakeryAndCereals },
+            { "Dairy products", Dairy }
+        };
+        
+        if (migrationMap.TryGetValue(trimmed, out var migratedCategory))
+        {
+            return migratedCategory;
+        }
         
         // Use Contains for efficient case-insensitive lookup
         // then find the exact match with correct casing
