@@ -12,9 +12,10 @@ interface GroceryItemProps {
 export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpenDetails }: GroceryItemProps) {
   const isChecked = item.state === 'checked';
   const hasQuantity = item.quantity !== undefined && item.quantity !== null;
+  // Format quantity inline: "Chocolate (4)" or "Bananas (2 kg)"
   const quantityText = hasQuantity
-    ? `${item.quantity}${item.quantityUnit ? ` ${item.quantityUnit}` : ''}`
-    : null;
+    ? ` (${item.quantity}${item.quantityUnit ? ` ${item.quantityUnit}` : ''})`
+    : '';
   const [translateX, setTranslateX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const [hasMovedForSwipe, setHasMovedForSwipe] = useState(false);
@@ -157,7 +158,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
       <div
         ref={containerRef}
         data-swipeable="true"
-        className={`px-4 py-3 rounded-xl border shadow flex items-start gap-3 relative transition-all ${
+        className={`px-4 min-h-[56px] rounded-xl border shadow flex items-center gap-3 relative transition-all ${
           isChecked ? 'bg-softmint border-warmsand' : 'bg-softwhitecream border-warmsand hover:shadow-md hover:-translate-y-[1px]'
         } touch-none ${onOpenDetails ? 'cursor-pointer' : ''}`}
         style={{
@@ -175,24 +176,19 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
           type="checkbox"
           checked={isChecked}
           onChange={() => onToggleChecked(item.id, isChecked ? 'active' : 'checked')}
-          className="mt-1 h-5 w-5 rounded border-warmsand text-freshgreen focus:ring-softblue cursor-pointer"
+          className="h-5 w-5 rounded-xl border-warmsand text-freshgreen focus:ring-softblue cursor-pointer flex-shrink-0"
           aria-label={`Mark ${item.name} as ${isChecked ? 'not checked' : 'checked'}`}
         />
 
-        {/* Item Content */}
-        <div className="flex-1 min-w-0">
-          <div className={`font-semibold break-words ${isChecked ? 'line-through text-softbrowngray' : 'text-warmcharcoal'}`}>
+        {/* Item Content - Single line with inline quantity */}
+        <div className="flex-1 min-w-0 whitespace-nowrap overflow-hidden text-ellipsis">
+          <span className={`font-semibold ${isChecked ? 'line-through text-softbrowngray' : 'text-warmcharcoal'}`}>
             {item.name}
-          </div>
+          </span>
           {quantityText && (
-            <div className="text-sm mt-1 break-words text-softbrowngray">
+            <span className="text-softbrowngray font-normal">
               {quantityText}
-            </div>
-          )}
-          {item.notes && (
-            <div className={`text-sm mt-1 break-words text-softbrowngray`}>
-              {item.notes}
-            </div>
+            </span>
           )}
         </div>
       </div>
