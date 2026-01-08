@@ -2,22 +2,24 @@ namespace api.Models;
 
 /// <summary>
 /// Fixed set of item categories
-/// Categories are displayed in this order: Vegetables, Meat, Cereals, Dairy products, Other
+/// Categories are displayed in this order: Produce, Meat & Fish, Dairy, Bakery & Cereals, Household, Other
 /// </summary>
 public static class Category
 {
-    public const string Vegetables = "Vegetables";
-    public const string Meat = "Meat";
-    public const string Cereals = "Cereals";
-    public const string DairyProducts = "Dairy products";
+    public const string Produce = "Produce";
+    public const string MeatAndFish = "Meat & Fish";
+    public const string Dairy = "Dairy";
+    public const string BakeryAndCereals = "Bakery & Cereals";
+    public const string Household = "Household";
     public const string Other = "Other";
 
     private static readonly HashSet<string> ValidCategories = new(StringComparer.OrdinalIgnoreCase)
     {
-        Vegetables,
-        Meat,
-        Cereals,
-        DairyProducts,
+        Produce,
+        MeatAndFish,
+        Dairy,
+        BakeryAndCereals,
+        Household,
         Other
     };
 

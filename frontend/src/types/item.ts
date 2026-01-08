@@ -20,13 +20,14 @@ export type QuantityUnit = 'g' | 'kg' | 'L' | 'ml' | 'cl' | 'portion' | 'piece';
  * Fixed set of item categories
  * Categories are displayed in this order
  */
-export type Category = 'Vegetables' | 'Meat' | 'Cereals' | 'Dairy products' | 'Other';
+export type Category = 'Produce' | 'Meat & Fish' | 'Dairy' | 'Bakery & Cereals' | 'Household' | 'Other';
 
 export const CATEGORIES: readonly Category[] = [
-  'Vegetables',
-  'Meat',
-  'Cereals',
-  'Dairy products',
+  'Produce',
+  'Meat & Fish',
+  'Dairy',
+  'Bakery & Cereals',
+  'Household',
   'Other'
 ] as const;
 

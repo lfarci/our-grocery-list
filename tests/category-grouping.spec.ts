@@ -38,7 +38,7 @@ test.describe('Category Grouping', () => {
     // We'll use mock data to test all categories
     await test.step('Add items with different categories via API', async () => {
       // Create test items in database with specific categories
-      const categories = ['Vegetables', 'Meat', 'Cereals', 'Dairy products', 'Other'];
+      const categories = ['Produce', 'Meat & Fish', 'Dairy', 'Bakery & Cereals', 'Household', 'Other'];
       
       for (const category of categories) {
         const itemName = makeTestItemName(test.info(), `${category}Item`);
@@ -64,7 +64,7 @@ test.describe('Category Grouping', () => {
       const headingCount = await headings.count();
       
       if (headingCount > 0) {
-        const expectedOrder = ['Vegetables', 'Meat', 'Cereals', 'Dairy products', 'Other'];
+        const expectedOrder = ['Produce', 'Meat & Fish', 'Dairy', 'Bakery & Cereals', 'Household', 'Other'];
         
         // Collect all heading texts
         const actualHeadings: string[] = [];
@@ -98,10 +98,10 @@ test.describe('Category Grouping', () => {
       await expect(otherHeading).toBeVisible({ timeout: TIMEOUTS.VISIBILITY });
       
       // Verify other category headings are not present
-      const vegetablesHeading = page.getByRole('heading', { name: 'Vegetables', level: 2 });
-      await expect(vegetablesHeading).not.toBeVisible();
+      const produceHeading = page.getByRole('heading', { name: 'Produce', level: 2 });
+      await expect(produceHeading).not.toBeVisible();
       
-      const meatHeading = page.getByRole('heading', { name: 'Meat', level: 2 });
+      const meatHeading = page.getByRole('heading', { name: 'Meat & Fish', level: 2 });
       await expect(meatHeading).not.toBeVisible();
     });
   });
