@@ -3,6 +3,7 @@
 @theme {
   --color-honey: #F6D85E;
   --color-cream: #FFF6DF;
+  --color-softwhitecream: #FFFCF3;
   --color-softblue: #3A78D8;
   --color-freshgreen: #4CAF50;
   --color-softmint: #DFF2E1;
@@ -17,7 +18,7 @@
 }
 
 :root {
-  background-color: var(--color-honey);
+  background-color: var(--color-cream);
 }
 
 html, body, #root {
@@ -30,9 +31,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #3A2E1F; /* Warm Charcoal for primary text */
-  background-color: var(--color-honey);
+  background-color: var(--color-cream);
 }
 
 #root {
-  background-color: var(--color-honey);
+  background-color: var(--color-cream);
 }
