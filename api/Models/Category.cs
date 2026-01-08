@@ -24,6 +24,17 @@ public static class Category
     };
 
     /// <summary>
+    /// Migration map for old category names to new category names
+    /// </summary>
+    private static readonly Dictionary<string, string> MigrationMap = new(StringComparer.OrdinalIgnoreCase)
+    {
+        { "Vegetables", Produce },
+        { "Meat", MeatAndFish },
+        { "Cereals", BakeryAndCereals },
+        { "Dairy products", Dairy }
+    };
+
+    /// <summary>
     /// Normalizes a category string to a valid category value
     /// Returns "Other" if the category is null, empty, or invalid
     /// Includes migration logic to map old category names to new ones
@@ -38,15 +49,7 @@ public static class Category
         var trimmed = category.Trim();
         
         // Migration: Map old category names to new ones
-        var migrationMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            { "Vegetables", Produce },
-            { "Meat", MeatAndFish },
-            { "Cereals", BakeryAndCereals },
-            { "Dairy products", Dairy }
-        };
-        
-        if (migrationMap.TryGetValue(trimmed, out var migratedCategory))
+        if (MigrationMap.TryGetValue(trimmed, out var migratedCategory))
         {
             return migratedCategory;
         }
