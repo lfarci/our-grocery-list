@@ -195,9 +195,9 @@ export function GroceryList({
                 type="button"
                 onClick={() => setMode('store')}
                 aria-pressed={mode === 'store'}
-                className={`px-4 py-1.5 text-sm font-semibold rounded-full transition ${
+                className={`px-4 py-1.5 text-sm font-semibold rounded-full transition cursor-pointer ${
                   mode === 'store'
-                    ? 'bg-softblue text-softwhitecream shadow-sm'
+                    ? 'bg-softblue text-softwhitecream shadow-sm ring-1 ring-honey/50'
                     : 'text-warmcharcoal hover:bg-warmsand/40'
                 }`}
               >
@@ -207,9 +207,9 @@ export function GroceryList({
                 type="button"
                 onClick={() => setMode('kitchen')}
                 aria-pressed={mode === 'kitchen'}
-                className={`px-4 py-1.5 text-sm font-semibold rounded-full transition ${
+                className={`px-4 py-1.5 text-sm font-semibold rounded-full transition cursor-pointer ${
                   mode === 'kitchen'
-                    ? 'bg-softblue text-softwhitecream shadow-sm'
+                    ? 'bg-softblue text-softwhitecream shadow-sm ring-1 ring-honey/50'
                     : 'text-warmcharcoal hover:bg-warmsand/40'
                 }`}
               >
