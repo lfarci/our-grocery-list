@@ -217,7 +217,7 @@ export function GroceryItem({
         onMouseMove={handleMouseMove}
       >
         {/* Done Toggle */}
-        {showCheckbox ? (
+        {showCheckbox && (
           <input
             type="checkbox"
             checked={isChecked}
@@ -225,8 +225,6 @@ export function GroceryItem({
             className="h-5 w-5 rounded-xl border-warmsand text-freshgreen focus:ring-softblue cursor-pointer flex-shrink-0"
             aria-label={`Mark ${item.name} as ${isChecked ? 'not checked' : 'checked'}`}
           />
-        ) : (
-          <div className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
         )}
 
         {/* Item Content - Single line with inline quantity */}

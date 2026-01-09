@@ -226,7 +226,7 @@ export function GroceryList({
             onArchive={handleArchive}
             onOpenDetails={onOpenDetails}
             showCheckbox={mode === 'store'}
-            archiveLabel={mode === 'kitchen' ? 'Buy more' : 'Send to kitchen'}
+            archiveLabel={mode === 'kitchen' ? 'Buy it' : 'Got it'}
           />
         </div>
       </div>
