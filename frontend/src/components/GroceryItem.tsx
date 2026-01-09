@@ -224,7 +224,7 @@ export function GroceryItem({
         {showCheckbox && (
           <label
             data-checkbox-hit-area="true"
-            className="relative flex items-center justify-center before:absolute before:-inset-3 before:content-['']"
+            className="flex items-center justify-center self-stretch p-3 -m-3 -ml-4"
             onClick={(event) => event.stopPropagation()}
             onPointerDown={(event) => event.stopPropagation()}
             onTouchStart={(event) => event.stopPropagation()}
