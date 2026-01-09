@@ -1,4 +1,4 @@
-import { useState, FormEvent, useCallback, useEffect, useRef } from 'react';
+import { useState, FormEvent, useCallback, useEffect, useMemo, useRef } from 'react';
 import { ErrorMessage } from './ErrorMessage';
 import { AddItemForm } from './AddItemForm';
 import { GroceryItemsList } from './GroceryItemsList';
@@ -19,6 +19,18 @@ interface GroceryListProps {
   autoFocusInput?: boolean;
 }
 
+type ListMode = 'store' | 'kitchen';
+
+const MODE_STORAGE_KEY = 'grocery-list-mode';
+
+const filterItemsByMode = (items: GroceryItem[], mode: ListMode) => {
+  if (mode === 'kitchen') {
+    return items.filter(item => item.state === 'archived');
+  }
+
+  return items.filter(item => item.state === 'active' || item.state === 'checked');
+};
+
 export function GroceryList({
   items,
   loading,
@@ -32,6 +44,14 @@ export function GroceryList({
   autoFocusInput = true,
 }: GroceryListProps) {
   const [name, setName] = useState('');
+  const [mode, setMode] = useState<ListMode>(() => {
+    if (typeof window === 'undefined') {
+      return 'store';
+    }
+
+    const savedMode = window.localStorage.getItem(MODE_STORAGE_KEY);
+    return savedMode === 'kitchen' ? 'kitchen' : 'store';
+  });
   const [formError, setFormError] = useState('');
   const [suggestions, setSuggestions] = useState<GroceryItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -64,6 +84,10 @@ export function GroceryList({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [name]);
+
+  useEffect(() => {
+    window.localStorage.setItem(MODE_STORAGE_KEY, mode);
+  }, [mode]);
 
   // Debounced search for suggestions
   useEffect(() => {
@@ -142,6 +166,17 @@ export function GroceryList({
     }
   };
 
+  const filteredItems = useMemo(() => filterItemsByMode(items, mode), [items, mode]);
+
+  const handleArchive = useCallback(async (id: string) => {
+    if (mode === 'kitchen') {
+      await toggleChecked(id, 'active');
+      return;
+    }
+
+    await archiveItem(id);
+  }, [archiveItem, mode, toggleChecked]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
@@ -154,14 +189,44 @@ export function GroceryList({
     <div className="min-h-screen bg-cream flex flex-col">
       <div className="flex-1 overflow-y-auto pb-24">
         <div className="max-w-2xl mx-auto px-4 pt-6 pb-6">
+          <div className="flex items-center justify-end pb-4">
+            <div className="inline-flex items-center rounded-full border border-warmsand/70 bg-softwhitecream p-1 shadow-sm" role="group" aria-label="List mode">
+              <button
+                type="button"
+                onClick={() => setMode('store')}
+                aria-pressed={mode === 'store'}
+                className={`px-4 py-1.5 text-sm font-semibold rounded-full transition ${
+                  mode === 'store'
+                    ? 'bg-softblue text-softwhitecream shadow-sm'
+                    : 'text-warmcharcoal hover:bg-warmsand/40'
+                }`}
+              >
+                Store
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('kitchen')}
+                aria-pressed={mode === 'kitchen'}
+                className={`px-4 py-1.5 text-sm font-semibold rounded-full transition ${
+                  mode === 'kitchen'
+                    ? 'bg-softblue text-softwhitecream shadow-sm'
+                    : 'text-warmcharcoal hover:bg-warmsand/40'
+                }`}
+              >
+                Kitchen
+              </button>
+            </div>
+          </div>
           {error && <ErrorMessage message={error} onRetry={loadItems} />}
 
           <GroceryItemsList
-            items={items}
+            items={filteredItems}
             onToggleChecked={toggleChecked}
             onDelete={removeItem}
-            onArchive={archiveItem}
+            onArchive={handleArchive}
             onOpenDetails={onOpenDetails}
+            showCheckbox={mode === 'store'}
+            archiveLabel={mode === 'kitchen' ? 'Restore' : 'Archive'}
           />
         </div>
       </div>
