@@ -1,4 +1,4 @@
-import { FormEvent, useEffect } from 'react';
+import { FormEvent, useEffect, useRef } from 'react';
 import { GroceryItem } from '../types';
 import { ItemSuggestions } from './ItemSuggestions';
 
@@ -12,6 +12,7 @@ interface AddItemFormProps {
   showSuggestions: boolean;
   inputRef: React.RefObject<HTMLInputElement | null>;
   formRef: React.RefObject<HTMLDivElement | null>;
+  autoFocus?: boolean;
 }
 
 export function AddItemForm({ 
@@ -23,11 +24,15 @@ export function AddItemForm({
   onSelectSuggestion,
   showSuggestions,
   inputRef,
-  formRef
+  formRef,
+  autoFocus = true,
 }: AddItemFormProps) {
+  const shouldAutoFocus = useRef(autoFocus);
   // Focus input on mount for better UX
   useEffect(() => {
-    inputRef.current?.focus();
+    if (shouldAutoFocus.current) {
+      inputRef.current?.focus();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

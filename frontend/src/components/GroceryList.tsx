@@ -16,6 +16,7 @@ interface GroceryListProps {
   removeItem: (id: string) => Promise<void>;
   archiveItem: (id: string) => Promise<void>;
   onOpenDetails?: (id: string) => void;
+  autoFocusInput?: boolean;
 }
 
 export function GroceryList({
@@ -28,6 +29,7 @@ export function GroceryList({
   removeItem,
   archiveItem,
   onOpenDetails,
+  autoFocusInput = true,
 }: GroceryListProps) {
   const [name, setName] = useState('');
   const [formError, setFormError] = useState('');
@@ -177,6 +179,7 @@ export function GroceryList({
             showSuggestions={showSuggestions}
             inputRef={inputRef}
             formRef={formRef}
+            autoFocus={autoFocusInput}
           />
         </div>
       </div>
