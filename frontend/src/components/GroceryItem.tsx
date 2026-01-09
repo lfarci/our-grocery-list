@@ -43,7 +43,11 @@ export function GroceryItem({
 
   // Helper to check if target is an interactive element
   const isInteractiveElement = (target: HTMLElement): boolean => {
-    return target.tagName === 'INPUT' || target.tagName === 'BUTTON';
+    return (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'BUTTON' ||
+      target.closest('[data-checkbox-hit-area="true"]') !== null
+    );
   };
 
   // Shared function to update swipe position
@@ -218,13 +222,21 @@ export function GroceryItem({
       >
         {/* Done Toggle */}
         {showCheckbox && (
-          <input
-            type="checkbox"
-            checked={isChecked}
-            onChange={() => onToggleChecked(item.id, isChecked ? 'active' : 'checked')}
-            className="h-5 w-5 rounded-xl border-warmsand text-freshgreen focus:ring-softblue cursor-pointer flex-shrink-0"
-            aria-label={`Mark ${item.name} as ${isChecked ? 'not checked' : 'checked'}`}
-          />
+          <label
+            data-checkbox-hit-area="true"
+            className="flex items-center justify-center self-stretch p-3 -m-3 -ml-4"
+            onClick={(event) => event.stopPropagation()}
+            onPointerDown={(event) => event.stopPropagation()}
+            onTouchStart={(event) => event.stopPropagation()}
+          >
+            <input
+              type="checkbox"
+              checked={isChecked}
+              onChange={() => onToggleChecked(item.id, isChecked ? 'active' : 'checked')}
+              className="h-5 w-5 rounded-xl border-warmsand text-freshgreen focus:ring-softblue cursor-pointer flex-shrink-0"
+              aria-label={`Mark ${item.name} as ${isChecked ? 'not checked' : 'checked'}`}
+            />
+          </label>
         )}
 
         {/* Item Content - Single line with inline quantity */}
