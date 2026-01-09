@@ -20,12 +20,16 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
   const [isSwiping, setIsSwiping] = useState(false);
   const [hasMovedForSwipe, setHasMovedForSwipe] = useState(false);
   const startXRef = useRef(0);
+  const startYRef = useRef(0);
   const currentXRef = useRef(0);
+  const currentYRef = useRef(0);
+  const gestureLockRef = useRef<'none' | 'horizontal' | 'vertical'>('none');
   const containerRef = useRef<HTMLDivElement>(null);
 
   const SWIPE_THRESHOLD = 100; // pixels to trigger action
   const MAX_SWIPE = 150; // maximum swipe distance
   const TAP_MOVEMENT_THRESHOLD = 10; // pixels - movement below this is considered a tap
+  const INTENT_THRESHOLD = 24; // pixels - movement required to lock direction
 
   // Helper to check if target is an interactive element
   const isInteractiveElement = (target: HTMLElement): boolean => {
@@ -85,13 +89,43 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
     
     startXRef.current = e.touches[0].clientX;
     currentXRef.current = e.touches[0].clientX;
+    startYRef.current = e.touches[0].clientY;
+    currentYRef.current = e.touches[0].clientY;
+    gestureLockRef.current = 'none';
     setIsSwiping(true);
     setHasMovedForSwipe(false);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isSwiping) return;
-    updateSwipePosition(e.touches[0].clientX);
+
+    currentXRef.current = e.touches[0].clientX;
+    currentYRef.current = e.touches[0].clientY;
+    const deltaX = currentXRef.current - startXRef.current;
+    const deltaY = currentYRef.current - startYRef.current;
+    const absDeltaX = Math.abs(deltaX);
+    const absDeltaY = Math.abs(deltaY);
+
+    if (gestureLockRef.current === 'none') {
+      if (absDeltaX < INTENT_THRESHOLD && absDeltaY < INTENT_THRESHOLD) {
+        return;
+      }
+
+      if (absDeltaX > absDeltaY && absDeltaX >= INTENT_THRESHOLD) {
+        gestureLockRef.current = 'horizontal';
+      } else {
+        gestureLockRef.current = 'vertical';
+        setIsSwiping(false);
+        setHasMovedForSwipe(false);
+        setTranslateX(0);
+        return;
+      }
+    }
+
+    if (gestureLockRef.current === 'horizontal') {
+      e.preventDefault();
+      updateSwipePosition(currentXRef.current);
+    }
   };
 
   const handleTouchEnd = () => {
@@ -108,6 +142,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
     
     startXRef.current = e.clientX;
     currentXRef.current = e.clientX;
+    gestureLockRef.current = 'horizontal';
     setIsSwiping(true);
     setHasMovedForSwipe(false);
   };
@@ -160,7 +195,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
         data-swipeable="true"
         className={`px-4 min-h-[56px] rounded-xl border shadow flex items-center gap-3 relative transition-all ${
           isChecked ? 'bg-softmint border-warmsand' : 'bg-softwhitecream border-warmsand hover:shadow-md hover:-translate-y-[1px]'
-        } touch-none ${onOpenDetails ? 'cursor-pointer' : ''}`}
+        } touch-pan-y ${onOpenDetails ? 'cursor-pointer' : ''}`}
         style={{
           transform: `translateX(${translateX}px)${!isSwiping && !isChecked ? ' translateY(0)' : ''}`,
           transition: isSwiping ? 'none' : 'transform 0.3s ease-out, box-shadow 0.2s ease-out',
