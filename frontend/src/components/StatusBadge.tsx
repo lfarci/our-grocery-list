@@ -11,7 +11,7 @@ const stateStyles: Record<ItemState, string> = {
 };
 
 const stateLabels: Record<ItemState, string> = {
-  active: 'Needs to be bought',
+  active: 'To buy',
   checked: 'In basket',
   archived: 'In kitchen',
 };
