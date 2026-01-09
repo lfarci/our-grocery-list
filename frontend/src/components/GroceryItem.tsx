@@ -211,7 +211,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
           type="checkbox"
           checked={isChecked}
           onChange={() => onToggleChecked(item.id, isChecked ? 'active' : 'checked')}
-          className="h-5 w-5 rounded-lg border-warmsand text-freshgreen focus:ring-softblue cursor-pointer flex-shrink-0"
+          className="h-5 w-5 rounded-lg border border-warmsand bg-softwhitecream text-freshgreen focus:ring-softblue cursor-pointer flex-shrink-0"
           aria-label={`Mark ${item.name} as ${isChecked ? 'not checked' : 'checked'}`}
         />
 
