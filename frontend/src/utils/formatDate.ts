@@ -5,7 +5,7 @@
 export function formatDate(dateString: string): string {
   try {
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
+    if (Number.isNaN(date.getTime())) {
       return 'Date unavailable';
     }
     return date.toLocaleString('en-US', {
@@ -27,7 +27,7 @@ export function formatDate(dateString: string): string {
 export function formatRelativeDate(dateString: string): string {
   try {
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
+    if (Number.isNaN(date.getTime())) {
       return 'Date unavailable';
     }
 
