@@ -7,9 +7,19 @@ interface GroceryItemProps {
   onDelete: (id: string) => void;
   onArchive: (id: string) => void;
   onOpenDetails?: (id: string) => void;
+  showCheckbox: boolean;
+  archiveLabel: string;
 }
 
-export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpenDetails }: GroceryItemProps) {
+export function GroceryItem({
+  item,
+  onToggleChecked,
+  onDelete,
+  onArchive,
+  onOpenDetails,
+  showCheckbox,
+  archiveLabel,
+}: GroceryItemProps) {
   const isChecked = item.state === 'checked';
   const hasQuantity = item.quantity !== undefined && item.quantity !== null;
   // Format quantity inline: "Chocolate (4)" or "Bananas (2 kg)"
@@ -179,7 +189,7 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
           <svg className="w-6 h-6 text-freshgreen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
           </svg>
-          <span className="text-freshgreen font-semibold">Archive</span>
+          <span className="text-freshgreen font-semibold">{archiveLabel}</span>
         </div>
         <div className={`flex items-center gap-2 transition-opacity ${showDeleteHint ? 'opacity-100' : 'opacity-0'}`}>
           <span className="text-mutedcoral font-semibold">Delete</span>
@@ -207,13 +217,15 @@ export function GroceryItem({ item, onToggleChecked, onDelete, onArchive, onOpen
         onMouseMove={handleMouseMove}
       >
         {/* Done Toggle */}
-        <input
-          type="checkbox"
-          checked={isChecked}
-          onChange={() => onToggleChecked(item.id, isChecked ? 'active' : 'checked')}
-          className="h-5 w-5 rounded-xl border-warmsand text-freshgreen focus:ring-softblue cursor-pointer flex-shrink-0"
-          aria-label={`Mark ${item.name} as ${isChecked ? 'not checked' : 'checked'}`}
-        />
+        {showCheckbox && (
+          <input
+            type="checkbox"
+            checked={isChecked}
+            onChange={() => onToggleChecked(item.id, isChecked ? 'active' : 'checked')}
+            className="h-5 w-5 rounded-xl border-warmsand text-freshgreen focus:ring-softblue cursor-pointer flex-shrink-0"
+            aria-label={`Mark ${item.name} as ${isChecked ? 'not checked' : 'checked'}`}
+          />
+        )}
 
         {/* Item Content - Single line with inline quantity */}
         <div className="flex-1 min-w-0 whitespace-nowrap overflow-hidden text-ellipsis">
