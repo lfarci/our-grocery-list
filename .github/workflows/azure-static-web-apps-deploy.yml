@@ -27,13 +27,11 @@ on:
       - 'api/**'
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pull-requests: write
-  id-token: write  # Required for federated credentials (OIDC)
-
 jobs:
   build_and_deploy:
+    permissions:
+      contents: read
+      pull-requests: write
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: ${{ github.event_name == 'push' && 'Deploy to Production' || 'Deploy Preview' }}
@@ -86,6 +84,8 @@ jobs:
     name: Configure Preview Database
     needs: build_and_deploy
     if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    permissions:
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - name: Azure CLI Login
@@ -116,6 +116,8 @@ jobs:
     name: Detect changed Playwright specs
     needs: build_and_deploy
     if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     outputs:
       changed_specs: ${{ steps.detect.outputs.specs }}
@@ -128,6 +130,8 @@ jobs:
     name: Run E2E Tests on Preview
     needs: [build_and_deploy, configure_preview_environment, detect_playwright_tests]
     if: github.event_name == 'pull_request' && github.event.action != 'closed' && needs.detect_playwright_tests.outputs.changed_specs != ''
+    permissions:
+      contents: read
     uses: lfarci/our-grocery-list/.github/workflows/playwright-tests.yml@main
     with:
       deployment_url: ${{ needs.build_and_deploy.outputs.deployment_url }}
@@ -137,6 +141,9 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
     name: Close PR Preview Environment
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Close Pull Request deployment
         id: closepullrequest
