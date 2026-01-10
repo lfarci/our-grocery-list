@@ -237,7 +237,7 @@ public class ItemFunctions
     /// </summary>
     private async Task<(JsonElement RawRequest, string? ErrorMessage)> ReadUpdateRequestAsync(HttpRequestData req, string id)
     {
-        JsonElement rawRequest = default;
+        JsonElement rawRequest;
 
         try
         {
