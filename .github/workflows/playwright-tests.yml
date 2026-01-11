@@ -60,6 +60,7 @@ jobs:
         id: check_branch
         env:
           BRANCH_NAME: ${{ inputs.branch_name }}
+          REPO_URL: https://github.com/${{ github.repository }}.git
         run: |
           echo "Checking if branch '$BRANCH_NAME' exists..."
           
