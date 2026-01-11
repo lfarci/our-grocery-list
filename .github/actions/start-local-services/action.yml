@@ -1,0 +1,182 @@
+name: Start Local Services
+description: Start Cosmos DB emulator, Azurite, SignalR emulator, API, and frontend for local Playwright tests.
+inputs:
+  cosmos_connection_string:
+    description: Cosmos DB connection string for the emulator.
+    required: true
+  cosmos_database_id:
+    description: Cosmos DB database id.
+    required: false
+    default: GroceryListDb
+  cosmos_container_id:
+    description: Cosmos DB container id.
+    required: false
+    default: Items
+  signalr_port:
+    description: Port for the SignalR emulator.
+    required: false
+    default: '8888'
+  api_port:
+    description: Port for the local Functions host.
+    required: false
+    default: '7071'
+  frontend_port:
+    description: Port for the frontend dev server.
+    required: false
+    default: '5173'
+outputs:
+  base_url:
+    description: Base URL for Playwright to test.
+    value: ${{ steps.base-url.outputs.value }}
+runs:
+  using: composite
+  steps:
+    - name: Start Azurite
+      shell: bash
+      run: |
+        docker run -d --name azurite \
+          -p 10000:10000 -p 10001:10001 -p 10002:10002 \
+          mcr.microsoft.com/azure-storage/azurite
+
+    - name: Wait for Azurite
+      shell: bash
+      run: |
+        for i in {1..15}; do
+          status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:10000/devstoreaccount1?comp=list || true)
+          if [ "${status_code}" != "000" ]; then
+            exit 0
+          fi
+          sleep 2
+        done
+
+        echo "::error::Azurite did not become ready in time."
+        exit 1
+
+    - name: Start Cosmos DB Emulator
+      shell: bash
+      run: |
+        docker run -d --name cosmos-emulator \
+          -p 8081:8081 -p 10251:10251 -p 10252:10252 -p 10253:10253 -p 10254:10254 \
+          -e AZURE_COSMOS_EMULATOR_PARTITION_COUNT=10 \
+          -e AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE=false \
+          mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
+
+    - name: Trust Cosmos DB Emulator certificate
+      shell: bash
+      run: |
+        for i in {1..30}; do
+          if curl -k -s https://localhost:8081/_explorer/emulator.pem -o /tmp/cosmos-emulator.crt; then
+            break
+          fi
+          sleep 2
+        done
+
+        sudo cp /tmp/cosmos-emulator.crt /usr/local/share/ca-certificates/cosmos-emulator.crt
+        sudo update-ca-certificates
+
+    - name: Install SignalR emulator
+      shell: bash
+      run: |
+        dotnet tool install -g Microsoft.Azure.SignalR.Emulator
+        echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
+    - name: Start SignalR emulator
+      id: signalr
+      shell: bash
+      run: |
+        mkdir -p /tmp/signalr-emulator
+        pushd /tmp/signalr-emulator
+        asrs-emulator upstream init
+        nohup asrs-emulator start -p "${{ inputs.signalr_port }}" > /tmp/signalr-emulator/output.log 2>&1 &
+        popd
+
+        for i in {1..30}; do
+          signalr_connection_string=$(awk 'star { if (NF) { print; exit } } /^\\*+$/ { star = !star }' /tmp/signalr-emulator/output.log | tr -d '\r')
+          if [ -n "${signalr_connection_string}" ]; then
+            echo "connection_string=${signalr_connection_string}" >> "$GITHUB_OUTPUT"
+            break
+          fi
+          sleep 2
+        done
+
+        if [ -z "${signalr_connection_string}" ]; then
+          echo "::error::SignalR emulator connection string not found."
+          cat /tmp/signalr-emulator/output.log
+          exit 1
+        fi
+
+    - name: Write API local settings
+      shell: bash
+      run: |
+        cat > api/local.settings.json <<EOF
+        {
+          "IsEncrypted": false,
+          "Values": {
+            "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+            "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+            "CosmosDbConnectionString": "${{ inputs.cosmos_connection_string }}",
+            "CosmosDbDatabaseId": "${{ inputs.cosmos_database_id }}",
+            "CosmosDbContainerId": "${{ inputs.cosmos_container_id }}",
+            "CosmosDbEnsureCreated": "true",
+            "AzureSignalRConnectionString": "${{ steps.signalr.outputs.connection_string }}"
+          },
+          "Host": {
+            "CORS": "http://localhost:${{ inputs.frontend_port }},http://127.0.0.1:${{ inputs.frontend_port }}",
+            "CORSCredentials": false
+          }
+        }
+        EOF
+
+    - name: Write frontend env
+      shell: bash
+      run: |
+        cat > frontend/.env <<EOF
+        VITE_API_BASE_URL=http://localhost:${{ inputs.api_port }}/api
+        EOF
+
+    - name: Start API
+      shell: bash
+      run: |
+        pushd api
+        nohup func start --port "${{ inputs.api_port }}" > /tmp/api.log 2>&1 &
+        popd
+
+    - name: Wait for API
+      shell: bash
+      run: |
+        for i in {1..45}; do
+          if curl -s -o /dev/null -w "%{http_code}" "http://localhost:${{ inputs.api_port }}/api/items" | grep -q "200"; then
+            exit 0
+          fi
+          sleep 2
+        done
+
+        echo "::error::API did not become ready in time."
+        tail -n 200 /tmp/api.log || true
+        exit 1
+
+    - name: Start frontend
+      shell: bash
+      run: |
+        pushd frontend
+        nohup npm run dev -- --host 127.0.0.1 --port "${{ inputs.frontend_port }}" > /tmp/frontend.log 2>&1 &
+        popd
+
+    - name: Wait for frontend
+      shell: bash
+      run: |
+        for i in {1..30}; do
+          if curl -s -o /dev/null -w "%{http_code}" "http://localhost:${{ inputs.frontend_port }}" | grep -q "200"; then
+            exit 0
+          fi
+          sleep 2
+        done
+
+        echo "::error::Frontend did not become ready in time."
+        tail -n 200 /tmp/frontend.log || true
+        exit 1
+
+    - name: Set base URL output
+      id: base-url
+      shell: bash
+      run: echo "value=http://localhost:${{ inputs.frontend_port }}" >> "$GITHUB_OUTPUT"

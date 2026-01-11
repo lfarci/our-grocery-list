@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using api.Repositories;
+using api.Services;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
@@ -64,6 +65,8 @@ builder.Services.AddSingleton<IItemRepository>(sp =>
     var logger = sp.GetRequiredService<ILogger<CosmosDbItemRepository>>();
     return new CosmosDbItemRepository(cosmosClient, logger, databaseId, containerId);
 });
+
+builder.Services.AddHostedService<CosmosDbInitializer>();
 
 // Note: CORS is configured in local.settings.json for local development
 // For Azure deployment, configure CORS in the Azure Portal

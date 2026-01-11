@@ -17,6 +17,11 @@ on:
         required: false
         type: string
         default: ''
+      cosmos_connection_string:
+        description: 'Cosmos DB connection string for local emulator runs'
+        required: false
+        type: string
+        default: ''
   workflow_dispatch:
     inputs:
       deployment_url:
@@ -29,6 +34,11 @@ on:
         type: string
       test_files:
         description: 'Space-separated list of Playwright spec files to run; runs all when empty'
+        required: false
+        type: string
+        default: ''
+      cosmos_connection_string:
+        description: 'Cosmos DB connection string for local emulator runs'
         required: false
         type: string
         default: ''
@@ -75,21 +85,65 @@ jobs:
           node-version: '20.x'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Setup .NET SDK
+        if: inputs.deployment_url == 'local'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install dependencies (remote)
+        if: inputs.deployment_url != 'local'
         # This repo's postinstall runs `dotnet restore` for the API.
         # For E2E tests against a deployed URL we don't need the API restored/built,
         # and skipping scripts avoids requiring .NET in this workflow.
         run: npm ci --ignore-scripts
 
+      - name: Install dependencies (local)
+        if: inputs.deployment_url == 'local'
+        run: npm ci
+
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 
+      - name: Install Azure Functions Core Tools
+        if: inputs.deployment_url == 'local'
+        run: npm install -g azure-functions-core-tools@4 --unsafe-perm true
+
+      - name: Resolve Cosmos connection string
+        if: inputs.deployment_url == 'local'
+        id: cosmos
+        run: |
+          connection_string="${{ inputs.cosmos_connection_string }}"
+          if [ -z "${connection_string}" ]; then
+            connection_string="${{ vars.COSMOS_EMULATOR_CONNECTION_STRING }}"
+          fi
+          if [ -z "${connection_string}" ]; then
+            connection_string="${{ secrets.COSMOS_EMULATOR_CONNECTION_STRING }}"
+          fi
+          if [ -z "${connection_string}" ]; then
+            echo "::error::Cosmos emulator connection string is not set. Configure COSMOS_EMULATOR_CONNECTION_STRING as a repo variable or secret, or pass the workflow input."
+            exit 1
+          fi
+
+          echo "connection_string=${connection_string}" >> "$GITHUB_OUTPUT"
+
+      - name: Start local services
+        if: inputs.deployment_url == 'local'
+        id: local-services
+        uses: ./.github/actions/start-local-services
+        with:
+          cosmos_connection_string: ${{ steps.cosmos.outputs.connection_string }}
+
       - name: Run Playwright tests
         env:
-          BASE_URL: ${{ inputs.deployment_url }}
+          BASE_URL: ${{ inputs.deployment_url == 'local' && steps.local-services.outputs.base_url || inputs.deployment_url }}
           CI: true
         run: |
-          echo "Running Playwright tests against: ${{ inputs.deployment_url }}"
+          if [ "${{ inputs.deployment_url }}" = "local" ]; then
+            echo "Running Playwright tests against local services."
+          else
+            echo "Running Playwright tests against: ${{ inputs.deployment_url }}"
+          fi
           if [ -n "${{ inputs.test_files }}" ]; then
             echo "Running specified test files: ${{ inputs.test_files }}"
             npx playwright test --project=chromium ${{ inputs.test_files }}

@@ -185,6 +185,7 @@ This file configures CORS, Cosmos DB, and SignalR:
     "CosmosDbConnectionString": "YOUR_COSMOS_DB_CONNECTION_STRING_HERE",
     "CosmosDbDatabaseId": "GroceryListDb",
     "CosmosDbContainerId": "Items",
+    "CosmosDbEnsureCreated": "false",
     "AzureSignalRConnectionString": "YOUR_SIGNALR_CONNECTION_STRING_HERE"
   },
   "Host": {
@@ -198,6 +199,7 @@ This file configures CORS, Cosmos DB, and SignalR:
 - **CosmosDbConnectionString**: Connection string for Azure Cosmos DB (see [Cosmos DB setup guide](cosmosdb-setup.md))
 - **CosmosDbDatabaseId**: Database name (default: "GroceryListDb")
 - **CosmosDbContainerId**: Container name (default: "Items")
+- **CosmosDbEnsureCreated**: Set to `true` to auto-create the database and container (useful for emulators/CI)
 - **AzureSignalRConnectionString**: Connection string for Azure SignalR Service (see below)
 
 > **Important:** The `local.settings.json` file is git-ignored and must be created locally. Without it, you'll encounter CORS errors when running services separately.

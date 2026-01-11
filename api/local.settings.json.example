@@ -2,12 +2,13 @@
     "IsEncrypted": false,
     "Values": {
         "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-        "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
-        "CosmosDbConnectionString": "YOUR_COSMOS_DB_CONNECTION_STRING_HERE",
-        "CosmosDbDatabaseId": "GroceryListDb",
-        "CosmosDbContainerId": "Items",
-        "AzureSignalRConnectionString": "YOUR_SIGNALR_CONNECTION_STRING_HERE"
-    },
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "CosmosDbConnectionString": "YOUR_COSMOS_DB_CONNECTION_STRING_HERE",
+    "CosmosDbDatabaseId": "GroceryListDb",
+    "CosmosDbContainerId": "Items",
+    "CosmosDbEnsureCreated": "false",
+    "AzureSignalRConnectionString": "YOUR_SIGNALR_CONNECTION_STRING_HERE"
+  },
     "Host": {
         "CORS": "http://localhost:5173,http://127.0.0.1:5173"
     }
