@@ -17,11 +17,6 @@ on:
         required: false
         type: string
         default: ''
-      cosmos_connection_string:
-        description: 'Cosmos DB connection string for local emulator runs'
-        required: false
-        type: string
-        default: ''
   workflow_dispatch:
     inputs:
       deployment_url:
@@ -34,11 +29,6 @@ on:
         type: string
       test_files:
         description: 'Space-separated list of Playwright spec files to run; runs all when empty'
-        required: false
-        type: string
-        default: ''
-      cosmos_connection_string:
-        description: 'Cosmos DB connection string for local emulator runs'
         required: false
         type: string
         default: ''
@@ -125,17 +115,7 @@ jobs:
         if: inputs.deployment_url == 'local'
         id: cosmos
         run: |
-          connection_string="${{ inputs.cosmos_connection_string }}"
-          if [ -z "${connection_string}" ]; then
-            connection_string="${{ vars.COSMOS_EMULATOR_CONNECTION_STRING }}"
-          fi
-          if [ -z "${connection_string}" ]; then
-            connection_string="${{ secrets.COSMOS_EMULATOR_CONNECTION_STRING }}"
-          fi
-          if [ -z "${connection_string}" ]; then
-            echo "::error::Cosmos emulator connection string is not set. Configure COSMOS_EMULATOR_CONNECTION_STRING as a repo variable or secret, or pass the workflow input."
-            exit 1
-          fi
+          connection_string="AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
 
           echo "connection_string=${connection_string}" >> "$GITHUB_OUTPUT"
 
