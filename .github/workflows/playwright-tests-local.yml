@@ -1,6 +1,9 @@
 name: Playwright Tests (Local Services)
 
 on:
+  pull_request:
+    branches:
+      - main
   workflow_call:
     inputs:
       branch_name:
