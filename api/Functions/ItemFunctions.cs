@@ -84,34 +84,23 @@ public class ItemFunctions
         
         if (request is null || string.IsNullOrWhiteSpace(request.Name))
         {
-            var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-            await errorResponse.WriteStringAsync("Item name is required");
-            return new CreateItemOutput { HttpResponse = errorResponse };
+            return await CreateCreateItemBadRequestOutputAsync(req, "Item name is required");
         }
 
         if (request.Name.Length > GroceryItem.MaxNameLength)
         {
-            var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-            await errorResponse.WriteStringAsync($"Item name must be {GroceryItem.MaxNameLength} characters or less");
-            return new CreateItemOutput { HttpResponse = errorResponse };
+            return await CreateCreateItemBadRequestOutputAsync(req, $"Item name must be {GroceryItem.MaxNameLength} characters or less");
         }
 
         if (request.Quantity.HasValue && request.Quantity.Value < 0)
         {
-            var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-            await errorResponse.WriteStringAsync("Quantity cannot be negative");
-            return new CreateItemOutput { HttpResponse = errorResponse };
+            return await CreateCreateItemBadRequestOutputAsync(req, "Quantity cannot be negative");
         }
 
         string? normalizedQuantityUnit = null;
-        if (request.QuantityUnit is not null)
+        if (request.QuantityUnit is not null && !QuantityUnits.TryNormalize(request.QuantityUnit, out normalizedQuantityUnit))
         {
-            if (!QuantityUnits.TryNormalize(request.QuantityUnit, out normalizedQuantityUnit))
-            {
-                var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-                await errorResponse.WriteStringAsync("Invalid quantity unit");
-                return new CreateItemOutput { HttpResponse = errorResponse };
-            }
+            return await CreateCreateItemBadRequestOutputAsync(req, "Invalid quantity unit");
         }
 
         var now = DateTime.UtcNow;
@@ -146,6 +135,16 @@ public class ItemFunctions
                 }
             }
         };
+    }
+
+    /// <summary>
+    /// Builds a bad-request response for create-item requests with a message payload.
+    /// </summary>
+    private static async Task<CreateItemOutput> CreateCreateItemBadRequestOutputAsync(HttpRequestData req, string message)
+    {
+        var errorResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+        await errorResponse.WriteStringAsync(message);
+        return new CreateItemOutput { HttpResponse = errorResponse };
     }
 
     /// <summary>
@@ -237,7 +236,7 @@ public class ItemFunctions
     /// </summary>
     private async Task<(JsonElement RawRequest, string? ErrorMessage)> ReadUpdateRequestAsync(HttpRequestData req, string id)
     {
-        JsonElement rawRequest = default;
+        JsonElement rawRequest;
 
         try
         {

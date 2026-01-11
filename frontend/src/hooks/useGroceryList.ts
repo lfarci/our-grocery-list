@@ -142,8 +142,6 @@ export function useGroceryList() {
     }, []),
   });
 
-  const visibleItems = items.filter(item => item.state !== 'archived');
-
   // Create category order mapping dynamically from CATEGORIES constant
   const categoryOrder: Record<string, number> = Object.fromEntries(
     CATEGORIES.map((cat, idx) => [cat, idx])
@@ -151,7 +149,7 @@ export function useGroceryList() {
 
   // Group items by category, maintaining order within each category
   // Sort: oldest first within each category to keep checked items in place
-  const sortedItems = [...visibleItems].sort((a, b) => {
+  const sortedItems = [...items].sort((a, b) => {
     // First sort by category according to fixed order
     const catA = categoryOrder[a.category] ?? CATEGORIES.length; // Default to end if unknown
     const catB = categoryOrder[b.category] ?? CATEGORIES.length;

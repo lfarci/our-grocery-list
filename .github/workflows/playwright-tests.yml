@@ -58,17 +58,19 @@ jobs:
       - name: Check if branch exists
         if: inputs.branch_name != ''
         id: check_branch
+        env:
+          BRANCH_NAME: ${{ inputs.branch_name }}
         run: |
-          echo "Checking if branch '${{ inputs.branch_name }}' exists..."
+          echo "Checking if branch '$BRANCH_NAME' exists..."
           
           # Fetch all branches from remote
-          git ls-remote --heads origin "${{ inputs.branch_name }}" > /dev/null 2>&1
+          git ls-remote --heads origin "$BRANCH_NAME" > /dev/null 2>&1
           
           if [ $? -eq 0 ]; then
-            echo "Branch '${{ inputs.branch_name }}' exists"
+            echo "Branch '$BRANCH_NAME' exists"
             echo "branch_exists=true" >> $GITHUB_OUTPUT
           else
-            echo "::error::Branch '${{ inputs.branch_name }}' does not exist in the repository"
+            echo "::error::Branch '$BRANCH_NAME' does not exist in the repository"
             echo "branch_exists=false" >> $GITHUB_OUTPUT
             exit 1
           fi
@@ -138,6 +140,7 @@ jobs:
         env:
           BASE_URL: ${{ inputs.deployment_url == 'local' && steps.local-services.outputs.base_url || inputs.deployment_url }}
           CI: true
+          TEST_FILES: ${{ inputs.test_files }}
         run: |
           if [ "${{ inputs.deployment_url }}" = "local" ]; then
             echo "Running Playwright tests against local services."

@@ -12,8 +12,8 @@ const stateStyles: Record<ItemState, string> = {
 
 const stateLabels: Record<ItemState, string> = {
   active: 'To buy',
-  checked: 'Available',
-  archived: 'Archived',
+  checked: 'In basket',
+  archived: 'In kitchen',
 };
 
 export function StatusBadge({ state }: StatusBadgeProps) {
