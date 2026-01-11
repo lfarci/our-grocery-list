@@ -55,6 +55,16 @@ jobs:
         if: inputs.branch_name == ''
         uses: actions/checkout@v4
 
+      - name: Validate branch name
+        if: inputs.branch_name != ''
+        env:
+          BRANCH_NAME: ${{ inputs.branch_name }}
+        run: |
+          if ! git check-ref-format --branch "$BRANCH_NAME"; then
+            echo "::error::Invalid branch name input."
+            exit 1
+          fi
+
       - name: Check if branch exists
         if: inputs.branch_name != ''
         id: check_branch
@@ -147,9 +157,16 @@ jobs:
           else
             echo "Running Playwright tests against: ${{ inputs.deployment_url }}"
           fi
-          if [ -n "${{ inputs.test_files }}" ]; then
-            echo "Running specified test files: ${{ inputs.test_files }}"
-            npx playwright test --project=chromium ${{ inputs.test_files }}
+          if [ -n "${TEST_FILES}" ]; then
+            echo "Running specified test files: ${TEST_FILES}"
+            read -r -a files <<< "${TEST_FILES}"
+            for file in "${files[@]}"; do
+              if ! [[ "${file}" =~ ^[A-Za-z0-9_./-]+\\.spec\\.ts$ ]]; then
+                echo "::error::Invalid test file input: ${file}"
+                exit 1
+              fi
+            done
+            npx playwright test --project=chromium "${files[@]}"
           else
             echo "No test files specified; running full suite."
             npx playwright test --project=chromium
