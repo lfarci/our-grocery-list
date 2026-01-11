@@ -60,11 +60,12 @@ jobs:
         id: check_branch
         env:
           BRANCH_NAME: ${{ inputs.branch_name }}
+          REPO_URL: https://github.com/${{ github.repository }}.git
         run: |
           echo "Checking if branch '${BRANCH_NAME}' exists..."
           
-          # Fetch all branches from remote
-          git ls-remote --heads origin "${BRANCH_NAME}" > /dev/null 2>&1
+          # Query the repository directly so a local checkout is not required.
+          git ls-remote --heads "${REPO_URL}" "${BRANCH_NAME}" > /dev/null 2>&1
           
           if [ $? -eq 0 ]; then
             echo "Branch '${BRANCH_NAME}' exists"
