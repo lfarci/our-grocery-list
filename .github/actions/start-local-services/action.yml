@@ -1,0 +1,40 @@
+name: 'Start local services prerequisites'
+description: 'Prepare local settings and dependencies for running the API with SWA during Playwright tests.'
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Install Azure Functions Core Tools
+      env:
+        NPM_CONFIG_USERCONFIG: /dev/null
+      run: npm install -g azure-functions-core-tools@4 --unsafe-perm true --ignore-scripts --registry=https://registry.npmjs.org
+      shell: bash
+
+    - name: Restore API dependencies
+      run: dotnet restore ./api/api.csproj
+      shell: bash
+
+    - name: Create local settings for Functions
+      run: |
+        cat > ./api/local.settings.json <<'EOF'
+        {
+          "IsEncrypted": false,
+          "Values": {
+            "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+            "AzureWebJobsSecretStorageType": "Files",
+            "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+            "CosmosDbConnectionString": "AccountEndpoint=https://placeholder.documents.azure.com:443/;AccountKey=placeholder",
+            "CosmosDbDatabaseId": "GroceryListDb",
+            "CosmosDbContainerId": "Items",
+            "AzureSignalRConnectionString": ""
+          },
+          "Host": {
+            "CORS": "http://localhost:4280,http://localhost:5173,http://127.0.0.1:5173"
+          }
+        }
+        EOF
+      shell: bash
