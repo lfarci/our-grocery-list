@@ -102,6 +102,27 @@ jobs:
         if: inputs.deployment_url == ''
         run: dotnet restore ./api/api.csproj
 
+      - name: Create local settings for Functions
+        if: inputs.deployment_url == ''
+        run: |
+          cat > ./api/local.settings.json <<'EOF'
+          {
+            "IsEncrypted": false,
+            "Values": {
+              "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+              "AzureWebJobsSecretStorageType": "Files",
+              "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+              "CosmosDbConnectionString": "AccountEndpoint=https://placeholder.documents.azure.com:443/;AccountKey=placeholder",
+              "CosmosDbDatabaseId": "GroceryListDb",
+              "CosmosDbContainerId": "Items",
+              "AzureSignalRConnectionString": ""
+            },
+            "Host": {
+              "CORS": "http://localhost:4280,http://localhost:5173,http://127.0.0.1:5173"
+            }
+          }
+          EOF
+
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 
