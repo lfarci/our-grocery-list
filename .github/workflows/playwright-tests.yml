@@ -88,7 +88,7 @@ jobs:
 
       - name: Install Azure Functions Core Tools
         if: inputs.deployment_url == ''
-        run: npm install -g @azure/functions-core-tools@4 --unsafe-perm true
+        run: npm install -g @azure/functions-core-tools@4 --unsafe-perm true --ignore-scripts
 
       - name: Install dependencies
         # This repo's postinstall runs `dotnet restore` for the API.
