@@ -40,7 +40,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: process.env.BASE_URL ? undefined : {
-    command: 'npm run dev:frontend',
+    command: 'npx swa start http://localhost:5173 --api-location ./api --run "npm run dev:frontend"',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
