@@ -1,4 +1,4 @@
-name: 'Start local services prerequisites'
+name: 'Run application'
 description: 'Prepare local settings and dependencies for running the API with SWA during Playwright tests.'
 runs:
   using: 'composite'

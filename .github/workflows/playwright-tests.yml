@@ -88,7 +88,7 @@ jobs:
 
       - name: Prepare local services
         if: inputs.deployment_url == ''
-        uses: ./.github/actions/start-local-services
+        uses: lfarci/our-grocery-list/.github/actions/run-application@main
 
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
