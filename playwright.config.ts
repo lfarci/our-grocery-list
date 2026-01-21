@@ -16,7 +16,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
 
   /* Keep parallelism enabled on CI. */
-  workers: process.env.CI ? 2 : undefined,
+  workers: process.env.CI ? '50%' : undefined,
   
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI ? [['html'], ['github']] : 'html',
