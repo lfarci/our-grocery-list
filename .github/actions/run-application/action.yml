@@ -11,6 +11,7 @@ runs:
           -p 10252:10252 \
           -p 10253:10253 \
           -p 10254:10254 \
+          -e AZURE_COSMOS_EMULATOR_ACCEPT_EULA=true \
           -e AZURE_COSMOS_EMULATOR_PARTITION_COUNT=10 \
           -e AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE=true \
           --name cosmos-emulator \
@@ -29,7 +30,7 @@ runs:
       run: |
         for i in {1..30}; do
           cosmos_ready=$(curl -k -sSf https://localhost:8081/_explorer/index.html > /dev/null && echo yes || echo no)
-          signalr_ready=$(curl -sSf http://localhost:8888/ > /dev/null && echo yes || echo no)
+          signalr_ready=$(curl -sSf http://localhost:8888/api/v1/health > /dev/null && echo yes || echo no)
           if [ "$cosmos_ready" = "yes" ] && [ "$signalr_ready" = "yes" ]; then
             echo "Cosmos DB and SignalR emulators are responding."
             exit 0
