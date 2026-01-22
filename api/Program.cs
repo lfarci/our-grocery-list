@@ -56,7 +56,8 @@ builder.Services.AddSingleton<CosmosClient>(sp =>
         ConnectionMode = ConnectionMode.Direct
     };
 
-    if (cosmosConnectionString.Contains("localhost", StringComparison.OrdinalIgnoreCase))
+    var isEmulator = cosmosConnectionString.Contains("localhost", StringComparison.OrdinalIgnoreCase);
+    if (isEmulator)
     {
         // Emulator uses a self-signed cert; allow it for local runs.
         clientOptions.ConnectionMode = ConnectionMode.Gateway;
@@ -70,7 +71,19 @@ builder.Services.AddSingleton<CosmosClient>(sp =>
         };
     }
 
-    return new CosmosClient(cosmosConnectionString, clientOptions);
+    var cosmosClient = new CosmosClient(cosmosConnectionString, clientOptions);
+
+    if (isEmulator)
+    {
+        // Ensure database and container exist for emulator-backed runs.
+        var databaseResponse = cosmosClient.CreateDatabaseIfNotExistsAsync(databaseId).GetAwaiter().GetResult();
+        databaseResponse.Database.CreateContainerIfNotExistsAsync(
+                new ContainerProperties(containerId, "/partitionKey"))
+            .GetAwaiter()
+            .GetResult();
+    }
+
+    return cosmosClient;
 });
 
 builder.Services.AddSingleton<IItemRepository>(sp =>
