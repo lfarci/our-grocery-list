@@ -1,0 +1,12 @@
+{
+  "UpstreamSettings": {
+    "Templates": [
+      {
+        "UrlTemplate": "http://api/runtime/webhooks/signalr",
+        "EventPattern": "*",
+        "HubPattern": "*",
+        "CategoryPattern": "*"
+      }
+    ]
+  }
+}
