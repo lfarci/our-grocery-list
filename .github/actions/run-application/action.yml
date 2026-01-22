@@ -38,3 +38,21 @@ runs:
         }
         EOF
       shell: bash
+
+    - name: Start SWA CLI
+      run: |
+        nohup npx swa start http://localhost:5173 --api-location ./api --run "npm run dev:frontend" --port 4280 > ./swa.log 2>&1 &
+      shell: bash
+
+    - name: Wait for local app
+      run: |
+        for i in {1..30}; do
+          if curl -sSf http://localhost:4280 > /dev/null; then
+            echo "Local app is responding."
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "Local app did not become ready in time."
+        exit 1
+      shell: bash

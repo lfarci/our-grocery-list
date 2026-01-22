@@ -95,11 +95,11 @@ jobs:
 
       - name: Run Playwright tests
         env:
-          BASE_URL: ${{ inputs.deployment_url }}
+          BASE_URL: ${{ inputs.deployment_url != '' && inputs.deployment_url || 'http://localhost:4280' }}
           CI: true
           TEST_FILES: ${{ inputs.test_files }}
         run: |
-          if [ -n "$BASE_URL" ]; then
+          if [ -n "${{ inputs.deployment_url }}" ]; then
             echo "Running Playwright tests against: $BASE_URL"
           else
             echo "Running Playwright tests against local dev server"
