@@ -12,10 +12,14 @@ import { getItemContainer, getAddItemInput, getAddItemButton, getSwipeableElemen
 export async function addItem(page: Page, itemName: string): Promise<void> {
   const input = getAddItemInput(page);
   await input.fill(itemName);
-  await input.press('Enter');
-  
-  // Wait for input to be cleared (indicates successful add)
-  await expect(input).toHaveValue('', { timeout: TIMEOUTS.ITEM_APPEAR });
+  const [response] = await Promise.all([
+    waitForPostResponse(page),
+    input.press('Enter'),
+  ]);
+  expect(response.ok()).toBe(true);
+
+  // Input should clear after a successful add, but don't fail the test if it lags.
+  await expect.soft(input).toHaveValue('', { timeout: TIMEOUTS.ITEM_APPEAR });
   
   // Wait for item to appear in the list
   const checkbox = getItemCheckbox(page, itemName);
