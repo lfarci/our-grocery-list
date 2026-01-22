@@ -44,6 +44,13 @@ runs:
         exit 1
       shell: bash
 
+    - name: Trust Cosmos DB emulator certificate
+      run: |
+        curl -k https://localhost:8081/_explorer/emulator.pem -o /tmp/cosmos-emulator.pem
+        sudo cp /tmp/cosmos-emulator.pem /usr/local/share/ca-certificates/cosmos-emulator.crt
+        sudo update-ca-certificates
+      shell: bash
+
     - name: Wait for Azurite
       run: |
         for i in {1..30}; do
