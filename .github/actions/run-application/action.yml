@@ -1,5 +1,10 @@
 name: 'Run application'
 description: 'Prepare local settings and dependencies for running the API with SWA during Playwright tests.'
+inputs:
+  signalr_emulator_image:
+    description: 'SignalR emulator image to run.'
+    required: false
+    default: 'mcr.microsoft.com/azure-signalr/signalr-emulator:1.0.0'
 runs:
   using: 'composite'
   steps:
@@ -23,7 +28,7 @@ runs:
         docker run -d \
           -p 8888:8888 \
           --name signalr-emulator \
-          mcr.microsoft.com/azure-signalr/signalr-emulator:latest
+          "${{ inputs.signalr_emulator_image }}"
       shell: bash
 
     - name: Wait for emulators
