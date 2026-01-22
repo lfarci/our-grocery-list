@@ -1,10 +1,5 @@
 name: 'Run application'
 description: 'Prepare local settings and dependencies for running the API with SWA during Playwright tests.'
-inputs:
-  signalr_emulator_image:
-    description: 'SignalR emulator image to run.'
-    required: false
-    default: 'mcr.microsoft.com/azure-signalr/signalr-emulator:latest'
 runs:
   using: 'composite'
   steps:
@@ -23,30 +18,19 @@ runs:
           mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
       shell: bash
 
-    - name: Start SignalR emulator
-      run: |
-        docker run -d \
-          -p 8888:8888 \
-          --name signalr-emulator \
-          "${{ inputs.signalr_emulator_image }}"
-      shell: bash
-
-    - name: Wait for emulators
+    - name: Wait for Cosmos DB emulator
       run: |
         for i in {1..60}; do
           cosmos_ready=$(curl -k -sSf https://localhost:8081/_explorer/index.html > /dev/null && echo yes || echo no)
-          signalr_ready=$(curl -sSf http://localhost:8888/api/v1/health > /dev/null && echo yes || echo no)
-          if [ "$cosmos_ready" = "yes" ] && [ "$signalr_ready" = "yes" ]; then
-            echo "Cosmos DB and SignalR emulators are responding."
+          if [ "$cosmos_ready" = "yes" ]; then
+            echo "Cosmos DB emulator is responding."
             exit 0
           fi
           sleep 2
         done
-        echo "Emulators did not become ready in time."
+        echo "Cosmos DB emulator did not become ready in time."
         echo "Cosmos DB logs:"
         docker logs cosmos-emulator || true
-        echo "SignalR logs:"
-        docker logs signalr-emulator || true
         exit 1
       shell: bash
 
@@ -54,6 +38,31 @@ runs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
+
+    - name: Install SignalR emulator
+      run: dotnet tool install -g Microsoft.Azure.SignalR.Emulator
+      shell: bash
+
+    - name: Start SignalR emulator
+      id: signalr_emulator
+      run: |
+        export PATH="$PATH:$HOME/.dotnet/tools"
+        asrs-emulator upstream init
+        nohup asrs-emulator start --port 8888 > ./signalr-emulator.log 2>&1 &
+        for i in {1..30}; do
+          if grep -Eq "Endpoint=.*AccessKey=.*Version=" ./signalr-emulator.log; then
+            break
+          fi
+          sleep 1
+        done
+        connection_string=$(grep -Eo "Endpoint=[^ ]+;AccessKey=[^;]+;Version=[^;]+;" ./signalr-emulator.log | head -n 1)
+        if [ -z "$connection_string" ]; then
+          echo "SignalR emulator did not output a connection string."
+          tail -n 200 ./signalr-emulator.log || true
+          exit 1
+        fi
+        echo "connection_string=$connection_string" >> "$GITHUB_OUTPUT"
+      shell: bash
 
     - name: Install Azure Functions Core Tools
       env:
@@ -77,7 +86,7 @@ runs:
             "CosmosDbConnectionString": "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
             "CosmosDbDatabaseId": "GroceryListDb",
             "CosmosDbContainerId": "Items",
-            "AzureSignalRConnectionString": "Endpoint=http://localhost:8888;AccessKey=local-dev-key;Version=1.0;"
+            "AzureSignalRConnectionString": "${{ steps.signalr_emulator.outputs.connection_string }}"
           },
           "Host": {
             "CORS": "http://localhost:4280,http://localhost:5173,http://127.0.0.1:5173"
