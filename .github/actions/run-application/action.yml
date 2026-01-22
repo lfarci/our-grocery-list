@@ -4,7 +4,7 @@ inputs:
   signalr_emulator_image:
     description: 'SignalR emulator image to run.'
     required: false
-    default: 'mcr.microsoft.com/azure-signalr/signalr-emulator:1.0.0'
+    default: 'mcr.microsoft.com/azure-signalr/signalr-emulator:latest'
 runs:
   using: 'composite'
   steps:
