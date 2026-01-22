@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using api.Repositories;
@@ -43,7 +44,7 @@ if (string.IsNullOrWhiteSpace(cosmosConnectionString))
 builder.Services.AddSingleton<CosmosClient>(sp =>
 {
     var logger = sp.GetRequiredService<ILogger<Program>>();
-    logger.LogInformation("Initializing Cosmos DB client with database: {DatabaseId}, container: {ContainerId}", 
+    logger.LogInformation("Initializing Cosmos DB client with database: {DatabaseId}, container: {ContainerId}",
         databaseId, containerId);
 
     var clientOptions = new CosmosClientOptions
@@ -54,6 +55,20 @@ builder.Services.AddSingleton<CosmosClient>(sp =>
         },
         ConnectionMode = ConnectionMode.Direct
     };
+
+    if (cosmosConnectionString.Contains("localhost", StringComparison.OrdinalIgnoreCase))
+    {
+        // Emulator uses a self-signed cert; allow it for local runs.
+        clientOptions.ConnectionMode = ConnectionMode.Gateway;
+        clientOptions.HttpClientFactory = () =>
+        {
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+            return new HttpClient(handler);
+        };
+    }
 
     return new CosmosClient(cosmosConnectionString, clientOptions);
 });
