@@ -48,6 +48,10 @@ jobs:
         if: inputs.branch_name == ''
         uses: actions/checkout@v4
 
+      - name: Checkout code (for branch lookup)
+        if: inputs.branch_name != ''
+        uses: actions/checkout@v4
+
       - name: Check if branch exists
         if: inputs.branch_name != ''
         id: check_branch

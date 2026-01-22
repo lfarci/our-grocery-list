@@ -33,7 +33,7 @@ runs:
 
     - name: Wait for emulators
       run: |
-        for i in {1..30}; do
+        for i in {1..60}; do
           cosmos_ready=$(curl -k -sSf https://localhost:8081/_explorer/index.html > /dev/null && echo yes || echo no)
           signalr_ready=$(curl -sSf http://localhost:8888/api/v1/health > /dev/null && echo yes || echo no)
           if [ "$cosmos_ready" = "yes" ] && [ "$signalr_ready" = "yes" ]; then
@@ -43,6 +43,10 @@ runs:
           sleep 2
         done
         echo "Emulators did not become ready in time."
+        echo "Cosmos DB logs:"
+        docker logs cosmos-emulator || true
+        echo "SignalR logs:"
+        docker logs signalr-emulator || true
         exit 1
       shell: bash
 
@@ -54,7 +58,7 @@ runs:
     - name: Install Azure Functions Core Tools
       env:
         NPM_CONFIG_USERCONFIG: /dev/null
-      run: npm install -g azure-functions-core-tools@4 --unsafe-perm true --ignore-scripts --registry=https://registry.npmjs.org
+      run: npm install -g azure-functions-core-tools@4 --unsafe-perm true --registry=https://registry.npmjs.org
       shell: bash
 
     - name: Restore API dependencies
@@ -89,7 +93,7 @@ runs:
 
     - name: Wait for local app
       run: |
-        for i in {1..30}; do
+        for i in {1..60}; do
           if curl -sSf http://localhost:4280 > /dev/null; then
             echo "Local app is responding."
             exit 0
@@ -97,5 +101,7 @@ runs:
           sleep 2
         done
         echo "Local app did not become ready in time."
+        echo "SWA CLI logs:"
+        tail -n 200 ./swa.log || true
         exit 1
       shell: bash
