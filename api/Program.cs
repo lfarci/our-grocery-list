@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using api.Repositories;
@@ -43,7 +44,7 @@ if (string.IsNullOrWhiteSpace(cosmosConnectionString))
 builder.Services.AddSingleton<CosmosClient>(sp =>
 {
     var logger = sp.GetRequiredService<ILogger<Program>>();
-    logger.LogInformation("Initializing Cosmos DB client with database: {DatabaseId}, container: {ContainerId}", 
+    logger.LogInformation("Initializing Cosmos DB client with database: {DatabaseId}, container: {ContainerId}",
         databaseId, containerId);
 
     var clientOptions = new CosmosClientOptions
@@ -55,7 +56,34 @@ builder.Services.AddSingleton<CosmosClient>(sp =>
         ConnectionMode = ConnectionMode.Direct
     };
 
-    return new CosmosClient(cosmosConnectionString, clientOptions);
+    var isEmulator = cosmosConnectionString.Contains("localhost", StringComparison.OrdinalIgnoreCase);
+    if (isEmulator)
+    {
+        // Emulator uses a self-signed cert; allow it for local runs.
+        clientOptions.ConnectionMode = ConnectionMode.Gateway;
+        clientOptions.HttpClientFactory = () =>
+        {
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+            return new HttpClient(handler);
+        };
+    }
+
+    var cosmosClient = new CosmosClient(cosmosConnectionString, clientOptions);
+
+    if (isEmulator)
+    {
+        // Ensure database and container exist for emulator-backed runs.
+        var databaseResponse = cosmosClient.CreateDatabaseIfNotExistsAsync(databaseId).GetAwaiter().GetResult();
+        databaseResponse.Database.CreateContainerIfNotExistsAsync(
+                new ContainerProperties(containerId, "/partitionKey"))
+            .GetAwaiter()
+            .GetResult();
+    }
+
+    return cosmosClient;
 });
 
 builder.Services.AddSingleton<IItemRepository>(sp =>

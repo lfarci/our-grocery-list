@@ -1,0 +1,158 @@
+name: 'Run application'
+description: 'Prepare local settings and dependencies for running the API with SWA during Playwright tests.'
+runs:
+  using: 'composite'
+  steps:
+    - name: Start Cosmos DB emulator
+      run: |
+        docker run -d \
+          -p 8081:8081 \
+          -p 10251:10251 \
+          -p 10252:10252 \
+          -p 10253:10253 \
+          -p 10254:10254 \
+          -e AZURE_COSMOS_EMULATOR_ACCEPT_EULA=true \
+          -e AZURE_COSMOS_EMULATOR_PARTITION_COUNT=10 \
+          -e AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE=true \
+          --name cosmos-emulator \
+          mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
+      shell: bash
+
+    - name: Start Azurite
+      run: |
+        docker run -d \
+          -p 10000:10000 \
+          -p 10001:10001 \
+          -p 10002:10002 \
+          --name azurite \
+          mcr.microsoft.com/azure-storage/azurite
+      shell: bash
+
+    - name: Wait for Cosmos DB emulator
+      run: |
+        for i in {1..60}; do
+          cosmos_ready=$(curl -k -sSf https://localhost:8081/_explorer/index.html > /dev/null && echo yes || echo no)
+          if [ "$cosmos_ready" = "yes" ]; then
+            echo "Cosmos DB emulator is responding."
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "Cosmos DB emulator did not become ready in time."
+        echo "Cosmos DB logs:"
+        docker logs cosmos-emulator || true
+        exit 1
+      shell: bash
+
+    - name: Trust Cosmos DB emulator certificate
+      run: |
+        curl -k https://localhost:8081/_explorer/emulator.pem -o /tmp/cosmos-emulator.pem
+        sudo cp /tmp/cosmos-emulator.pem /usr/local/share/ca-certificates/cosmos-emulator.crt
+        sudo update-ca-certificates
+      shell: bash
+
+    - name: Wait for Azurite
+      run: |
+        for i in {1..30}; do
+          if nc -z 127.0.0.1 10000; then
+            echo "Azurite is responding."
+            exit 0
+          fi
+          sleep 1
+        done
+        echo "Azurite did not become ready in time."
+        echo "Azurite logs:"
+        docker logs azurite || true
+        exit 1
+      shell: bash
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Install SignalR emulator
+      run: dotnet tool install -g Microsoft.Azure.SignalR.Emulator
+      shell: bash
+
+    - name: Start SignalR emulator
+      id: signalr_emulator
+      run: |
+        export PATH="$PATH:$HOME/.dotnet/tools"
+        asrs-emulator upstream init
+        nohup asrs-emulator start --port 8888 > ./signalr-emulator.log 2>&1 &
+        for i in {1..30}; do
+          if grep -Eq "Endpoint=.*AccessKey=.*Version=" ./signalr-emulator.log; then
+            break
+          fi
+          sleep 1
+        done
+        connection_string=$(grep -Eo "Endpoint=[^ ]+;AccessKey=[^;]+;Version=[^;]+;" ./signalr-emulator.log | head -n 1)
+        if [ -z "$connection_string" ]; then
+          echo "SignalR emulator did not output a connection string."
+          tail -n 200 ./signalr-emulator.log || true
+          exit 1
+        fi
+        echo "connection_string=$connection_string" >> "$GITHUB_OUTPUT"
+      shell: bash
+
+    - name: Install Azure Functions Core Tools
+      env:
+        NPM_CONFIG_USERCONFIG: /dev/null
+      run: npm install -g azure-functions-core-tools@4 --unsafe-perm true --registry=https://registry.npmjs.org
+      shell: bash
+
+    - name: Restore API dependencies
+      run: dotnet restore ./api/api.csproj
+      shell: bash
+
+    - name: Create local settings for Functions
+      run: |
+        cat > ./api/local.settings.json <<'EOF'
+        {
+          "IsEncrypted": false,
+          "Values": {
+            "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+            "AzureWebJobsSecretStorageType": "Files",
+            "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+            "CosmosDbConnectionString": "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
+            "CosmosDbDatabaseId": "GroceryListDb",
+            "CosmosDbContainerId": "Items",
+            "AzureSignalRConnectionString": "${{ steps.signalr_emulator.outputs.connection_string }}"
+          },
+          "Host": {
+            "CORS": "http://localhost:4280,http://localhost:5173,http://127.0.0.1:5173"
+          }
+        }
+        EOF
+      shell: bash
+
+    - name: Start SWA CLI
+      run: |
+        nohup npx swa start http://localhost:5173 --api-location ./api --run "npm run dev:frontend" --port 4280 > ./swa.log 2>&1 &
+      shell: bash
+
+    - name: Wait for local app
+      run: |
+        for i in {1..60}; do
+          if curl -sSf http://localhost:4280 > /dev/null; then
+            echo "Local app is responding."
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "Local app did not become ready in time."
+        echo "SWA CLI logs:"
+        tail -n 200 ./swa.log || true
+        exit 1
+      shell: bash
+
+    - name: Smoke test API
+      run: |
+        if ! curl -sSf http://localhost:4280/api/items > /dev/null; then
+          echo "API did not respond successfully."
+          echo "SWA CLI logs:"
+          tail -n 200 ./swa.log || true
+          exit 1
+        fi
+      shell: bash
