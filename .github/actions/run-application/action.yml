@@ -146,3 +146,13 @@ runs:
         tail -n 200 ./swa.log || true
         exit 1
       shell: bash
+
+    - name: Smoke test API
+      run: |
+        if ! curl -sSf http://localhost:4280/api/items > /dev/null; then
+          echo "API did not respond successfully."
+          echo "SWA CLI logs:"
+          tail -n 200 ./swa.log || true
+          exit 1
+        fi
+      shell: bash

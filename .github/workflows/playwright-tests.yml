@@ -126,6 +126,17 @@ jobs:
           retention-days: 30
           if-no-files-found: ignore
 
+      - name: Upload local app logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-app-logs
+          path: |
+            swa.log
+            signalr-emulator.log
+          retention-days: 7
+          if-no-files-found: ignore
+
       - name: Upload test traces
         if: always()
         uses: actions/upload-artifact@v4
