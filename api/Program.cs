@@ -1,5 +1,7 @@
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using api.Initialization;
 using api.Repositories;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
@@ -24,6 +26,7 @@ builder.Services.Configure<JsonSerializerOptions>(options =>
 var cosmosConnectionString = builder.Configuration["CosmosDbConnectionString"];
 var databaseId = builder.Configuration["CosmosDbDatabaseId"] ?? "GroceryListDb";
 var containerId = builder.Configuration["CosmosDbContainerId"] ?? "Items";
+var useCosmosEmulator = builder.Environment.IsDevelopment();
 
 // Log warning if connection string is missing but don't fail startup
 // This allows preview deployments to succeed even without Cosmos DB configured
@@ -43,8 +46,7 @@ if (string.IsNullOrWhiteSpace(cosmosConnectionString))
 builder.Services.AddSingleton<CosmosClient>(sp =>
 {
     var logger = sp.GetRequiredService<ILogger<Program>>();
-    logger.LogInformation("Initializing Cosmos DB client with database: {DatabaseId}, container: {ContainerId}", 
-        databaseId, containerId);
+    logger.LogInformation("Initializing Cosmos DB client with database: {DatabaseId}, container: {ContainerId}", databaseId, containerId);
 
     var clientOptions = new CosmosClientOptions
     {
@@ -52,10 +54,33 @@ builder.Services.AddSingleton<CosmosClient>(sp =>
         {
             PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
         },
-        ConnectionMode = ConnectionMode.Direct
+        ConnectionMode = useCosmosEmulator ? ConnectionMode.Gateway : ConnectionMode.Direct
     };
 
+    if (useCosmosEmulator)
+    {
+        logger.LogWarning("Cosmos DB emulator TLS certificate validation disabled for Development environment.");
+
+        // Cosmos emulator uses a self-signed certificate; override validation for local containers.
+        clientOptions.HttpClientFactory = () =>
+        {
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+
+            return new HttpClient(handler, disposeHandler: true);
+        };
+    }
+
     return new CosmosClient(cosmosConnectionString, clientOptions);
+});
+
+builder.Services.AddHostedService(sp =>
+{
+    var cosmosClient = sp.GetRequiredService<CosmosClient>();
+    var logger = sp.GetRequiredService<ILogger<CosmosDbInitializer>>();
+    return new CosmosDbInitializer(cosmosClient, logger, databaseId, containerId, useCosmosEmulator);
 });
 
 builder.Services.AddSingleton<IItemRepository>(sp =>

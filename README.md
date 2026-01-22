@@ -17,6 +17,7 @@ Simple shared grocery list PWA with one global list that works on phones and des
 - Node.js 18.x, 20.x, or 22.x (⚠️ Node.js 24+ not supported by Azure Functions v4)
 - .NET 8.0 SDK
 - Azure Functions Core Tools v4
+- Docker (optional, for Docker Compose)
 
 ### Installation
 
@@ -32,6 +33,16 @@ cd api && func start
 ```
 
 Visit `http://localhost:5173` to see the app.
+
+### Docker Compose (Full Stack)
+
+Run the entire stack in containers (frontend, API, Cosmos emulator, Azurite, SignalR emulator):
+
+```bash
+docker compose up --build
+```
+
+Visit `http://localhost:5173` to see the app. The API is available at `http://localhost:7071`.
 
 📖 **Full setup guide**: See [docs/technical/development.md](docs/technical/development.md) for detailed instructions.
 

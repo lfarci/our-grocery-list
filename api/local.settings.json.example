@@ -3,10 +3,11 @@
     "Values": {
         "AzureWebJobsStorage": "UseDevelopmentStorage=true",
         "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+        "AZURE_FUNCTIONS_ENVIRONMENT": "Development",
         "CosmosDbConnectionString": "YOUR_COSMOS_DB_CONNECTION_STRING_HERE",
         "CosmosDbDatabaseId": "GroceryListDb",
         "CosmosDbContainerId": "Items",
-        "AzureSignalRConnectionString": "YOUR_SIGNALR_CONNECTION_STRING_HERE"
+        "AzureSignalRConnectionString": "Endpoint=http://localhost;Port=8888;AccessKey=YOUR_SIGNALR_EMULATOR_ACCESS_KEY;Version=1.0;ClientEndpoint=http://localhost:8888"
     },
     "Host": {
         "CORS": "http://localhost:5173,http://127.0.0.1:5173"
