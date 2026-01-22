@@ -13,6 +13,7 @@ This guide provides instructions for setting up and running the application loca
   - Download from: https://dotnet.microsoft.com/download/dotnet/10.0
 - **Azure Functions Core Tools** v4 (for running the API locally)
 - **Azure Static Web Apps CLI** (optional, for integrated development)
+- **Docker** (optional, for running the full stack with Docker Compose)
 
 To install required tools:
 ```bash
@@ -136,6 +137,32 @@ API will be available at `http://localhost:7071`
 VITE_API_BASE_URL=http://localhost:7071/api
 ```
 
+#### Option C: Docker Compose (Full Stack)
+
+Run the full stack with Docker for local development and Playwright:
+
+```bash
+docker compose up --build
+```
+
+This starts the frontend (Vite dev server), API, Cosmos emulator, Azurite, and SignalR emulator.
+The API container sets `AZURE_FUNCTIONS_ENVIRONMENT=Development` so local Cosmos emulator TLS bypass
+and initialization are enabled.
+
+**Access the app at:** `http://localhost:5173`
+
+**Stop containers:**
+```bash
+docker compose down
+```
+
+**Reset emulator data (optional):**
+```bash
+docker compose down -v
+```
+
+**SignalR emulator note:** Use a connection string with `ClientEndpoint=http://localhost:8888` so the negotiate response points at a host the browser can reach, while keeping `Endpoint=http://signalr-emulator;Port=8888` for the API container.
+
 ## Local Configuration
 
 ### Frontend Environment Variables
@@ -185,7 +212,7 @@ This file configures CORS, Cosmos DB, and SignalR:
     "CosmosDbConnectionString": "YOUR_COSMOS_DB_CONNECTION_STRING_HERE",
     "CosmosDbDatabaseId": "GroceryListDb",
     "CosmosDbContainerId": "Items",
-    "AzureSignalRConnectionString": "YOUR_SIGNALR_CONNECTION_STRING_HERE"
+    "AzureSignalRConnectionString": "Endpoint=http://localhost;Port=8888;AccessKey=YOUR_SIGNALR_EMULATOR_ACCESS_KEY;Version=1.0;ClientEndpoint=http://localhost:8888"
   },
   "Host": {
     "CORS": "http://localhost:5173,http://127.0.0.1:5173"
@@ -198,7 +225,7 @@ This file configures CORS, Cosmos DB, and SignalR:
 - **CosmosDbConnectionString**: Connection string for Azure Cosmos DB (see [Cosmos DB setup guide](cosmosdb-setup.md))
 - **CosmosDbDatabaseId**: Database name (default: "GroceryListDb")
 - **CosmosDbContainerId**: Container name (default: "Items")
-- **AzureSignalRConnectionString**: Connection string for Azure SignalR Service (see below)
+- **AzureSignalRConnectionString**: Connection string for Azure SignalR Service (supports `ClientEndpoint=...` for Docker)
 
 > **Important:** The `local.settings.json` file is git-ignored and must be created locally. Without it, you'll encounter CORS errors when running services separately.
 
@@ -288,6 +315,12 @@ npm run test:debug
 
 # View the test report
 npm run test:report
+```
+
+When running the Docker Compose stack, point Playwright at the containerized frontend:
+
+```bash
+BASE_URL=http://localhost:5173 npm test
 ```
 
 ### Test Configuration
